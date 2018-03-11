@@ -13,7 +13,12 @@ import csv
 import os
 import time
 import operator
+from subprocess import Popen, PIPE
 from datetime import datetime
+
+import http.server
+import socketserver
+from threading import Thread
 
 # TODO: add command line parameters for input csv
 INPUT_FILE = './messages.csv'
@@ -39,6 +44,16 @@ MASTER_ALIAS = [MASTER_NAME, 'Mansur He']
 MASTER_ID = '100002015209360@facebook.com'
 
 WRITE_CSV_HEADER = False
+
+PORT = 8000
+
+# Launch local server
+process = Popen(['python', '-m', 'http.server', PORT], stdin=None, stdout=PIPE, stderr=PIPE)
+
+# Prompt to enter user access token
+accessToken = input('Enter your accesss token: ')
+print('Your access token is:', accessToken)
+process.kill()
 
 def getMsgEntry(entry):
     """Returns the formatted csv entry given preparsed csv row"""
@@ -99,34 +114,37 @@ def getMsgEntry(entry):
 
     return (writeTS, writeSender, writeReceiver, writeMsgLen)
 
-msgHistoryUnsorted = []
-with open(INPUT_FILE, newline='', encoding="utf8") as csvfile:
-    reader = csv.reader(csvfile, delimiter=',', quotechar='"')
+def readMessageCSV():
+    msgHistoryUnsorted = []
+    with open(INPUT_FILE, newline='', encoding="utf8") as csvfile:
+        reader = csv.reader(csvfile, delimiter=',', quotechar='"')
 
-    msgRead = 0
-    for row in reader:
+        msgRead = 0
+        for row in reader:
 
-        # Ignore header (for now)
-        if msgRead != 0:
-            newEntry = getMsgEntry(row)
-            if newEntry != '':
-                msgHistoryUnsorted.append(newEntry)
+            # Ignore header (for now)
+            if msgRead != 0:
+                newEntry = getMsgEntry(row)
+                if newEntry != '':
+                    msgHistoryUnsorted.append(newEntry)
 
-        # Limit number of messages read
-        if msgRead > MSG_LIMIT and MSG_LIMIT != 0:
-            break
-        else:
-            msgRead += 1
+            # Limit number of messages read
+            if msgRead > MSG_LIMIT and MSG_LIMIT != 0:
+                break
+            else:
+                msgRead += 1
+    return msgHistoryUnsorted
 
 # Write to as unsorted csv
-msgHistorySorted = sorted(msgHistoryUnsorted)
-with open(SORTED, 'w', newline='', encoding='utf-8') as csvfile:
-    writer = csv.writer(csvfile, delimiter=',', quotechar='"')
+def sortMessageCSV(unsorted):
+    msgHistorySorted = sorted(unsorted)
+    with open(SORTED, 'w', newline='', encoding='utf-8') as csvfile:
+        writer = csv.writer(csvfile, delimiter=',', quotechar='"')
 
-    # Writer header row
-    if WRITE_CSV_HEADER:
-        writer.writerow(['time', 'sender', 'receiver', 'msglen'])
+        # Writer header row
+        if WRITE_CSV_HEADER:
+            writer.writerow(['time', 'sender', 'receiver', 'msglen'])
 
-    # Write entries to file
-    for msgEntry in msgHistorySorted:
-        writer.writerow(msgEntry)
+        # Write entries to file
+        for msgEntry in msgHistorySorted:
+            writer.writerow(msgEntry)

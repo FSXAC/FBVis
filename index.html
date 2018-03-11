@@ -7,6 +7,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
+    <strong>User access token:</strong>
+    <p id='token'></p>
     <script>
         window.fbAsyncInit = function () {
             FB.init({
@@ -33,13 +35,8 @@
 
         function statusChangeCallback(response) {
             if (response.status === 'connected') {
-                // Logged in
-                console.log('Logged in and authenticated');
                 var accessToken = response.authResponse.accessToken;
-                console.log(accessToken);
-                
-            } else {
-                console.log('Not logged in');
+                displayToken(accessToken)
             }
         }
         
@@ -47,6 +44,11 @@
             FB.getLoginStatus(function (response) {
                 statusChangeCallback(response);
             });
+        }
+
+        function displayToken(token) {
+            document.getElementById('token').innerHTML = token;
+            console.log(token);
         }
     </script>
     <fb:login-button scope="public_profile,email" onlogin="checkLoginState();">
