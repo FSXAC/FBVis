@@ -15,6 +15,7 @@ import time
 import operator
 import requests
 import json
+import webbrowser
 from subprocess import Popen, PIPE
 from datetime import datetime
 
@@ -22,9 +23,10 @@ from datetime import datetime
 # TODO: add command line parameters for input csv
 INPUT_FILE = './messages.csv'
 SORTED = './sorted.csv'
+NAME_MAP_FILE = './name_map.csv'
 
 # TODO: set as command line parameter (0 for unlimited)
-MSG_LIMIT = 0
+MSG_LIMIT = 100
 
 # TODO: load name maps
 NAME_MAP = {}
@@ -39,10 +41,26 @@ PORT = '8000'
 
 # Launch local server
 process = Popen(['python', '-m', 'http.server', PORT], stdin=None, stdout=PIPE, stderr=PIPE)
+webbrowser.open('http://localhost:8000', new=2)
 
 # Prompt to enter user access token
 ACCESS_TOKEN = input('Enter your accesss token: ')
 process.kill()
+
+def importNameMap():
+    newNameMap = {}
+    with open(NAME_MAP_FILE, newline='', encoding="utf8") as csvfile:
+        reader = csv.reader(csvfile, delimiter=',', quotechar='"')
+        for row in reader:
+            newNameMap[row[0]] = row[1]
+    return newNameMap
+
+
+def saveNameMap():
+    with open(NAME_MAP_FILE, 'w', newline='', encoding='utf8') as csvfile:
+        writer = csv.writer(csvfile, delimiter=',', quotechar='"')
+        for key in NAME_MAP:
+            writer.writerow([key, NAME_MAP[key]])
 
 def getFacebookName(id):
     host = 'https://graph.facebook.com'
@@ -146,7 +164,7 @@ def readMessageCSV():
 # Write to as unsorted csv
 def sortMessageCSV(unsorted):
     msgHistorySorted = sorted(unsorted)
-    with open(SORTED, 'w', newline='', encoding='utf-8') as csvfile:
+    with open(SORTED, 'w', newline='', encoding='utf8') as csvfile:
         writer = csv.writer(csvfile, delimiter=',', quotechar='"')
 
         # Writer header row
@@ -157,10 +175,6 @@ def sortMessageCSV(unsorted):
         for msgEntry in msgHistorySorted:
             writer.writerow(msgEntry)
 
-
+NAME_MAP = importNameMap()
 sortMessageCSV(readMessageCSV())
-print(NAME_MAP)
-with open('name_map.csv', 'w', newline='', encoding='utf-8') as csvfile:
-    writer = csv.writer(csvfile, delimiter=',', quotechar='"')
-    for key in NAME_MAP:
-        writer.writerow([key, NAME_MAP[key]])
+saveNameMap()
