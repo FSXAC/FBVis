@@ -23,11 +23,14 @@ MSG_LIMIT = 0
 
 # TODO: map ids to names automatically (probably via API)
 NAME_MAP = {
-    
+    '100004290304565@facebook.com':'Winnie  Gong',
+    '1483268778@facebook.com':'LuFei Liu',
+    '100002533586559@facebook.com':'Danny Hsieh',
+    '1579537448@facebook.com':'Paul Liu'
 }
 
 MASTER_NAME = 'Muchen He'
-MASTER_ALIAS = ['Mansur He']
+MASTER_ALIAS = [MASTER_NAME, 'Mansur He']
 MASTER_ID = '100002015209360@facebook.com'
 
 def getMsgEntry(entry):
@@ -72,9 +75,10 @@ def getMsgEntry(entry):
 
         if masterParticipantId == 0:
             writeReceiver = participants[1]
-    else:
-        if masterParticipantId == 0:
+        else:
             writeReceiver = participants[0]
+    else:
+        writeReceiver = MASTER_NAME
 
     # Message length
     writeMsgLen = len(msg)
