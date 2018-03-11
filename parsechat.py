@@ -26,12 +26,18 @@ NAME_MAP = {
     '100004290304565@facebook.com':'Winnie  Gong',
     '1483268778@facebook.com':'LuFei Liu',
     '100002533586559@facebook.com':'Danny Hsieh',
-    '1579537448@facebook.com':'Paul Liu'
+    '1579537448@facebook.com':'Paul Liu',
+    '100002049867151@facebook.com':'Chris Chiu',
+    '691598428@facebook.com':'Keegen Payne',
+    '100004795364108@facebook.com':'Christopher Tong',
+    '1403335938@facebook.com':'Maharsh Patel'
 }
 
 MASTER_NAME = 'Muchen He'
 MASTER_ALIAS = [MASTER_NAME, 'Mansur He']
 MASTER_ID = '100002015209360@facebook.com'
+
+WRITE_CSV_HEADER = False
 
 def getMsgEntry(entry):
     """Returns the formatted csv entry given preparsed csv row"""
@@ -48,7 +54,10 @@ def getMsgEntry(entry):
     for participant in participants:
         if participant == MASTER_ID:
             participants[participants.index(MASTER_ID)] = MASTER_NAME
-    
+        elif participant in NAME_MAP:
+            participants[participants.index(participant)] = NAME_MAP[participant]
+
+    # Master ID
     masterParticipantId = 0
     try:
         masterParticipantId = participants.index(MASTER_NAME)
@@ -66,10 +75,7 @@ def getMsgEntry(entry):
     writeTS = int(time.mktime(timestamp.timetuple()))
 
     # Convert sender name to master name
-    writeSender = sender
-
     # Receiver is the other participant that is not sender
-    writeReceiver = ''
     if sender == MASTER_ID or sender in MASTER_ALIAS:
         writeSender = MASTER_NAME
 
@@ -77,7 +83,14 @@ def getMsgEntry(entry):
             writeReceiver = participants[1]
         else:
             writeReceiver = participants[0]
+        
+        if writeReceiver in NAME_MAP:
+            writeReceiver = NAME_MAP[writeReceiver]
     else:
+        if masterParticipantId == 0:
+            writeSender = participants[1]
+        else:
+            writeSender = participants[0]
         writeReceiver = MASTER_NAME
 
     # Message length
@@ -109,6 +122,9 @@ with open(UNSORTED_FILE, 'w', newline='', encoding='utf-8') as csvfile:
     writer = csv.writer(csvfile, delimiter=',', quotechar='"')
 
     # Writer header row
-    writer.writerow(['time', 'sender', 'receiver', 'msglen'])
+    if WRITE_CSV_HEADER:
+        writer.writerow(['time', 'sender', 'receiver', 'msglen'])
+
+    # Write entries to file
     for msgEntry in msgHistoryUnsorted:
         writer.writerow(msgEntry)
