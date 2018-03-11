@@ -13,12 +13,11 @@ import csv
 import os
 import time
 import operator
+import requests
+import json
 from subprocess import Popen, PIPE
 from datetime import datetime
 
-import http.server
-import socketserver
-from threading import Thread
 
 # TODO: add command line parameters for input csv
 INPUT_FILE = './messages.csv'
@@ -27,17 +26,8 @@ SORTED = './sorted.csv'
 # TODO: set as command line parameter (0 for unlimited)
 MSG_LIMIT = 0
 
-# TODO: map ids to names automatically (probably via API)
-NAME_MAP = {
-    '100004290304565@facebook.com':'Winnie  Gong',
-    '1483268778@facebook.com':'LuFei Liu',
-    '100002533586559@facebook.com':'Danny Hsieh',
-    '1579537448@facebook.com':'Paul Liu',
-    '100002049867151@facebook.com':'Chris Chiu',
-    '691598428@facebook.com':'Keegen Payne',
-    '100004795364108@facebook.com':'Christopher Tong',
-    '1403335938@facebook.com':'Maharsh Patel'
-}
+# TODO: load name maps
+NAME_MAP = {}
 
 MASTER_NAME = 'Muchen He'
 MASTER_ALIAS = [MASTER_NAME, 'Mansur He']
@@ -45,15 +35,31 @@ MASTER_ID = '100002015209360@facebook.com'
 
 WRITE_CSV_HEADER = False
 
-PORT = 8000
+PORT = '8000'
 
 # Launch local server
 process = Popen(['python', '-m', 'http.server', PORT], stdin=None, stdout=PIPE, stderr=PIPE)
 
 # Prompt to enter user access token
-accessToken = input('Enter your accesss token: ')
-print('Your access token is:', accessToken)
+ACCESS_TOKEN = input('Enter your accesss token: ')
 process.kill()
+
+def getFacebookName(id):
+    host = 'https://graph.facebook.com'
+    version = '/v2.12'
+    path = '/' + id
+    url = '{host}{version}{path}?access_token={token}'.format(host=host, version=version, path=path, token=ACCESS_TOKEN)
+
+    try:
+        response = requests.get(url)
+        data = json.loads(response.text)
+        if ('name' in data):
+            return data['name']
+        else:
+            return id
+    except Exception as e:
+        print('Exception in getFacebookName function:', e)
+        return id
 
 def getMsgEntry(entry):
     """Returns the formatted csv entry given preparsed csv row"""
@@ -72,15 +78,17 @@ def getMsgEntry(entry):
             participants[participants.index(MASTER_ID)] = MASTER_NAME
         elif participant in NAME_MAP:
             participants[participants.index(participant)] = NAME_MAP[participant]
+        else:
+            # Participant not in name map -> add to name map
+            participantID = participant[0:participant.index('@')]
+            name = getFacebookName(participantID)
+            print('Added to name map:', name)
+
+            # Add to name map
+            NAME_MAP[participant] = name
 
     # Master ID
-    masterParticipantId = 0
-    try:
-        masterParticipantId = participants.index(MASTER_NAME)
-    except Exception as e:
-        print(e)
-        print(participants)
-        input()
+    masterParticipantId = participants.index(MASTER_NAME)
 
     # Parse time
     timestamp = datetime.strptime(
@@ -148,3 +156,11 @@ def sortMessageCSV(unsorted):
         # Write entries to file
         for msgEntry in msgHistorySorted:
             writer.writerow(msgEntry)
+
+
+sortMessageCSV(readMessageCSV())
+print(NAME_MAP)
+with open('name_map.csv', 'w', newline='', encoding='utf-8') as csvfile:
+    writer = csv.writer(csvfile, delimiter=',', quotechar='"')
+    for key in NAME_MAP:
+        writer.writerow([key, NAME_MAP[key]])
