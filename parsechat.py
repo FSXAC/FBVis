@@ -12,11 +12,12 @@
 import csv
 import os
 import time
+import operator
 from datetime import datetime
 
 # TODO: add command line parameters for input csv
 INPUT_FILE = './messages.csv'
-UNSORTED_FILE = './unsorted.csv'
+SORTED = './sorted.csv'
 
 # TODO: set as command line parameter (0 for unlimited)
 MSG_LIMIT = 0
@@ -118,7 +119,8 @@ with open(INPUT_FILE, newline='', encoding="utf8") as csvfile:
             msgRead += 1
 
 # Write to as unsorted csv
-with open(UNSORTED_FILE, 'w', newline='', encoding='utf-8') as csvfile:
+msgHistorySorted = sorted(msgHistoryUnsorted)
+with open(SORTED, 'w', newline='', encoding='utf-8') as csvfile:
     writer = csv.writer(csvfile, delimiter=',', quotechar='"')
 
     # Writer header row
@@ -126,5 +128,5 @@ with open(UNSORTED_FILE, 'w', newline='', encoding='utf-8') as csvfile:
         writer.writerow(['time', 'sender', 'receiver', 'msglen'])
 
     # Write entries to file
-    for msgEntry in msgHistoryUnsorted:
+    for msgEntry in msgHistorySorted:
         writer.writerow(msgEntry)
