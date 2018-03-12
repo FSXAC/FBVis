@@ -24,11 +24,9 @@ from datetime import datetime
 INPUT_FILE = './messages.csv'
 SORTED = './sorted.csv'
 NAME_MAP_FILE = './name_map.csv'
+MASTER_FILE = './master.txt'
 
-# TODO: set as command line parameter (0 for unlimited)
-MSG_LIMIT = 100
-
-# TODO: load name maps
+MSG_LIMIT = 0
 NAME_MAP = {}
 
 MASTER_NAME = 'Muchen He'
@@ -36,6 +34,7 @@ MASTER_ALIAS = [MASTER_NAME, 'Mansur He']
 MASTER_ID = '100002015209360@facebook.com'
 
 WRITE_CSV_HEADER = False
+EXPORT_NO_NAME = False
 
 PORT = '8000'
 
@@ -49,10 +48,13 @@ process.kill()
 
 def importNameMap():
     newNameMap = {}
-    with open(NAME_MAP_FILE, newline='', encoding="utf8") as csvfile:
-        reader = csv.reader(csvfile, delimiter=',', quotechar='"')
-        for row in reader:
-            newNameMap[row[0]] = row[1]
+    try:
+        with open(NAME_MAP_FILE, newline='', encoding="utf8") as csvfile:
+            reader = csv.reader(csvfile, delimiter=',', quotechar='"')
+            for row in reader:
+                newNameMap[row[0]] = row[1]
+    except Exception as e:
+        print(e)
     return newNameMap
 
 
@@ -74,10 +76,13 @@ def getFacebookName(id):
         if ('name' in data):
             return data['name']
         else:
-            return id
+            if (EXPORT_NO_NAME):
+                return id
+            else:
+                return ''
     except Exception as e:
         print('Exception in getFacebookName function:', e)
-        return id
+        return ''
 
 def getMsgEntry(entry):
     """Returns the formatted csv entry given preparsed csv row"""
@@ -100,6 +105,10 @@ def getMsgEntry(entry):
             # Participant not in name map -> add to name map
             participantID = participant[0:participant.index('@')]
             name = getFacebookName(participantID)
+
+            if (name == ''):
+                return ''
+
             print('Added to name map:', name)
 
             # Add to name map
@@ -175,6 +184,12 @@ def sortMessageCSV(unsorted):
         for msgEntry in msgHistorySorted:
             writer.writerow(msgEntry)
 
+# Write master
+def writeMaster():
+    with open(MASTER_FILE, 'w') as mf:
+        mf.write(MASTER_NAME)
+
 NAME_MAP = importNameMap()
 sortMessageCSV(readMessageCSV())
+writeMaster()
 saveNameMap()
