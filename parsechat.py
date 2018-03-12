@@ -34,7 +34,7 @@ MASTER_ALIAS = [MASTER_NAME, 'Mansur He']
 MASTER_ID = '100002015209360@facebook.com'
 
 WRITE_CSV_HEADER = False
-EXPORT_NO_NAME = False
+EXPORT_NO_NAME = True
 
 PORT = '8000'
 
@@ -93,26 +93,28 @@ def getMsgEntry(entry):
 
     # Check that the thread is only 1-to-1
     participants = thread.split(', ')
-    if len(participants) != 2:
+    if len(participants) > 2:
         return ''
 
-    for participant in participants:
-        if participant == MASTER_ID:
-            participants[participants.index(MASTER_ID)] = MASTER_NAME
-        elif participant in NAME_MAP:
-            participants[participants.index(participant)] = NAME_MAP[participant]
-        else:
-            # Participant not in name map -> add to name map
-            participantID = participant[0:participant.index('@')]
-            name = getFacebookName(participantID)
+    # for participant in participants:
+    #     if participant == MASTER_ID:
+    #         participants[participants.index(MASTER_ID)] = MASTER_NAME
+    #     elif participant in NAME_MAP:
+    #         participants[participants.index(participant)] = NAME_MAP[participant]
+    #     else:
+    #         # Participant not in name map -> add to name map
+    #         participantID = participant[0:participant.index('@')]
+    #         name = getFacebookName(participantID)
 
-            if (name == ''):
-                return ''
+    #         if (name == ''):
+    #             return ''
 
-            print('Added to name map:', name)
+    #         print('Added to name map:', name)
 
-            # Add to name map
-            NAME_MAP[participant] = name
+    #         # Add to name map
+    #         NAME_MAP[participant] = name
+    print(participants)
+    return
 
     # Master ID
     masterParticipantId = participants.index(MASTER_NAME)
