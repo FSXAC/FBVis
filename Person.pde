@@ -2,24 +2,23 @@ class Person {
     private float desiredX, desiredY;
     private float positionX, positionY;
     private String name;
-    public int id;
 
-    public Person(int id) {
-        this.id = id;
+    public Person(String name) {
+        this.name = name;
         this.positionX = 0;
         this.positionY = 0;
         this.desiredX = 0;
         this.desiredY = 0;
     }
 
-    public Person(int id, float desiredX, float desiredY) {
-        this(id);
+    public Person(String name, float desiredX, float desiredY) {
+        this(name);
         this.desiredX = desiredX;
         this.desiredY = desiredY;
     }
 
-    public Person(int id, float desiredX, float desiredY, float x, float y) {
-        this(id, desiredX, desiredY);
+    public Person(String name, float desiredX, float desiredY, float x, float y) {
+        this(name, desiredX, desiredY);
         this.positionX = x;
         this.positionY = y;
     }
@@ -35,6 +34,11 @@ class Person {
         text(this.name, this.positionX, this.positionY + NAME_OFFSET);
 
         this.update();
+    }
+
+    public void setDesired(float x, float y) {
+        this.desiredX = x;
+        this.desiredY = y;
     }
 
     private void update() {

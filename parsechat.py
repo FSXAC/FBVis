@@ -13,10 +13,6 @@ import csv
 import os
 import time
 import operator
-import requests
-import json
-import webbrowser
-from subprocess import Popen, PIPE
 from datetime import datetime
 
 
@@ -35,55 +31,8 @@ MASTER_ID = '100002015209360@facebook.com'
 
 WRITE_CSV_HEADER = False
 EXPORT_NO_NAME = True
+EXPORT_UNKNOWN = False
 EXPORT_ZERO_LENGTH = False
-
-PORT = '8000'
-
-# Launch local server
-# process = Popen(['python', '-m', 'http.server', PORT], stdin=None, stdout=PIPE, stderr=PIPE)
-# webbrowser.open('http://localhost:8000', new=2)
-
-# Prompt to enter user access token
-ACCESS_TOKEN = input('Enter your accesss token: ')
-# process.kill()
-
-def importNameMap():
-    newNameMap = {}
-    try:
-        with open(NAME_MAP_FILE, newline='', encoding="utf8") as csvfile:
-            reader = csv.reader(csvfile, delimiter=',', quotechar='"')
-            for row in reader:
-                newNameMap[row[0]] = row[1]
-    except Exception as e:
-        print(e)
-    return newNameMap
-
-
-def saveNameMap():
-    with open(NAME_MAP_FILE, 'w', newline='', encoding='utf8') as csvfile:
-        writer = csv.writer(csvfile, delimiter=',', quotechar='"')
-        for key in NAME_MAP:
-            writer.writerow([key, NAME_MAP[key]])
-
-def getFacebookName(id):
-    host = 'https://graph.facebook.com'
-    version = '/v2.12'
-    path = '/' + id
-    url = '{host}{version}{path}?access_token={token}'.format(host=host, version=version, path=path, token=ACCESS_TOKEN)
-
-    try:
-        response = requests.get(url)
-        data = json.loads(response.text)
-        if ('name' in data):
-            return data['name']
-        else:
-            if (EXPORT_NO_NAME):
-                return id
-            else:
-                return ''
-    except Exception as e:
-        print('Exception in getFacebookName function:', e)
-        return ''
 
 def getMsgEntry(entry):
     """Returns the formatted csv entry given preparsed csv row"""
@@ -99,6 +48,10 @@ def getMsgEntry(entry):
     # Check that the thread is only 1-to-1
     participants = thread.split(', ')
     if len(participants) > 1:
+        return ''
+
+    # Check that the participant has a known name
+    if 'Facebook User' in participants and not EXPORT_UNKNOWN:
         return ''
 
     # Parse time
@@ -160,7 +113,5 @@ def writeMaster():
     with open(MASTER_FILE, 'w') as mf:
         mf.write(MASTER_NAME)
 
-NAME_MAP = importNameMap()
 sortMessageCSV(readMessageCSV())
 writeMaster()
-saveNameMap()
