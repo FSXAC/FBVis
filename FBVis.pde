@@ -25,7 +25,7 @@ void setup() {
         chatLength = chats.getRowCount();
     }
 
-    current = 110000;
+    current = 175000;
     
     masterName = readMaster();
     participants = new StringList();
@@ -102,15 +102,18 @@ void drawMaster() {
     text(masterName, width/2, height/2 + 20);
 }
 
-float radius = 400;
+// float radius = 400;
+float radiusMin = 100;
+float radiusIncrement = 50;
 float zapX, zapY;
 void drawParticipants() {
     if (participants.size() == 0) {
         return;
     } else {
+        float da = constrain(TWO_PI / participants.size(), PI/6, 3);
         for (int i = 0; i < participants.size(); i++) {
-            float x = 75 + (i % 12) * 75;
-            float y = 75 + int(i / 12) * 45;
+            float x = (radiusMin + 6 * i) * sin(i * da) + width/2;
+            float y = (radiusMin + 6 * i) * cos(i * da) + height/2;
             String name = participants.get(i);
             
             if (name.equals(currentChatParticipant)) {
@@ -130,12 +133,12 @@ void drawParticipants() {
 void drawZap() {
     zapLayer.beginDraw();
     zapLayer.noStroke();
-    zapLayer.fill(0, 5);
+    zapLayer.fill(0, 15);
     zapLayer.rect(0, 0, width, height);
     if (sentFromMaster) {
-        zapLayer.stroke(0, 255, 0);
+        zapLayer.stroke(100, 255, 100);
     } else {
-        zapLayer.stroke(255, 0, 0);
+        zapLayer.stroke(255, 100, 100);
     }
     zapLayer.strokeWeight(0.2 * currentMsgLen + 2);
     zapLayer.line(width/2, height/2, zapX, zapY);

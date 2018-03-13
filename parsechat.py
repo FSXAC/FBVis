@@ -35,16 +35,17 @@ MASTER_ID = '100002015209360@facebook.com'
 
 WRITE_CSV_HEADER = False
 EXPORT_NO_NAME = True
+EXPORT_ZERO_LENGTH = False
 
 PORT = '8000'
 
 # Launch local server
-process = Popen(['python', '-m', 'http.server', PORT], stdin=None, stdout=PIPE, stderr=PIPE)
-webbrowser.open('http://localhost:8000', new=2)
+# process = Popen(['python', '-m', 'http.server', PORT], stdin=None, stdout=PIPE, stderr=PIPE)
+# webbrowser.open('http://localhost:8000', new=2)
 
 # Prompt to enter user access token
 ACCESS_TOKEN = input('Enter your accesss token: ')
-process.kill()
+# process.kill()
 
 def importNameMap():
     newNameMap = {}
@@ -91,33 +92,14 @@ def getMsgEntry(entry):
     date = entry[2]
     msg = entry[3]
 
-    # Check that the thread is only 1-to-1
-    participants = thread.split(', ')
-    if len(participants) > 2:
+    # Check that the message have content
+    if (not EXPORT_ZERO_LENGTH and len(msg) == 0):
         return ''
 
-    # for participant in participants:
-    #     if participant == MASTER_ID:
-    #         participants[participants.index(MASTER_ID)] = MASTER_NAME
-    #     elif participant in NAME_MAP:
-    #         participants[participants.index(participant)] = NAME_MAP[participant]
-    #     else:
-    #         # Participant not in name map -> add to name map
-    #         participantID = participant[0:participant.index('@')]
-    #         name = getFacebookName(participantID)
-
-    #         if (name == ''):
-    #             return ''
-
-    #         print('Added to name map:', name)
-
-    #         # Add to name map
-    #         NAME_MAP[participant] = name
-    print(participants)
-    return
-
-    # Master ID
-    masterParticipantId = participants.index(MASTER_NAME)
+    # Check that the thread is only 1-to-1
+    participants = thread.split(', ')
+    if len(participants) > 1:
+        return ''
 
     # Parse time
     timestamp = datetime.strptime(
@@ -131,25 +113,12 @@ def getMsgEntry(entry):
     # Receiver is the other participant that is not sender
     if sender == MASTER_ID or sender in MASTER_ALIAS:
         writeSender = MASTER_NAME
-
-        if masterParticipantId == 0:
-            writeReceiver = participants[1]
-        else:
-            writeReceiver = participants[0]
-        
-        if writeReceiver in NAME_MAP:
-            writeReceiver = NAME_MAP[writeReceiver]
+        writeReceiver = participants[0]
     else:
-        if masterParticipantId == 0:
-            writeSender = participants[1]
-        else:
-            writeSender = participants[0]
+        writeSender = participants[0]
         writeReceiver = MASTER_NAME
 
-    # Message length
-    writeMsgLen = len(msg)
-
-    return (writeTS, writeSender, writeReceiver, writeMsgLen)
+    return (writeTS, writeSender, writeReceiver, len(msg))
 
 def readMessageCSV():
     msgHistoryUnsorted = []
