@@ -6,14 +6,13 @@ import ch.bildspur.postfx.builder.*;
 import ch.bildspur.postfx.pass.*;
 import ch.bildspur.postfx.*;
 
-final int START_TIME = 0; // 0 for very beginning
+final int START_TIME = 0;
 final int TIME_DIFF = 3600 * 24;
-// final int SKIP_TIME_THRESHOLD = TIME_DIFF * 24;
 
 final int PEOPLE_SIZE = 20;
 final float ENABLE_ENLARGE_FACTOR = 1.2;
-final float PEOPLE_LERPNESS = 0.03;
-final boolean PEOPLE_DO_DECAY = false;
+final float PEOPLE_LERPNESS = 0.5;
+final boolean PEOPLE_DO_DECAY = true;
 final float PEOPLE_ACTIVE_DECAY_RATE = 0.5;
 final float PEOPLE_INACTIVE_THRESHOLD = 25;
 final float PEOPLE_INACTIVE_DECAY_RATE = 0.25;
@@ -29,8 +28,8 @@ final float MSG_DECAY_FACTOR = 30;
 
 // Colors
 final color BACKGROUND_COLOR = #000000;
-final color RECEIVE_COLOR = color(255, 50, 50);
-final color SEND_COLOR = color(50, 255, 50);
+final color RECEIVE_COLOR = color(255, 88, 88);
+final color SEND_COLOR = color(88, 255, 88);
 final color ACTIVE_PERSON_COLOR = color(255, 255, 0);
 final color MASTER_COLOR = color(255);
 
@@ -51,10 +50,13 @@ PGraphics pg_zap;
 // Graphics
 PostFX fx;
 
+// TODO: hacks
+int cooldown = 120;
+
 // Setup
 void setup() {
-    //fullScreen(P2D);
-    size(1280, 960, P2D);
+    fullScreen(P2D);
+    //size(1280, 960, P2D);
     background(BACKGROUND_COLOR);
     drawLoading();
 
@@ -105,10 +107,18 @@ void draw() {
     g_nowChats.clear();
 
     // Reposition participants if necessary
-    if (g_hasInactiveParticipants) {
+    //if (g_hasInactiveParticipants) {
+    //    removeInactiveParticipants();
+    //    repositionParticipants();
+    //    g_hasInactiveParticipants = false;
+    //}
+    if (g_participants.size() > 160 && cooldown == 0) {
         removeInactiveParticipants();
         repositionParticipants();
-        g_hasInactiveParticipants = false;
+        cooldown = 160;
+    }
+    if (cooldown > 0) {
+        cooldown--;
     }
 
     // add bloom filter
@@ -182,9 +192,9 @@ void drawZaps() {
         // Obtain postion and draw
         Person p = g_participants.get(c.participant);
         pg_zap.line(g_master.positionX, g_master.positionY, p.positionX, p.positionY);
-        pg_zap.stroke(ACTIVE_PERSON_COLOR);
-        pg_zap.strokeWeight(PEOPLE_SIZE * 1.3);
-        pg_zap.point(p.positionX, p.positionY);
+        //pg_zap.stroke(ACTIVE_PERSON_COLOR);
+        //pg_zap.strokeWeight(PEOPLE_SIZE * 1.3);
+        //pg_zap.point(p.positionX, p.positionY);
     }
 
     pg_zap.endDraw();
