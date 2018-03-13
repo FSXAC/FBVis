@@ -29,12 +29,12 @@ class Person {
 
     public void draw(boolean active) {
         if (active) {
-            fill(255, 255, 0);
+            fill(ACTIVE_PERSON_COLOR);
             ellipse(this.positionX, this.positionY, PEOPLE_SIZE * ENABLE_ENLARGE_FACTOR, PEOPLE_SIZE * ENABLE_ENLARGE_FACTOR);
             this.activeness = 255;
         } else {
             if (this.master) {
-                fill(0, 255, 255);
+                fill(MASTER_COLOR);
             } else {
                 fill(255, this.activeness);
             }

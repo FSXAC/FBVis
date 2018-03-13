@@ -6,29 +6,46 @@ import ch.bildspur.postfx.builder.*;
 import ch.bildspur.postfx.pass.*;
 import ch.bildspur.postfx.*;
 
-PostFX fx;
-
 final int FORCE_LENGTH = 0;
-final int STARTING_INDEX = 171000;
+// final int STARTING_INDEX = 171000;
+final int STARTING_INDEX = 0;
 
 final int PEOPLE_SIZE = 20;
 final float ENABLE_ENLARGE_FACTOR = 1.2;
 final float PEOPLE_LERPNESS = 0.3;
 final int NAME_OFFSET = 20;
-final String MSG_FILE = "sorted.csv";
 
+final float SPIRAL_C = 40;
+final int SPIRAL_OFFSET = 4;
+
+final String MSG_FILE = "sorted.csv";
+final float MSG_LENGTH_ZAP_K = 0.2;
+final int MSG_LENGTH_ZAP_MIN_WIDTH = 2;
+final float MSG_DECAY_FACTOR = 30;
+
+// Colors
+final color RECEIVE_COLOR = color(255, 50, 50);
+final color SEND_COLOR = color(50, 255, 50);
+final color ACTIVE_PERSON_COLOR = color(255, 255, 0);
+final color MASTER_COLOR = color(255);
+
+// Participants
 HashMap<String, Person> g_participants;
 Person g_master;
 StringList g_newParticipantsList;
 ChatUtil g_cu;
 
+// Zappng effect
 PGraphics pg_zap;
 float zapX, zapY;
 
+// Graphics
+PostFX fx;
+
 // Setup
 void setup() {
-    // fullScreen(P2D);
-    size(1280, 960, P2D);
+    fullScreen(P2D);
+    // size(1280, 960, P2D);
     background(0);
     drawLoading();
 
@@ -88,9 +105,8 @@ void addParticipants() {
         for (int i = 0, l = g_newParticipantsList.size(); i < l; i++) {
             String newName = g_newParticipantsList.get(i);
             int n = g_participants.size();
-            int x = width / 12 * (n % 12) + 50;
-            int y = 50 * floor((n / 12)) + 50;
-            g_participants.put(newName, new Person(newName, x, y, g_master.positionX, g_master.positionY));
+            PVector start = spiral(n, width/2, height/2);
+            g_participants.put(newName, new Person(newName, start.x, start.y, g_master.positionX, g_master.positionY));
         }
 
         // Clear the list
@@ -99,6 +115,8 @@ void addParticipants() {
 }
 
 void drawParticipants() {
+    stroke(50);
+    strokeWeight(4);
     for (String name:g_participants.keySet()) {
         Person p = g_participants.get(name);
         if (g_cu.currentParticipant.equals(name)) {
@@ -114,15 +132,24 @@ void drawParticipants() {
 void drawZaps() {
     pg_zap.beginDraw();
     pg_zap.noStroke();
-    pg_zap.fill(0, 15);
+    pg_zap.fill(0, MSG_DECAY_FACTOR);
     pg_zap.rect(0, 0, width, height);
     if (g_cu.currentParticipantIsSender) {
-        pg_zap.stroke(255, 100, 100);
+        pg_zap.stroke(RECEIVE_COLOR);
     } else {
-        pg_zap.stroke(100, 255, 100);
+        pg_zap.stroke(SEND_COLOR);
     }
-    pg_zap.strokeWeight(0.2 * g_cu.currentMsgLength + 2);
+    pg_zap.strokeWeight(MSG_LENGTH_ZAP_K * g_cu.currentMsgLength + MSG_LENGTH_ZAP_MIN_WIDTH);
     pg_zap.line(g_master.positionX, g_master.positionY, zapX, zapY);
     pg_zap.endDraw();
     image(pg_zap, 0, 0);
+}
+
+// Function that gives a vector around a point 
+PVector spiral(int n, float centerX, float centerY) {
+    float a = (n + SPIRAL_OFFSET) * 137.5;
+    float r = SPIRAL_C * sqrt(n + SPIRAL_OFFSET);
+    float x = r * cos(a) + centerX;
+    float y = r * sin(a) + centerY;
+    return new PVector(x, y);
 }
