@@ -5,72 +5,86 @@ final int MSGLEN_INDEX = 3;
 
 class ChatUtil {
     public String currentDate;
-    public String currentParticipant;
-    public boolean currentParticipantIsSender;
-    public int currentMsgLength;
 
     private Table chats;
     private int chatEndIndex;
     private int chatIndex;
+    private long time;
+    private long timeNext;
     private String masterName;
 
     public ChatUtil(String filename) {
         this.chats = this.readChatToTable(filename);
 
-        // Read chat length
-        if (FORCE_LENGTH != 0) {
-            this.chatEndIndex = STARTING_INDEX + FORCE_LENGTH;
-        } else {
-            this.chatEndIndex = this.chats.getRowCount();
-        }
-
-        // Current
-        this.chatIndex = STARTING_INDEX;
+        // Indexing
+        this.chatEndIndex = this.chats.getRowCount();
+        this.chatIndex = 0;
 
         // Read master name
         this.masterName = this.readMasterName();
 
-        // Default current
-        this.currentDate = "XXXX-XX";
-        this.currentParticipant = "";
-        this.currentParticipantIsSender = false;
-        this.currentMsgLength = 0;
+        // Starting time
+        long readInitialTime = this.chats.getInt(0, 0);
+        if (readInitialTime > START_TIME) {
+            this.time = readInitialTime;
+        } else {
+            this.time = START_TIME;
+        }
+
+        // Next time
+        this.timeNext = this.time + TIME_DIFF;
     }
 
-    public void readNext() {
+    public void next() {
         if (this.chatIndex < this.chatEndIndex) {
-            TableRow entry = this.chats.getRow(this.chatIndex);
-            
-            this.currentDate = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm").format(new java.util.Date(1000L * entry.getInt(DATE_INDEX)));
-            String sender = entry.getString(SENDER_INDEX);
-            String receiver = entry.getString(RECEIVER_INDEX);
-            this.currentMsgLength = entry.getInt(MSGLEN_INDEX);
+            // Time of current chat index
+            long t0 = this.chats.getInt(this.chatIndex, DATE_INDEX);
 
-            if (sender.equals(masterName)) {
-                this.currentParticipantIsSender = false;
-                this.currentParticipant = receiver;
+            while (t0 >= this.time && t0 < this.timeNext) {
+                g_nowChats.add(this.read(this.chatIndex));
                 
-                // Check if receiver in the participants list
-                if (!g_participants.containsKey(receiver)) {
-                    g_newParticipantsList.append(receiver);
+                if (this.chatIndex < this.chatEndIndex) {
+                    this.chatIndex++;
                 }
 
-            } else {
-                this.currentParticipantIsSender = true;
-                this.currentParticipant = sender;
-
-                if (!g_participants.containsKey(sender)) {
-                    g_newParticipantsList.append(sender);
-                }
+                t0 = this.chats.getInt(this.chatIndex, DATE_INDEX);
             }
 
-            // Next index
-            this.chatIndex++;
-        } else {
-            this.currentParticipant = "";
-            g_zapX = 0;
-            g_zapY = 0;
+            // Next interval of time
+            this.time = this.timeNext;
+            this.timeNext += TIME_DIFF;
+            this.currentDate = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm").format(new java.util.Date(1000L * this.time));
         }
+    }
+
+    public ChatEntry read(int index) {
+        String sender = this.chats.getString(index, SENDER_INDEX);
+        String receiver = this.chats.getString(index, RECEIVER_INDEX);
+
+        boolean isParticipantSender;
+        String participant;
+        if (sender.equals(this.masterName)) {
+            isParticipantSender = false;
+            participant = receiver;
+
+            if (!g_participants.containsKey(receiver)) {
+                g_newParticipantsList.append(receiver);
+            }
+        } else {
+            isParticipantSender = true;
+            participant = sender;
+
+            if (!g_participants.containsKey(sender)) {
+                g_newParticipantsList.append(sender);
+            }
+        }
+
+        return new ChatEntry(
+            this.chats.getInt(index, DATE_INDEX),
+            participant,
+            isParticipantSender,
+            this.chats.getInt(index, MSGLEN_INDEX)
+        );
     }
 
     public String masterName() {
@@ -91,5 +105,21 @@ class ChatUtil {
             e.printStackTrace();
         }
         return name;
+    }
+}
+
+class ChatEntry {
+    long timestamp;
+    // String date;
+    String participant;
+    boolean isParticipantSender;
+    int msgLength;
+
+    public ChatEntry(long timestamp, String partName, boolean partIsSender, int msgLength) {
+        this.timestamp = timestamp;
+        // this.date = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm").format(new java.util.Date(1000L * this.timestamp));
+        this.participant = partName;
+        this.isParticipantSender = partIsSender;
+        this.msgLength = msgLength;
     }
 }

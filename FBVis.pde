@@ -6,9 +6,8 @@ import ch.bildspur.postfx.builder.*;
 import ch.bildspur.postfx.pass.*;
 import ch.bildspur.postfx.*;
 
-final int FORCE_LENGTH = 0;
-final int STARTING_INDEX = 184200;
-// final int STARTING_INDEX = 0;
+final int START_TIME = 0; // 0 for very beginning
+final int TIME_DIFF = 3600; // hourly
 
 final int PEOPLE_SIZE = 20;
 final float ENABLE_ENLARGE_FACTOR = 1.2;
@@ -28,6 +27,7 @@ final int MSG_LENGTH_ZAP_MIN_WIDTH = 2;
 final float MSG_DECAY_FACTOR = 30;
 
 // Colors
+final color BACKGROUND_COLOR = #000000;
 final color RECEIVE_COLOR = color(255, 50, 50);
 final color SEND_COLOR = color(50, 255, 50);
 final color ACTIVE_PERSON_COLOR = color(255, 255, 0);
@@ -41,22 +41,26 @@ StringList g_inactiveParticipantsList;
 ChatUtil g_cu;
 boolean g_hasInactiveParticipants;
 
+// Chat buffer
+ArrayList<ChatEntry> g_nowChats;
+StringList g_activeParticipantsList;
+
 // Zappng effect
 PGraphics pg_zap;
-float g_zapX, g_zapY;
 
 // Graphics
 PostFX fx;
 
 // Setup
 void setup() {
-    // fullScreen(P2D);
+    //fullScreen(P2D);
     size(1280, 960, P2D);
-    background(0);
+    background(BACKGROUND_COLOR);
     drawLoading();
 
     // Create chat utility
     g_cu = new ChatUtil(MSG_FILE);
+    g_nowChats = new ArrayList<ChatEntry>();
 
     // Create hashmap for all participants
     g_participants = new HashMap<String, Person>();
@@ -64,6 +68,7 @@ void setup() {
     // Create string list to store new participants to be added
     g_newParticipantsList = new StringList();
     g_inactiveParticipantsList = new StringList();
+    g_activeParticipantsList = new StringList();
 
     // Create graphic layer for zapping
     pg_zap = createGraphics(width, height);
@@ -80,7 +85,7 @@ void setup() {
 
 void draw() {
     // Get info from next
-    g_cu.readNext();
+    g_cu.next();
 
     // Add people from the new participants list
     addParticipants();
@@ -97,6 +102,9 @@ void draw() {
     // Draw participants
     drawParticipants();
 
+    // Clear active participants list
+    g_activeParticipantsList.clear();
+
     // Reposition participants if necessary
     if (g_hasInactiveParticipants) {
         removeInactiveParticipants();
@@ -106,7 +114,7 @@ void draw() {
 
     // add bloom filter
     fx.render()
-    .bloom(0.7, 40, 30)
+    .bloom(0.5, 20, 30)
     .compose();
 
     // Finally, draw UI stuff
@@ -132,10 +140,8 @@ void drawParticipants() {
     strokeWeight(4);
     for (String name:g_participants.keySet()) {
         Person p = g_participants.get(name);
-        if (g_cu.currentParticipant.equals(name)) {
+        if (g_activeParticipantsList.hasValue(name)) {
             p.draw(true);
-            g_zapX = p.positionX;
-            g_zapY = p.positionY;
         } else {
             p.draw(false);
         }
@@ -168,19 +174,33 @@ void repositionParticipants() {
 }
 
 void drawZaps() {
-    if (g_zapX == 0 || g_zapY == 0) return;
+    if (g_nowChats.size() == 0) return;
 
     pg_zap.beginDraw();
     pg_zap.noStroke();
-    pg_zap.fill(0, MSG_DECAY_FACTOR);
+    pg_zap.fill(BACKGROUND_COLOR, MSG_DECAY_FACTOR);
     pg_zap.rect(0, 0, width, height);
-    if (g_cu.currentParticipantIsSender) {
-        pg_zap.stroke(RECEIVE_COLOR);
-    } else {
-        pg_zap.stroke(SEND_COLOR);
+
+    // Draw zap for each chat that is happening right now
+    for (ChatEntry c:g_nowChats) {
+        if (c.isParticipantSender) {
+            pg_zap.stroke(RECEIVE_COLOR);
+        } else {
+            pg_zap.stroke(SEND_COLOR);
+        }
+
+        // Add to active participants list
+        if (!g_activeParticipantsList.hasValue(c.participant)) {
+            g_activeParticipantsList.append(c.participant);
+        }
+
+        pg_zap.strokeWeight(MSG_LENGTH_ZAP_K * c.msgLength + MSG_LENGTH_ZAP_MIN_WIDTH);
+
+        // Obtain postion and draw
+        Person p = g_participants.get(c.participant);
+        pg_zap.line(g_master.positionX, g_master.positionY, p.positionX, p.positionY);
     }
-    pg_zap.strokeWeight(MSG_LENGTH_ZAP_K * g_cu.currentMsgLength + MSG_LENGTH_ZAP_MIN_WIDTH);
-    pg_zap.line(g_master.positionX, g_master.positionY, g_zapX, g_zapY);
+
     pg_zap.endDraw();
     image(pg_zap, 0, 0);
 }
