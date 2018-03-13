@@ -63,9 +63,9 @@ class Person {
 
         if (this.activeness > 25) {
             this.activeness -= PEOPLE_ACTIVE_DECAY_RATE;
-        } else if (this.activeness > 0) {
+        } else if (this.activeness > 0 && PEOPLE_DO_DECAY) {
             this.activeness -= PEOPLE_INACTIVE_DECAY_RATE;
-        } else {
+        } else if (PEOPLE_DO_DECAY) {
             // Mark this person for deletion
             this.inactive = true;
         }

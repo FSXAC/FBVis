@@ -38,34 +38,38 @@ class ChatUtil {
     }
 
     public void readNext() {
-        TableRow entry = this.chats.getRow(this.chatIndex);
-        
-        this.currentDate = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm").format(new java.util.Date(1000L * entry.getInt(DATE_INDEX)));
-        String sender = entry.getString(SENDER_INDEX);
-        String receiver = entry.getString(RECEIVER_INDEX);
-        this.currentMsgLength = entry.getInt(MSGLEN_INDEX);
-
-        if (sender.equals(masterName)) {
-            this.currentParticipantIsSender = false;
-            this.currentParticipant = receiver;
-            
-            // Check if receiver in the participants list
-            if (!g_participants.containsKey(receiver)) {
-                g_newParticipantsList.append(receiver);
-            }
-
-        } else {
-            this.currentParticipantIsSender = true;
-            this.currentParticipant = sender;
-
-            if (!g_participants.containsKey(sender)) {
-                g_newParticipantsList.append(sender);
-            }
-        }
-
-        // Next index
         if (this.chatIndex < this.chatEndIndex) {
+            TableRow entry = this.chats.getRow(this.chatIndex);
+            
+            this.currentDate = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm").format(new java.util.Date(1000L * entry.getInt(DATE_INDEX)));
+            String sender = entry.getString(SENDER_INDEX);
+            String receiver = entry.getString(RECEIVER_INDEX);
+            this.currentMsgLength = entry.getInt(MSGLEN_INDEX);
+
+            if (sender.equals(masterName)) {
+                this.currentParticipantIsSender = false;
+                this.currentParticipant = receiver;
+                
+                // Check if receiver in the participants list
+                if (!g_participants.containsKey(receiver)) {
+                    g_newParticipantsList.append(receiver);
+                }
+
+            } else {
+                this.currentParticipantIsSender = true;
+                this.currentParticipant = sender;
+
+                if (!g_participants.containsKey(sender)) {
+                    g_newParticipantsList.append(sender);
+                }
+            }
+
+            // Next index
             this.chatIndex++;
+        } else {
+            this.currentParticipant = "";
+            g_zapX = 0;
+            g_zapY = 0;
         }
     }
 
