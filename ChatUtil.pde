@@ -4,36 +4,41 @@ final int RECEIVER_INDEX = 2;
 final int MSGLEN_INDEX = 3;
 
 class ChatUtil {
+    public String currentDate;
+    public String currentParticipant;
+    public boolean currentParticipantIsSender;
+    public int currentMsgLength;
 
     private Table chats;
-    private int chatLength;
-    private int chatCurrent;
+    private int chatEndIndex;
+    private int chatIndex;
     private String masterName;
-
-    private String currentDate;
-    private String currentParticipant;
-    private boolean currentParticipantIsSender;
-    private int currentMsgLength;
 
     public ChatUtil(String filename) {
         this.chats = this.readChatToTable(filename);
 
         // Read chat length
-        if (FORCE_LENGTH == 0) {
-            this.chatLength = FORCE_LENGTH;
+        if (FORCE_LENGTH != 0) {
+            this.chatEndIndex = STARTING_INDEX + FORCE_LENGTH;
         } else {
-            this.chatLength = this.chats.getRowCount();
+            this.chatEndIndex = this.chats.getRowCount();
         }
 
         // Current
-        this.chatCurrent = STARTING_INDEX;
+        this.chatIndex = STARTING_INDEX;
 
         // Read master name
         this.masterName = this.readMasterName();
+
+        // Default current
+        this.currentDate = "XXXX-XX";
+        this.currentParticipant = "";
+        this.currentParticipantIsSender = false;
+        this.currentMsgLength = 0;
     }
 
     public void readNext() {
-        TableRow entry = this.chats.getRow(this.chatCurrent);
+        TableRow entry = this.chats.getRow(this.chatIndex);
         
         this.currentDate = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm").format(new java.util.Date(1000L * entry.getInt(DATE_INDEX)));
         String sender = entry.getString(SENDER_INDEX);
@@ -59,8 +64,9 @@ class ChatUtil {
         }
 
         // Next index
-        if (this.chatCurrent < chatLength)
-            this.chatCurrent++;
+        if (this.chatIndex < this.chatEndIndex) {
+            this.chatIndex++;
+        }
     }
 
     public String masterName() {
