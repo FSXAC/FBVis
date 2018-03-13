@@ -44,17 +44,20 @@ class ChatUtil {
             while (t0 >= this.time && t0 < this.timeNext) {
                 g_nowChats.add(this.read(this.chatIndex));
                 
-                if (this.chatIndex < this.chatEndIndex) {
+                if (this.chatIndex < this.chatEndIndex - 1) {
                     this.chatIndex++;
+                    t0 = this.chats.getInt(this.chatIndex, DATE_INDEX);
+                } else {
+                    break;
                 }
-
-                t0 = this.chats.getInt(this.chatIndex, DATE_INDEX);
             }
 
             // Next interval of time
-            this.time = this.timeNext;
-            this.timeNext += TIME_DIFF;
-            this.currentDate = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm").format(new java.util.Date(1000L * this.time));
+            if (this.chatIndex < this.chatEndIndex - 1) {
+                this.time = this.timeNext;
+                this.timeNext += TIME_DIFF;
+                this.currentDate = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm").format(new java.util.Date(1000L * this.time));
+            }
         }
     }
 
