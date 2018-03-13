@@ -27,7 +27,7 @@ class Person {
     public void draw(boolean active) {
         if (active) {
             fill(255, 255, 0);
-            ellipse(this.positionX, this.positionY, PEOPLE_SIZE * ENABLE_ENLARGE_FACTOR, PEOPLE_SIZE) * ENABLE_ENLARGE_FACTOR;
+            ellipse(this.positionX, this.positionY, PEOPLE_SIZE * ENABLE_ENLARGE_FACTOR, PEOPLE_SIZE * ENABLE_ENLARGE_FACTOR);
         } else {
             fill(255);
             ellipse(this.positionX, this.positionY, PEOPLE_SIZE, PEOPLE_SIZE);
