@@ -7,7 +7,8 @@ import ch.bildspur.postfx.pass.*;
 import ch.bildspur.postfx.*;
 
 final int START_TIME = 0; // 0 for very beginning
-final int TIME_DIFF = 3600; // hourly
+final int TIME_DIFF = 3600 * 24;
+// final int SKIP_TIME_THRESHOLD = TIME_DIFF * 24;
 
 final int PEOPLE_SIZE = 20;
 final float ENABLE_ENLARGE_FACTOR = 1.2;
@@ -15,7 +16,7 @@ final float PEOPLE_LERPNESS = 0.03;
 final boolean PEOPLE_DO_DECAY = false;
 final float PEOPLE_ACTIVE_DECAY_RATE = 0.5;
 final float PEOPLE_INACTIVE_THRESHOLD = 25;
-final float PEOPLE_INACTIVE_DECAY_RATE = 0.01;
+final float PEOPLE_INACTIVE_DECAY_RATE = 0.25;
 final int NAME_OFFSET = 20;
 final boolean USE_ARCHIMEDEAN_SPIRAL = true;
 final float SPIRAL_C = 40;
@@ -36,7 +37,6 @@ final color MASTER_COLOR = color(255);
 // Participants
 HashMap<String, Person> g_participants;
 Person g_master;
-StringList g_newParticipantsList;
 StringList g_inactiveParticipantsList;
 ChatUtil g_cu;
 boolean g_hasInactiveParticipants;
@@ -66,7 +66,6 @@ void setup() {
     g_participants = new HashMap<String, Person>();
 
     // Create string list to store new participants to be added
-    g_newParticipantsList = new StringList();
     g_inactiveParticipantsList = new StringList();
     g_activeParticipantsList = new StringList();
 
@@ -87,9 +86,6 @@ void draw() {
     // Get info from next
     g_cu.next();
 
-    // Add people from the new participants list
-    addParticipants();
-
     // Reset canvas
     background(0);
 
@@ -105,6 +101,9 @@ void draw() {
     // Clear active participants list
     g_activeParticipantsList.clear();
 
+    // Clear current chats list
+    g_nowChats.clear();
+
     // Reposition participants if necessary
     if (g_hasInactiveParticipants) {
         removeInactiveParticipants();
@@ -119,20 +118,6 @@ void draw() {
 
     // Finally, draw UI stuff
     drawTopText(g_cu.currentDate);
-}
-
-void addParticipants() {
-    if (g_newParticipantsList.size() != 0) {
-        for (int i = 0, l = g_newParticipantsList.size(); i < l; i++) {
-            String newName = g_newParticipantsList.get(i);
-            int n = g_participants.size();
-            PVector start = spiral(n, width/2, height/2);
-            g_participants.put(newName, new Person(newName, start.x, start.y, g_master.positionX, g_master.positionY));
-        }
-
-        // Clear the list
-        g_newParticipantsList.clear();
-    }
 }
 
 void drawParticipants() {
@@ -174,8 +159,6 @@ void repositionParticipants() {
 }
 
 void drawZaps() {
-    if (g_nowChats.size() == 0) return;
-
     pg_zap.beginDraw();
     pg_zap.noStroke();
     pg_zap.fill(BACKGROUND_COLOR, MSG_DECAY_FACTOR);
@@ -199,6 +182,9 @@ void drawZaps() {
         // Obtain postion and draw
         Person p = g_participants.get(c.participant);
         pg_zap.line(g_master.positionX, g_master.positionY, p.positionX, p.positionY);
+        pg_zap.stroke(ACTIVE_PERSON_COLOR);
+        pg_zap.strokeWeight(PEOPLE_SIZE * 1.3);
+        pg_zap.point(p.positionX, p.positionY);
     }
 
     pg_zap.endDraw();

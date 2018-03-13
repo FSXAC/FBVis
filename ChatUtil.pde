@@ -40,6 +40,7 @@ class ChatUtil {
             // Time of current chat index
             long t0 = this.chats.getInt(this.chatIndex, DATE_INDEX);
 
+            // TODO: improve logic here to cover more corner cases such as when t0 > timenext
             while (t0 >= this.time && t0 < this.timeNext) {
                 g_nowChats.add(this.read(this.chatIndex));
                 
@@ -66,16 +67,20 @@ class ChatUtil {
         if (sender.equals(this.masterName)) {
             isParticipantSender = false;
             participant = receiver;
-
+            
             if (!g_participants.containsKey(receiver)) {
-                g_newParticipantsList.append(receiver);
+                int n = g_participants.size();
+                PVector start = spiral(n, width/2, height/2);
+                g_participants.put(receiver, new Person(receiver, start.x, start.y, g_master.positionX, g_master.positionY));
             }
         } else {
             isParticipantSender = true;
             participant = sender;
 
             if (!g_participants.containsKey(sender)) {
-                g_newParticipantsList.append(sender);
+                int n = g_participants.size();
+                PVector start = spiral(n, width/2, height/2);
+                g_participants.put(sender, new Person(sender, start.x, start.y, g_master.positionX, g_master.positionY));
             }
         }
 
