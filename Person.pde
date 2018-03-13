@@ -1,9 +1,10 @@
 class Person {
     float desiredX, desiredY;
     float positionX, positionY;
-    int activeness;
+    float activeness;
     String name;
     boolean master;
+    boolean inactive;
 
     public Person(String name) {
         this.name = name;
@@ -13,6 +14,7 @@ class Person {
         this.desiredY = 0;
         this.activeness = 255;
         this.master = false;
+        this.inactive = false;
     }
 
     public Person(String name, float desiredX, float desiredY) {
@@ -36,11 +38,11 @@ class Person {
             if (this.master) {
                 fill(MASTER_COLOR);
             } else {
-                fill(255, this.activeness);
+                fill(255, constrain(this.activeness, 25, 255));
             }
             ellipse(this.positionX, this.positionY, PEOPLE_SIZE, PEOPLE_SIZE);
         }
-        textSize(10);
+        textSize(12);
         text(this.name, this.positionX, this.positionY + NAME_OFFSET);
 
         this.update();
@@ -60,7 +62,12 @@ class Person {
         this.positionY = lerp(this.positionY, this.desiredY, PEOPLE_LERPNESS);
 
         if (this.activeness > 25) {
-            this.activeness--;
+            this.activeness -= PEOPLE_ACTIVE_DECAY_RATE;
+        } else if (this.activeness > 0) {
+            this.activeness -= PEOPLE_INACTIVE_DECAY_RATE;
+        } else {
+            // Mark this person for deletion
+            this.inactive = true;
         }
     }
 }

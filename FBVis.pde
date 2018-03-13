@@ -7,12 +7,16 @@ import ch.bildspur.postfx.pass.*;
 import ch.bildspur.postfx.*;
 
 final int FORCE_LENGTH = 0;
-// final int STARTING_INDEX = 171000;
-final int STARTING_INDEX = 0;
+final int STARTING_INDEX = 171000;
+// final int STARTING_INDEX = 0;
 
 final int PEOPLE_SIZE = 20;
 final float ENABLE_ENLARGE_FACTOR = 1.2;
-final float PEOPLE_LERPNESS = 0.3;
+final float PEOPLE_LERPNESS = 0.03;
+
+final float PEOPLE_ACTIVE_DECAY_RATE = 0.5;
+final float PEOPLE_INACTIVE_THRESHOLD = 25;
+final float PEOPLE_INACTIVE_DECAY_RATE = 0.01;
 final int NAME_OFFSET = 20;
 
 final float SPIRAL_C = 40;
@@ -33,7 +37,9 @@ final color MASTER_COLOR = color(255);
 HashMap<String, Person> g_participants;
 Person g_master;
 StringList g_newParticipantsList;
+StringList g_inactiveParticipantsList;
 ChatUtil g_cu;
+boolean g_hasInactiveParticipants;
 
 // Zappng effect
 PGraphics pg_zap;
@@ -57,6 +63,7 @@ void setup() {
 
     // Create string list to store new participants to be added
     g_newParticipantsList = new StringList();
+    g_inactiveParticipantsList = new StringList();
 
     // Create graphic layer for zapping
     pg_zap = createGraphics(width, height);
@@ -67,8 +74,7 @@ void setup() {
     fx = new PostFX(this);
     
     // Draw master
-    g_master = new Person(g_cu.masterName());
-    g_master.setDesired(width/2, height/2);
+    g_master = new Person(g_cu.masterName(), width/2, height/2, width/2, height/2);
     g_master.setMaster();
 }
 
@@ -90,6 +96,13 @@ void draw() {
 
     // Draw participants
     drawParticipants();
+
+    // Reposition participants if necessary
+    if (g_hasInactiveParticipants) {
+        removeInactiveParticipants();
+        repositionParticipants();
+        g_hasInactiveParticipants = false;
+    }
 
     // add bloom filter
     fx.render()
@@ -126,6 +139,31 @@ void drawParticipants() {
         } else {
             p.draw(false);
         }
+
+        // If participant is inactive, delete them and request a reposition call
+        if (p.inactive) {
+            g_inactiveParticipantsList.append(name);
+            g_hasInactiveParticipants = true;
+        }
+    }
+}
+
+void removeInactiveParticipants() {
+    if (g_inactiveParticipantsList.size() != 0) {
+        for (int i = 0, l = g_inactiveParticipantsList.size(); i < l; i++) {
+            g_participants.remove(g_inactiveParticipantsList.get(i));
+        }
+        g_inactiveParticipantsList.clear();
+    }
+}
+
+void repositionParticipants() {
+    int index = 0;
+    for (String name:g_participants.keySet()) {
+        Person p = g_participants.get(name);
+        PVector newPos = spiral(index, width/2, height/2);
+        p.setDesired(newPos.x, newPos.y);
+        index++;
     }
 }
 
@@ -147,9 +185,12 @@ void drawZaps() {
 
 // Function that gives a vector around a point 
 PVector spiral(int n, float centerX, float centerY) {
-    float a = (n + SPIRAL_OFFSET) * 137.5;
-    float r = SPIRAL_C * sqrt(n + SPIRAL_OFFSET);
-    float x = r * cos(a) + centerX;
-    float y = r * sin(a) + centerY;
+    // float a = (n + SPIRAL_OFFSET) * 137.5;
+    // float r = SPIRAL_C * sqrt(n + SPIRAL_OFFSET);
+    // float x = r * cos(a) + centerX;
+    // float y = r * sin(a) + centerY;
+
+    float x = (100 + 6 * n) * sin(n * PI/5) + centerX;
+    float y = (100 + 6 * n) * cos(n * PI/5) + centerY;
     return new PVector(x, y);
 }
