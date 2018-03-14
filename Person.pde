@@ -43,7 +43,11 @@ class Person {
             ellipse(this.positionX, this.positionY, PEOPLE_SIZE, PEOPLE_SIZE);
         }
         textSize(12);
-        text(this.name, this.positionX, this.positionY + NAME_OFFSET);
+        if (PEOPLE_HIDE_NAME && !this.master) {
+            text("Person", this.positionX, this.positionY + NAME_OFFSET);
+        } else {
+            text(this.name, this.positionX, this.positionY + NAME_OFFSET);
+        }
 
         this.update();
     }
