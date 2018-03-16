@@ -157,7 +157,7 @@ class ChatEntryAgent {
             //pg.ellipse(this.x, this.y, this.size, this.size);
             //pg.ellipse(this.x, this.y, 10, 10);
             pg.stroke(this.c);
-            pg.strokeWeight(4);
+            pg.strokeWeight(this.size);
             pg.line(this.x, this.y, this.x_p, this.y_p);
             
             // update

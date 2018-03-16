@@ -90,8 +90,14 @@ void setup() {
     g_master = new Person(g_cu.masterName(), width/2, height/2, width/2, height/2);
     g_master.setMaster();
 }
-
+boolean loaded = false;
 void draw() {
+    if (loaded == false) {
+        // Let OBS do its thing
+        delay(3000);
+        loaded = true;
+    }
+    
     // Get info from next
     g_cu.next();
 
