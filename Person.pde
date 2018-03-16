@@ -7,7 +7,12 @@ class Person {
     boolean inactive;
 
     public Person(String name) {
-        this.name = name;
+        if (PEOPLE_USE_INITIAL) {
+            String[] nameParts = splitTokens(name, " ");
+            this.name = str(nameParts[0].charAt(0)) + str(nameParts[1].charAt(0));
+        } else {
+            this.name = name;
+        }
         this.positionX = 0;
         this.positionY = 0;
         this.desiredX = 0;
