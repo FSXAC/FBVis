@@ -9,12 +9,14 @@ import ch.bildspur.postfx.*;
 final int START_TIME = 0;
 final int TIME_DIFF = 3600 * 24;
 
+final boolean USE_MSG_AGENTS = true;
+
 final int PEOPLE_SIZE = 20;
 final float ENABLE_ENLARGE_FACTOR = 1.2;
 final float PEOPLE_LERPNESS = 0.5;
 final boolean PEOPLE_DO_DECAY = true;
 final boolean PEOPLE_HIDE_NAME = false;
-final boolean PEOPLE_USE_INITIAL = true;
+final boolean PEOPLE_USE_INITIAL = false; // beta
 final float PEOPLE_ACTIVE_DECAY_RATE = 0.5;
 final float PEOPLE_INACTIVE_THRESHOLD = 25;
 final float PEOPLE_INACTIVE_DECAY_RATE = 0.25;
@@ -44,6 +46,7 @@ boolean g_hasInactiveParticipants;
 
 // Chat buffer
 ArrayList<ChatEntry> g_nowChats;
+ArrayList<ChatEntryAgent> g_nowChatAgents;
 StringList g_activeParticipantsList;
 
 // Zappng effect
@@ -57,14 +60,15 @@ int cooldown = 120;
 
 // Setup
 void setup() {
-    //fullScreen(P2D);
-    size(1280, 960, P2D);
+    fullScreen(P2D);
+    //size(1280, 960, P2D);
     background(BACKGROUND_COLOR);
     drawLoading();
 
     // Create chat utility
     g_cu = new ChatUtil(MSG_FILE);
     g_nowChats = new ArrayList<ChatEntry>();
+    g_nowChatAgents = new ArrayList<ChatEntryAgent>();
 
     // Create hashmap for all participants
     g_participants = new HashMap<String, Person>();
@@ -80,6 +84,7 @@ void setup() {
     textAlign(CENTER, CENTER);
     noStroke();
     fx = new PostFX(this);
+    frameRate(15);
     
     // Draw master
     g_master = new Person(g_cu.masterName(), width/2, height/2, width/2, height/2);
@@ -178,25 +183,71 @@ void drawZaps() {
 
     // Draw zap for each chat that is happening right now
     for (ChatEntry c:g_nowChats) {
-        if (c.isParticipantSender) {
-            pg_zap.stroke(RECEIVE_COLOR);
+        if (USE_MSG_AGENTS) {
+            
+            // Add to active participants list
+            if (!g_activeParticipantsList.hasValue(c.participant)) {
+                g_activeParticipantsList.append(c.participant);
+            }
+            
+            Person p = g_participants.get(c.participant);
+            if (c.isParticipantSender) {
+                g_nowChatAgents.add(
+                    new ChatEntryAgent(
+                        p.positionX + random(-5, 5),
+                        p.positionY + random(-5, 5),
+                        g_master.positionX,
+                        g_master.positionY,
+                        MSG_LENGTH_ZAP_K * c.msgLength + MSG_LENGTH_ZAP_MIN_WIDTH,
+                        RECEIVE_COLOR
+                    )
+                );
+            } else {
+                g_nowChatAgents.add(
+                    new ChatEntryAgent(
+                        g_master.positionX + random(-5, 5),
+                        g_master.positionY + random(-5, 5),
+                        p.positionX,
+                        p.positionY,
+                        MSG_LENGTH_ZAP_K * c.msgLength + MSG_LENGTH_ZAP_MIN_WIDTH,
+                        SEND_COLOR
+                    )
+                );
+            }
+
         } else {
-            pg_zap.stroke(SEND_COLOR);
+            if (c.isParticipantSender) {
+                pg_zap.stroke(RECEIVE_COLOR);
+            } else {
+                pg_zap.stroke(SEND_COLOR);
+            }
+    
+            // Add to active participants list
+            if (!g_activeParticipantsList.hasValue(c.participant)) {
+                g_activeParticipantsList.append(c.participant);
+            }
+    
+            pg_zap.strokeWeight(MSG_LENGTH_ZAP_K * c.msgLength + MSG_LENGTH_ZAP_MIN_WIDTH);
+    
+            // Obtain postion and draw
+            Person p = g_participants.get(c.participant);
+            pg_zap.line(g_master.positionX, g_master.positionY, p.positionX, p.positionY);
         }
-
-        // Add to active participants list
-        if (!g_activeParticipantsList.hasValue(c.participant)) {
-            g_activeParticipantsList.append(c.participant);
+    }
+    
+    if (USE_MSG_AGENTS) {
+        // Draw individual msg agent zaps
+        ArrayList<ChatEntryAgent> deleteList = new ArrayList<ChatEntryAgent>();
+        for (ChatEntryAgent ca:g_nowChatAgents) {
+            ca.draw(pg_zap);
+            if (ca.life == 0) {
+                deleteList.add(ca);
+            }
         }
-
-        pg_zap.strokeWeight(MSG_LENGTH_ZAP_K * c.msgLength + MSG_LENGTH_ZAP_MIN_WIDTH);
-
-        // Obtain postion and draw
-        Person p = g_participants.get(c.participant);
-        pg_zap.line(g_master.positionX, g_master.positionY, p.positionX, p.positionY);
-        //pg_zap.stroke(ACTIVE_PERSON_COLOR);
-        //pg_zap.strokeWeight(PEOPLE_SIZE * 1.3);
-        //pg_zap.point(p.positionX, p.positionY);
+        
+        for (ChatEntryAgent ca:deleteList) {
+            g_nowChatAgents.remove(ca);
+        }
     }
 
     pg_zap.endDraw();

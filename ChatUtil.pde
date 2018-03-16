@@ -131,3 +131,42 @@ class ChatEntry {
         this.msgLength = msgLength;
     }
 }
+
+class ChatEntryAgent {
+    short life = 20;
+    float x, y, x_p, y_p;
+    float destX, destY;
+    float size;
+    color c;
+    float rate;
+    public ChatEntryAgent(float x, float y, float destX, float destY, float size, color c) {
+        this.x = x;
+        this.y = y;
+        this.x_p = x;
+        this.y_p = y;
+        this.destX = destX;
+        this.destY = destY;
+        this.size = size;
+        this.c = c;
+        this.rate = random(0.2, 0.6);
+    }
+    
+    public void draw(PGraphics pg) {
+        if (this.life != 0) {
+            //pg.fill(this.c);
+            //pg.ellipse(this.x, this.y, this.size, this.size);
+            //pg.ellipse(this.x, this.y, 10, 10);
+            pg.stroke(this.c);
+            pg.strokeWeight(4);
+            pg.line(this.x, this.y, this.x_p, this.y_p);
+            
+            // update
+            this.x_p = x;
+            this.y_p = y;
+            this.x = lerp(this.x, this.destX, this.rate);
+            this.y = lerp(this.y, this.destY, this.rate);
+            
+            this.life--;
+        }
+    }
+}
