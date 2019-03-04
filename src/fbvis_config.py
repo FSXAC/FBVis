@@ -11,3 +11,5 @@ MESSAGE_FILENAME = 'message.json'
 USER_INPUT_CHAR = '> '
 
 IGNORED_NAMES = ['Messenger']
+
+VISUALIZER_SCREEN_SIZE = [1280, 900]

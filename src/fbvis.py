@@ -3,11 +3,11 @@
 import argparse
 import json
 import os
-import pygame
 import sys
 
 import fbvis_config
 from util import *
+import visualizer
 
 # Argument parsing
 parser = argparse.ArgumentParser(description='Process some integers.')
@@ -149,7 +149,8 @@ class FBVis:
                     else:
                         selected_file = menu_map[menu_alphabet_list[user_input]][menu_names_list[inner_user_input]]
                         printDebug(selected_file + ' selected')
-                        
+
+                        visualizer.IndividualVisualizer(selected_file)
 
 # Run the program
 if __name__ == '__main__':
