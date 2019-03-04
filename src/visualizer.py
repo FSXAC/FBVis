@@ -13,6 +13,7 @@ class IndividualVisualizer:
         pygame.init()
 
         self.pyClock = pygame.time.Clock()
+        self.pyFont = pygame.font.SysFont('Arial', 30)
         self.pyScreen = pygame.display.set_mode(fbvis_config.VISUALIZER_SCREEN_SIZE)
 
         self.running = True
@@ -20,6 +21,9 @@ class IndividualVisualizer:
 
         # Process data
         self.processData()
+
+        # Visualizer settings
+        # TODO: make configurable
         
         # Entry point
         self.runVisualizer()
@@ -31,19 +35,27 @@ class IndividualVisualizer:
         with open(self.message_file, encoding='utf-8') as msg_file:
             data = json.load(msg_file)
 
-            me = fbvis_config.NAME
-            other = data['participants'].remove(fbvis_config.NAME)[0]
+            self.person_me = fbvis_config.NAME
+            self.person_other = ''
+            for participant in data['participants']:
+                if participant['name'] != self.person_me:
+                    self.person_other = participant['name']
 
             # Set display caption
-            self.setDisplayCaption('Conversation with {}'.format(other))
+            self.setDisplayCaption('Conversation with {}'.format(self.person_other))
 
-            messages = data['messages']
+            # Messages is an array of message objects
+            # The array has its most recent content first,
+            # so we just need to go backwards
+            self.messages = data['messages']
 
     
     def runVisualizer(self):
+
+        data_index = len(self.messages) - 1
+
         while self.running:
 
-            # printDebug('Update tick')
 
             # Clock tick
             self.pyClock.tick(self.fps)
@@ -51,10 +63,15 @@ class IndividualVisualizer:
             # Handle events
             self.handleEvents()
 
-            # Update state
-
             # Draw
             self.pyScreen.fill([0, 0 ,0])
+
+            if 'content' in self.messages[data_index]:
+                textsurface = self.pyFont.render(self.messages[data_index]['content'], False, (255, 255, 255))
+                self.pyScreen.blit(textsurface, (0, 0))
+
+            if data_index > 0:
+                data_index -= 1
 
             # Update frame
             pygame.display.flip()
