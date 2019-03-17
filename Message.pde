@@ -32,67 +32,65 @@ class MessageManager {
     public void buildMessagesList() {
         println("Building ordered messages list, sorting through all messages by time");
         for (int i = 0; i < this.messageUtils.size(); i++) {
-        //for (MessageUtil mu : this.messageUtils) {
             println("Sorting " + str(i) + "/" + str(messageUtils.size()) + " entries");
             MessageUtil mu = this.messageUtils.get(i);
             for (MessageData md : mu.getMessagesList()) {
-                
                 // No sorting required for the first entry
                 if (this.organizedMessagesList.size() == 0) {
                     this.organizedMessagesList.add(md);
                     continue;
                 }
-                
-                // Compare timestamp using binary search
-                int listSize = this.organizedMessagesList.size();
-                int index = listSize / 2;
-                while (true) {
-                    // Get two reference data as bracket to compare (they are neighbors)
-                    MessageData r1 = this.organizedMessagesList.get(index);
-                    MessageData r2;
-                    if (index + 1 > listSize - 1) {
-                        if (index == 0) {
-                            r2 = r1;
-                        } else {
-                            r2 = this.organizedMessagesList.get(index - 1);
-                        }
-                    } else {
-                        r2 = this.organizedMessagesList.get(index + 1);
-                    }
-                    
-                    // Check if the attempted index is too high or too low
-                    if (md.timestamp < r1.timestamp && md.timestamp < r2.timestamp) {
-                        // Too low
-                        // index += (this.organizedMessagesList.size() - index) / 2;
-                        index *= 3 / 2;
-                    } else if (md.timestamp > r1.timestamp && md.timestamp > r2.timestamp) {
-                        // Too high
-                        index /= 2;
-                    } else if ((md.timestamp >= r1.timestamp && md.timestamp <= r2.timestamp) ||
-                               (md.timestamp <= r1.timestamp && md.timestamp >= r2.timestamp)) {
-                        // Just right
-                        this.organizedMessagesList.add(index, md);
-                        break;
-                    }
-                }
+
+                int index = this.getInsersionIndex(md.timestamp, 0, this.organizedMessagesList.size() - 1);
+                this.organizedMessagesList.add(index, md);
             }
         }
-        
+
         // Print first 200 results to verify
         for (int i = 0; i < 200; i++) {
             println(this.organizedMessagesList.get(i).timestamp);
+        }
+    }
+
+    private int getInsersionIndex(long timestamp, int start, int end) {
+        // Recursive function that use binary search to get index to insert
+        
+        // Edge case
+        if (start == end) {
+            if (this.organizedMessagesList.get(start).timestamp > timestamp) {
+                return start;
+            } else {
+                return start + 1;
+            }
+        }
+
+        if (start > end) {
+            return start;
+        }
+
+
+        // All other cases
+        int mid = (start + end) / 2;
+        long midTime = this.organizedMessagesList.get(mid).timestamp;
+        if (midTime < timestamp) {
+            return this.getInsersionIndex(timestamp, mid + 1, end);
+        } else if (midTime > timestamp) {
+            return this.getInsersionIndex(timestamp, start, mid - 1);
+        } else {
+            return mid;
         }
     }
 }
 
 
 // Primitive object for a single entry of message
-class MessageData {
+class MessageData{
     long timestamp;
     String sender;
     String content;
 
     public MessageData(long timestamp, String sender, String content) {
+        super();
         this.timestamp = timestamp;
         this.sender = sender;
         this.content = content;
