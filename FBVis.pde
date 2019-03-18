@@ -23,6 +23,7 @@ void setup() {
     thread("initData");
 }
 
+int gi = 0;
 void draw() {
     if (!initialized) {
         background(0);
@@ -36,11 +37,20 @@ void draw() {
         return;
     }
 
-    background(0);
-    int i = frameCount % man.organizedMessagesList.size();
-    MessageData current = man.organizedMessagesList.get(i);
-    text(current.content, width/2, height/2);
-    println(frameRate);
+    //background(0, 50);
+    fill(0, 5);
+    rect(0, 0, width, height);
+    int di = gi % man.organizedMessagesList.size();
+    float y = (frameCount % 40) * height / 40;
+    MessageData current = man.organizedMessagesList.get(di);
+    fill(255);
+    
+    String date = new java.text.SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date(current.timestamp * 1000L));
+    text(date, 10, y);
+    text(current.sender, 80, y);
+    text(current.content, 200, y);
+    
+    gi++;
 }
 
 void drawPersons() {

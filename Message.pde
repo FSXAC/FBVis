@@ -1,4 +1,3 @@
-
 // This should be a class that manages all messages, and message utils
 class MessageManager {
     ArrayList<MessageData> organizedMessagesList;
@@ -43,7 +42,7 @@ class MessageManager {
             for (MessageData md : mu.getMessagesList()) {
                 // No sorting required for the first entry
                 if (this.organizedMessagesList.size() == 0) {
-                    this.organizedMessagesList.add(md);
+                    this.organizedMessagesList.add(0, md);
                     continue;
                 }
 
@@ -53,9 +52,7 @@ class MessageManager {
         }
 
         // Print first 200 results to verify
-        for (int i = 0; i < 200; i++) {
-            println(this.organizedMessagesList.get(i).timestamp);
-        }
+        println("Sorted " + this.organizedMessagesList.size() + " total messages");
     }
 
     private int getInsersionIndex(long timestamp, int start, int end) {
