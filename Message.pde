@@ -15,6 +15,7 @@ class MessageManager {
         //printArray(filenames);
         
         // create a new messageutil for each entry
+        int i = 0;
         for (String filename : filenames) {
             String[] pathSegments = {this.rootPath, filename, "message.json"};
             String messageDataPath = pathJoins(pathSegments);
@@ -23,6 +24,10 @@ class MessageManager {
             MessageUtil newMessageUtil = new MessageUtil(messageDataPath);
             
             this.messageUtils.add(newMessageUtil);
+            
+            i++;
+            
+            progress_load = 100.0 * i / filenames.length; 
         }
         
         this.buildMessagesList();
@@ -33,6 +38,7 @@ class MessageManager {
         println("Building ordered messages list, sorting through all messages by time");
         for (int i = 0; i < this.messageUtils.size(); i++) {
             println("Sorting " + str(i) + "/" + str(messageUtils.size()) + " entries");
+            progress_sort = 100.0 * i / messageUtils.size();
             MessageUtil mu = this.messageUtils.get(i);
             for (MessageData md : mu.getMessagesList()) {
                 // No sorting required for the first entry
