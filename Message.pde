@@ -26,7 +26,8 @@ class MessageManager {
             
             i++;
             
-            progress_load = 100.0 * i / filenames.length; 
+            // Status
+            progress.setLoadingProgress(100.0 * i / filenames.length);
         }
         
         this.buildMessagesList();
@@ -36,8 +37,11 @@ class MessageManager {
     public void buildMessagesList() {
         println("Building ordered messages list, sorting through all messages by time");
         for (int i = 0; i < this.messageUtils.size(); i++) {
+
+            // Status
             println("Sorting " + str(i) + "/" + str(messageUtils.size()) + " entries");
-            progress_sort = 100.0 * i / messageUtils.size();
+            progress.setSortingProgress(100.0 * i / messageUtils.size());
+
             MessageUtil mu = this.messageUtils.get(i);
             for (MessageData md : mu.getMessagesList()) {
                 // No sorting required for the first entry
@@ -159,9 +163,17 @@ class MessageUtil {
             JSONObject message = messages.getJSONObject(i);
 
             if (message.getString("type").equals("Generic")) {
-                final String content = message.getString("content");
-                final String sender = message.getString("sender_name");
+                String content = message.getString("content");
+                String sender = message.getString("sender_name");
                 final long timestamp = message.getLong("timestamp_ms") / 1000;
+                
+                if (sender == null) {
+                    sender = "UNKNOWN USER";
+                }
+                
+                if (content == null) {
+                    content = "{NO CONTENT}";
+                }
                 
                 messagesList.add(new MessageData(timestamp, sender, content));
             }
