@@ -71,10 +71,10 @@ class MessageManager {
             }
         }
 
+        // Exit condition
         if (start > end) {
             return start;
         }
-
 
         // All other cases
         int mid = (start + end) / 2;
@@ -165,7 +165,7 @@ class MessageUtil {
             if (message.getString("type").equals("Generic")) {
                 String content = message.getString("content");
                 String sender = message.getString("sender_name");
-                final long timestamp = message.getLong("timestamp_ms") / 1000;
+                final long timestamp = message.getLong("timestamp_ms");
                 
                 if (sender == null) {
                     sender = "UNKNOWN USER";

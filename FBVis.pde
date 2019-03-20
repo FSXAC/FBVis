@@ -36,8 +36,8 @@ void draw() {
         text("NOW LOADING...", 50, 50);
         
         stroke(255);
-        line(50, 70, 50 + progress.getLoadingProgress(), 70);
-        line(50, 90, 50 + progress.getSortingProgress(), 90);
+        line(50, 70, 50 + 3 * progress.getLoadingProgress(), 70);
+        line(50, 90, 50 + 3 * progress.getSortingProgress(), 90);
         return;
     }
 
@@ -57,7 +57,7 @@ void drawListMode(MessageData current) {
     rect(0, 0, width, height);
     float y = (frameCount % 40) * height / 40;
     fill(255);
-    String date = new java.text.SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date(current.timestamp * 1000L));
+    String date = new java.text.SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date(current.timestamp));
     text(date, 10, y);
     text(current.sender, 80, y);
     text(current.content, 200, y);
