@@ -94,12 +94,14 @@ class MessageManager {
 class MessageData{
     long timestamp;
     String sender;
+    ArrayList<String> receivers;
     String content;
 
-    public MessageData(long timestamp, String sender, String content) {
+    public MessageData(long timestamp, String sender, ArrayList<String> receivers, String content) {
         super();
         this.timestamp = timestamp;
         this.sender = sender;
+        this.receivers = receivers;
         this.content = content;
     }
 }
@@ -156,6 +158,10 @@ class MessageUtil {
         // Get participants
         JSONArray participants = jsonData.getJSONArray("participants");
         JSONArray messages = jsonData.getJSONArray("messages");
+        
+        // A hashmap / table is used to cache the sender -> receiver mapping
+        // TODO: we have to recompute the table if someone adds/removes people from group chat
+        HashMap<String, ArrayList<String>> receiverMapping = new HashMap<String, ArrayList<String>>();
 
         // We go backwards because the messages are sorted
         // by most recent on top
@@ -168,14 +174,38 @@ class MessageUtil {
                 final long timestamp = message.getLong("timestamp_ms");
                 
                 if (sender == null) {
-                    sender = "UNKNOWN USER";
+                    sender = "{UNKNOWN USER}";
                 }
                 
                 if (content == null) {
                     content = "{NO CONTENT}";
                 }
+
+                // Get a single or list of receivers
+                ArrayList<String> receivers;
+                if (receiverMapping.containsKey(sender)) {
+                    receivers = receiverMapping.get(sender);
+
+                } else {
+
+                    receivers = new ArrayList<String>();
+
+                    // Find all receivers from the participants list
+                    for (int j = 0; j < participants.size(); j++) {
+                        JSONObject nameObj = participants.getJSONObject(j);
+                        String name = nameObj.getString("name");
+
+                        // if participant name is not sender, it must be receiver
+                        if (!sender.equals(name)) {
+                            receivers.add(name);
+                        }
+                    }
+
+                    // Add the list to the table to save computing
+                    receiverMapping.put(sender, receivers);
+                }
                 
-                messagesList.add(new MessageData(timestamp, sender, content));
+                messagesList.add(new MessageData(timestamp, sender, receivers, content));
             }
         }
 
