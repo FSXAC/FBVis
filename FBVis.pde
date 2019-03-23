@@ -80,27 +80,28 @@ void drawPersons() {
     int y = 0;
 
     for (Person person : persons) {
-            person.setPosition(map(x, 0, xcols, padding, width - padding), map(y, 0, yrows, padding, height - padding));
-            person.draw();
-            
-            
-            if (x == xcols - 1) {
-                x = 0;
-                y += 1;
-            } else {
-                x += 1;
-            }
+        person.setDesiredPosition(map(x, 0, xcols, padding, width - padding), map(y, 0, yrows, padding, height - padding));
+        person.draw();
+        
+        
+        if (x == xcols - 1) {
+            x = 0;
+            y += 1;
+        } else {
+            x += 1;
+        }
     }
 }
 
 void drawListMode(MessageData current) {
     // Draw by listing all the messages one per frame
-    fill(0, 15);
+    fill(0, 20);
     rect(0, 0, width, height);
     float y = (frameCount % 40) * height / 40;
-    fill(255);
+    fill(50);
     String date = new java.text.SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date(current.timestamp));
     textAlign(LEFT, TOP);
+    textSize(10);
     text(date, 10, y);
     text(current.sender, 80, y);
     text(current.content, 200, y);
