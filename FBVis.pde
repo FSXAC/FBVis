@@ -8,6 +8,8 @@ import java.util.Map;
 IntDict nameToPersonIndexMap;
 ArrayList<Person> persons;
 
+ArrayList<Payload> payloads;
+
 MessageManager man;
 boolean initialized = false;
 
@@ -20,6 +22,8 @@ void initData() {
 
     nameToPersonIndexMap = new IntDict();
     persons = new ArrayList<Person>();
+
+    payloads = new ArrayList<Payload>();
 
     initialized = true;
 }
@@ -48,9 +52,19 @@ void draw() {
     int di = gi % man.organizedMessagesList.size();
     MessageData current = man.organizedMessagesList.get(di);
     
-    processCurrentmessageData(current); //<>//
-    drawPersons();
+    processCurrentmessageData(current);
+
+    background(0);
+
+    // Display the list of messages in the back
     drawListMode(current);
+
+    // Draw a grid of people
+    drawPersons();
+
+    // Draw and update payload
+    drawPayload();
+
     gi++;
 }
 
@@ -68,11 +82,17 @@ void processCurrentmessageData(MessageData current) {
             persons.add(new Person(receiver));
             nameToPersonIndexMap.set(receiver, persons.size() - 1);
         }
+
+        // For each receiving end, we make a payload
+        // Create new payload
+        Person senderPerson = persons.get(nameToPersonIndexMap.get(current.sender));
+        Person receivePerson = persons.get(nameToPersonIndexMap.get(receiver));
+        payloads.add(new Payload(senderPerson, receivePerson));
     }
 }
 
 float padding = 75;
-int xcols = 12;
+int xcols = 14;
 float yrows = 10;
 void drawPersons() {
     // Iterate through all the people in the map
@@ -80,10 +100,11 @@ void drawPersons() {
     int y = 0;
 
     for (Person person : persons) {
-        person.setDesiredPosition(map(x, 0, xcols, padding, width - padding), map(y, 0, yrows, padding, height - padding));
+        // TODO: could be optimized as there is no need to call this every frame
+        person.setTargetPosition(map(x, 0, xcols, padding, width - padding), map(y, 0, yrows, padding, height - padding));
         person.draw();
         
-        
+        // HACK:
         if (x == xcols - 1) {
             x = 0;
             y += 1;
@@ -93,10 +114,31 @@ void drawPersons() {
     }
 }
 
+// TODO: could be instanciated elsewhere and just cleared
+ArrayList<Payload> toBeRemoved = new ArrayList<Payload>();
+void drawPayload() {
+
+    toBeRemoved.clear();
+
+    // Draw and check
+    for (Payload payload : payloads) {
+        payload.draw();
+        
+        if (payload.hasArrived()) {
+            toBeRemoved.add(payload);
+        }
+    }
+
+    // Remove from active list
+    for (Payload payload : toBeRemoved) {
+        payloads.remove(payload);
+    }
+}
+
 void drawListMode(MessageData current) {
     // Draw by listing all the messages one per frame
-    fill(0, 20);
-    rect(0, 0, width, height);
+    // fill(0, 20);
+    // rect(0, 0, width, height);
     float y = (frameCount % 40) * height / 40;
     fill(50);
     String date = new java.text.SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date(current.timestamp));

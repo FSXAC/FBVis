@@ -4,11 +4,11 @@
 final float PERSON_LERP = 0.5;
 
 class Person {
-    float positionX;
-    float positionY;
+    float x;
+    float y;
 
-    float desiredPositionX;
-    float desiredPositionY;
+    float targetX;
+    float targetY;
     
     String name;
     boolean isMaster;
@@ -23,14 +23,14 @@ class Person {
     }
     
     public void init() {
-        this.positionX = width / 2;
-        this.positionY = height / 2;
+        this.x = width / 2;
+        this.y = height / 2;
         this.isMaster = false;
     }
     
     public void draw() {
         pushMatrix();
-        translate(this.positionX, this.positionY);
+        translate(this.x, this.y);
         
         // Draw node
         // final float circleSize = 25;
@@ -56,18 +56,18 @@ class Person {
     
     public void update() {
         // LERP for now
-        this.positionX = lerp(this.positionX, this.desiredPositionX, PERSON_LERP);
-        this.positionY = lerp(this.positionY, this.desiredPositionY, PERSON_LERP);
+        this.x = lerp(this.x, this.targetX, PERSON_LERP);
+        this.y = lerp(this.y, this.targetY, PERSON_LERP);
     }
 
     public void setPosition(float x, float y) {
-        this.positionX = x;
-        this.positionY = y;
+        this.x = x;
+        this.y = y;
     }
 
-    public void setDesiredPosition(float x, float y) {
-        this.desiredPositionX = x;
-        this.desiredPositionY = y;
+    public void setTargetPosition(float x, float y) {
+        this.targetX = x;
+        this.targetY = y;
     }
 
     public void setIsMaster(boolean master) {
