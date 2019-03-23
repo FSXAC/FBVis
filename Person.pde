@@ -43,6 +43,7 @@ class Person {
 
         noFill();
         float f = map(this.fresh, 0, 1, 0, 175);
+        strokeWeight(1);
         stroke(80 + f, 80 + f, 80);
         rect(-10, -10, 20, 20);
 

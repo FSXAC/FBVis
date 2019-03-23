@@ -84,7 +84,18 @@ void processCurrentmessageData(MessageData current) {
         // For each receiving end, we make a payload
         Person senderPerson = persons.get(nameToPersonIndexMap.get(current.sender));
         Person receivePerson = persons.get(nameToPersonIndexMap.get(receiver));
-        payloads.add(new PayloadLine(senderPerson, receivePerson));
+        addPayload(senderPerson, receivePerson);
+    }
+}
+
+final int PAYLOAD_SELECT = 2;
+void addPayload(Person sender, Person receiver) {
+    if (PAYLOAD_SELECT == 0) {
+        payloads.add(new PayloadDot(sender, receiver));
+    } else if (PAYLOAD_SELECT == 1) {
+        payloads.add(new PayloadLine(sender, receiver));
+    } else if (PAYLOAD_SELECT == 2) {
+        payloads.add(new PayloadSegment(sender, receiver));
     }
 }
 
