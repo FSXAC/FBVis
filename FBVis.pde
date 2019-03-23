@@ -43,21 +43,57 @@ void draw() {
 
     int di = gi % man.organizedMessagesList.size();
     MessageData current = man.organizedMessagesList.get(di);
-
+    
+    processCurrentmessageData(current);
+    drawPersons();
     drawListMode(current);
     gi++;
+} //<>//
+
+void processCurrentmessageData(MessageData current) {
+    // check if sender and receiver in the persons map
+    if (!personMap.containsKey(current.sender)) {
+        // add sender
+        personMap.put(current.sender, new Person(current.sender));
+    }
+    
+    for (String receiver : current.receivers) {
+        if (!personMap.containsKey(receiver)) {
+            personMap.put(receiver, new Person(receiver));
+        }
+    }
 }
 
+float padding = 75;
+int xcols = 12;
+float yrows = 10;
 void drawPersons() {
+    // Iterate through all the people in the map
+    int x = 0;
+    int y = 0;
+    for (Person person : personMap.values()) {
+        
+        person.setPosition(map(x, 0, xcols, padding, width - padding), map(y, 0, yrows, padding, height - padding));
+        person.draw();
+        
+        
+        if (x == xcols - 1) {
+            x = 0;
+            y += 1;
+        } else {
+            x += 1;
+        }
+    }
 }
 
 void drawListMode(MessageData current) {
     // Draw by listing all the messages one per frame
-    fill(0, 5);
+    fill(0, 15);
     rect(0, 0, width, height);
     float y = (frameCount % 40) * height / 40;
     fill(255);
     String date = new java.text.SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date(current.timestamp));
+    textAlign(LEFT, TOP);
     text(date, 10, y);
     text(current.sender, 80, y);
     text(current.content, 200, y);
