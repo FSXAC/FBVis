@@ -3,6 +3,8 @@
 
 final float PERSON_LERP = 0.5;
 
+final float FRESH_DECAY = 0.99;
+
 class Person {
     float x;
     float y;
@@ -14,10 +16,13 @@ class Person {
     boolean isMaster;
 
     boolean autoUpdate;
+
+    float fresh;
     
     public Person(String name) {
         this.name = name;
         this.autoUpdate = true;
+        this.fresh = 0;
 
         this.init();
     }
@@ -37,7 +42,8 @@ class Person {
         // ellipse(0, 0, circleSize, circleSize);
 
         noFill();
-        stroke(80);
+        float f = map(this.fresh, 0, 1, 0, 175);
+        stroke(80 + f, 80 + f, 80);
         rect(-10, -10, 20, 20);
 
         textAlign(CENTER, CENTER);
@@ -58,6 +64,8 @@ class Person {
         // LERP for now
         this.x = lerp(this.x, this.targetX, PERSON_LERP);
         this.y = lerp(this.y, this.targetY, PERSON_LERP);
+        
+        this.fresh *= FRESH_DECAY;
     }
 
     public void setPosition(float x, float y) {
@@ -72,5 +80,9 @@ class Person {
 
     public void setIsMaster(boolean master) {
         this.isMaster = master;
+    }
+
+    public void receive() {
+        this.fresh = 1.0;
     }
 }

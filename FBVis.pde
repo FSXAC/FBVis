@@ -1,7 +1,5 @@
 // Main entry point of the program
 
-    
-
 import java.util.Map;
 
 // Hash map to hold to the person
@@ -84,10 +82,9 @@ void processCurrentmessageData(MessageData current) {
         }
 
         // For each receiving end, we make a payload
-        // Create new payload
         Person senderPerson = persons.get(nameToPersonIndexMap.get(current.sender));
         Person receivePerson = persons.get(nameToPersonIndexMap.get(receiver));
-        payloads.add(new Payload(senderPerson, receivePerson));
+        payloads.add(new PayloadLine(senderPerson, receivePerson));
     }
 }
 
@@ -126,6 +123,10 @@ void drawPayload() {
         
         if (payload.hasArrived()) {
             toBeRemoved.add(payload);
+
+            // Update the target
+            // TODO: rename to smoething better
+            payload.targetPerson.receive();
         }
     }
 

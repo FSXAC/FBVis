@@ -20,9 +20,7 @@ class Payload {
         return;
     }
 
-    public boolean hasArrived() {
-        return true;
-    }
+    public boolean has
 }
 
 
@@ -41,7 +39,6 @@ class PayloadDot extends Payload{
     float f;
 
     public PayloadDot(Person source, Person target) {
-        super(source, target);
         this.x = source.x + random(-RANDOM_START_D, RANDOM_START_D);
         this.y = source.y + random(-RANDOM_START_D, RANDOM_START_D);
         
@@ -51,7 +48,7 @@ class PayloadDot extends Payload{
         this.f = random(80, 200);
     }
 
-    @Override
+    @override
     public void draw() {
         pushMatrix();
         translate(this.x, this.y);
@@ -62,13 +59,13 @@ class PayloadDot extends Payload{
         this.update();
     }
 
-    @Override
+    @override
     public void update() {
         this.x = lerp(this.x, this.targetPerson.x, PAYLOAD_LERP);
         this.y = lerp(this.y, this.targetPerson.y, PAYLOAD_LERP);
     }
 
-    @Override
+    @override
     public boolean hasArrived() {
         final float dx = abs(this.targetPerson.x - this.x);
         final float dy = abs(this.targetPerson.y - this.y);
@@ -77,28 +74,42 @@ class PayloadDot extends Payload{
     }
 }
 
-class PayloadLine extends Payload{
+class PayloadLine {
     float x;
     float y;
     Person targetPerson;
 
+    float r;
+    float f;
+
     int life;
 
     public PayloadLine(Person source, Person target) {
-        super(source, target);
         this.x = source.x + random(-RANDOM_START_D, RANDOM_START_D);
         this.y = source.y + random(-RANDOM_START_D, RANDOM_START_D);
         
         this.targetPerson = target;
-        this.life = 15;
+
+        this.r = random(5, 12);
+        this.f = random(80, 200);
+
+        this.life = 10;
     }
 
     public void draw() {
-        stroke(255, 255, 0);
+
+        stroke(this.f);
+        strokeWeight(this.r);
         line(this.x, this.y, this.targetPerson.x, this.targetPerson.y);
+
+        // pushMatrix();
+        // translate(this.x, this.y);
+        // fill(this.f);
+        // ellipse(0, 0, this.r, this.r);
+        // popMatrix();
     }
 
     public boolean hasArrived() {
-        return life-- == 0;
+        return life-- > 0;
     }
 }
