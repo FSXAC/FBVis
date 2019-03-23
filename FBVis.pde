@@ -22,7 +22,7 @@ void initData() {
 }
 
 void setup() {
-    size(1280, 720);
+    size(1280, 960);
     thread("initData");
 
     nameToPersonIndexMap = new IntDict();
@@ -80,7 +80,7 @@ void processCurrentmessageData(MessageData current) {
 
         // For each receiving end, we make a payload
         Person senderPerson = persons.get(nameToPersonIndexMap.get(current.sender));
-        Person receivePerson = persons.get(nameToPersonIndexMap.get(receiver)); //<>//
+        Person receivePerson = persons.get(nameToPersonIndexMap.get(receiver)); //<>// //<>// //<>//
         addPayload(senderPerson, receivePerson);
     }
 }
@@ -90,6 +90,13 @@ void addNewPerson(String name) {
 
     Person new_person = new Person(name);
     final PVector new_position = spiral(index, width/2, height/2);
+    // TODO: make it an option to start from either middle or outside
+    // - Middle: don't change anything
+    // - Outside:
+    // float t = random(0, TWO_PI);
+    // new_person.setPosition(width * cos(t), width * sin(t));
+    // - Upper center
+    // new_person.setPosition(width/2, 0);
     new_person.setTargetPosition(new_position.x, new_position.y);
     persons.add(new_person);
 
