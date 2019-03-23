@@ -18,17 +18,16 @@ void initData() {
     progress = new Progress();
     man = new MessageManager(DATA_ROOT_DIR);
 
-    nameToPersonIndexMap = new IntDict();
-    persons = new ArrayList<Person>();
-
-    payloads = new ArrayList<Payload>();
-
     initialized = true;
 }
 
 void setup() {
     size(1280, 720);
     thread("initData");
+
+    nameToPersonIndexMap = new IntDict();
+    persons = new ArrayList<Person>();
+    payloads = new ArrayList<Payload>();
 }
 
 int gi = 0;
@@ -55,7 +54,7 @@ void draw() {
     background(0);
 
     // Display the list of messages in the back
-    drawListMode(current);
+    // drawListMode(current);
 
     // Draw a grid of people
     drawPersons();
@@ -71,21 +70,30 @@ void processCurrentmessageData(MessageData current) {
     if (!nameToPersonIndexMap.hasKey(current.sender)) {
 
         // Add to array and get the index and put it in the map
-        persons.add(new Person(current.sender));
-        nameToPersonIndexMap.set(current.sender, persons.size() - 1);
+        addNewPerson(current.sender);
     }
     
     for (String receiver : current.receivers) {
         if (!nameToPersonIndexMap.hasKey(receiver)) {
-            persons.add(new Person(receiver));
-            nameToPersonIndexMap.set(receiver, persons.size() - 1);
+            addNewPerson(receiver);
         }
 
         // For each receiving end, we make a payload
         Person senderPerson = persons.get(nameToPersonIndexMap.get(current.sender));
-        Person receivePerson = persons.get(nameToPersonIndexMap.get(receiver));
+        Person receivePerson = persons.get(nameToPersonIndexMap.get(receiver)); //<>//
         addPayload(senderPerson, receivePerson);
     }
+}
+
+void addNewPerson(String name) {
+    final int index = persons.size();
+
+    Person new_person = new Person(name);
+    final PVector new_position = spiral(index, width/2, height/2);
+    new_person.setTargetPosition(new_position.x, new_position.y);
+    persons.add(new_person);
+
+    nameToPersonIndexMap.set(name, index);
 }
 
 final int PAYLOAD_SELECT = 2;
@@ -99,26 +107,10 @@ void addPayload(Person sender, Person receiver) {
     }
 }
 
-float padding = 75;
-int xcols = 14;
-float yrows = 10;
 void drawPersons() {
-    // Iterate through all the people in the map
-    int x = 0;
-    int y = 0;
-
     for (Person person : persons) {
-        // TODO: could be optimized as there is no need to call this every frame
-        person.setTargetPosition(map(x, 0, xcols, padding, width - padding), map(y, 0, yrows, padding, height - padding));
+        // person.setTargetPosition(map(x, 0, xcols, padding, width - padding), map(y, 0, yrows, padding, height - padding));
         person.draw();
-        
-        // HACK:
-        if (x == xcols - 1) {
-            x = 0;
-            y += 1;
-        } else {
-            x += 1;
-        }
     }
 }
 
