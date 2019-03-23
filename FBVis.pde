@@ -5,7 +5,8 @@
 import java.util.Map;
 
 // Hash map to hold to the person
-HashMap<String, Person> personMap;
+IntDict nameToPersonIndexMap;
+ArrayList<Person> persons;
 
 MessageManager man;
 boolean initialized = false;
@@ -16,7 +17,10 @@ Progress progress;
 void initData() {
     progress = new Progress();
     man = new MessageManager(DATA_ROOT_DIR);
-    personMap = new HashMap<String, Person>();
+
+    nameToPersonIndexMap = new IntDict();
+    persons = new ArrayList<Person>();
+
     initialized = true;
 }
 
@@ -44,22 +48,25 @@ void draw() {
     int di = gi % man.organizedMessagesList.size();
     MessageData current = man.organizedMessagesList.get(di);
     
-    processCurrentmessageData(current);
+    processCurrentmessageData(current); //<>//
     drawPersons();
     drawListMode(current);
     gi++;
-} //<>//
+}
 
 void processCurrentmessageData(MessageData current) {
     // check if sender and receiver in the persons map
-    if (!personMap.containsKey(current.sender)) {
-        // add sender
-        personMap.put(current.sender, new Person(current.sender));
+    if (!nameToPersonIndexMap.hasKey(current.sender)) {
+
+        // Add to array and get the index and put it in the map
+        persons.add(new Person(current.sender));
+        nameToPersonIndexMap.set(current.sender, persons.size() - 1);
     }
     
     for (String receiver : current.receivers) {
-        if (!personMap.containsKey(receiver)) {
-            personMap.put(receiver, new Person(receiver));
+        if (!nameToPersonIndexMap.hasKey(receiver)) {
+            persons.add(new Person(receiver));
+            nameToPersonIndexMap.set(receiver, persons.size() - 1);
         }
     }
 }
@@ -71,18 +78,18 @@ void drawPersons() {
     // Iterate through all the people in the map
     int x = 0;
     int y = 0;
-    for (Person person : personMap.values()) {
-        
-        person.setPosition(map(x, 0, xcols, padding, width - padding), map(y, 0, yrows, padding, height - padding));
-        person.draw();
-        
-        
-        if (x == xcols - 1) {
-            x = 0;
-            y += 1;
-        } else {
-            x += 1;
-        }
+
+    for (Person person : persons) {
+            person.setPosition(map(x, 0, xcols, padding, width - padding), map(y, 0, yrows, padding, height - padding));
+            person.draw();
+            
+            
+            if (x == xcols - 1) {
+                x = 0;
+                y += 1;
+            } else {
+                x += 1;
+            }
     }
 }
 
