@@ -111,7 +111,7 @@ class MessageData{
 // uniform time sorted list
 
 // For now, suppose we are only dealing with one chat file
-
+int globalUnknownUserCount = 0;
 class MessageUtil {
     String filePath;
     ArrayList<MessageData> messagesList;
@@ -156,7 +156,23 @@ class MessageUtil {
         JSONObject jsonData = loadJSONObject(filePath);
 
         // Get participants
-        JSONArray participants = jsonData.getJSONArray("participants");
+        JSONArray participantsData = jsonData.getJSONArray("participants");
+        ArrayList<String> participants = new ArrayList<String>();
+        for (int i = 0; i < participantsData.size(); i++) {
+            JSONObject nameObj = participantsData.getJSONObject(i);
+
+
+            String name = nameObj.getString("name");
+
+            if (name.equals(FACEBOOK_USER_NAME)) {
+                name += ' ' + str(globalUnknownUserCount);
+                globalUnknownUserCount++;
+            }
+
+            participants.add(name);
+        }
+
+        // Get messages
         JSONArray messages = jsonData.getJSONArray("messages");
         
         // A hashmap / table is used to cache the sender -> receiver mapping
@@ -192,8 +208,7 @@ class MessageUtil {
 
                     // Find all receivers from the participants list
                     for (int j = 0; j < participants.size(); j++) {
-                        JSONObject nameObj = participants.getJSONObject(j);
-                        String name = nameObj.getString("name");
+                        String name = participants.get(j);
 
                         // if participant name is not sender, it must be receiver
                         if (!sender.equals(name)) {
