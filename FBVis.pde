@@ -37,7 +37,7 @@ void setup() {
     fx = new PostFX(this);
 }
 
-int gi = 300000;
+int gi = 100000;
 void draw() {
 
     // If uninitialized, then display the loading screen
@@ -54,7 +54,7 @@ void draw() {
     }
         
     //TODO: make this an option (run 3 times faster)
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 1; i++) {
         int di = gi % man.organizedMessagesList.size();
         MessageData current = man.organizedMessagesList.get(di);
         processCurrentmessageData(current);
@@ -131,6 +131,8 @@ void addPayload(Person sender, Person receiver) {
         payloads.add(new PayloadLine(sender, receiver));
     } else if (PAYLOAD_SELECT == 2) {
         payloads.add(new PayloadSegment(sender, receiver));
+    } else if (PAYLOAD_SELECT == 3) {
+        payloads.add(new PayloadSegmentPhysics(sender, receiver));
     }
 }
 
