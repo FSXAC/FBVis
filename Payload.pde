@@ -1,6 +1,5 @@
 // This is a graphic version of the message
 
-
 class Payload {
     float x;
     float y;

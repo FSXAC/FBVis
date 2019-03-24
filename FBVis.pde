@@ -1,6 +1,11 @@
 // Main entry point of the program
 
 import java.util.Map;
+import ch.bildspur.postfx.builder.*;
+import ch.bildspur.postfx.pass.*;
+import ch.bildspur.postfx.*;
+
+PostFX fx;
 
 // Hash map to hold to the person
 IntDict nameToPersonIndexMap;
@@ -22,15 +27,17 @@ void initData() {
 }
 
 void setup() {
-    size(1280, 960);
+    size(1280, 960, P2D);
     thread("initData");
 
     nameToPersonIndexMap = new IntDict();
     persons = new ArrayList<Person>();
     payloads = new ArrayList<Payload>();
+
+    fx = new PostFX(this);
 }
 
-int gi = 0;
+int gi = 300000;
 void draw() {
 
     // If uninitialized, then display the loading screen
@@ -45,11 +52,14 @@ void draw() {
         line(50, 90, 50 + 3 * progress.getSortingProgress(), 90);
         return;
     }
-
-    int di = gi % man.organizedMessagesList.size();
-    MessageData current = man.organizedMessagesList.get(di);
-    
-    processCurrentmessageData(current);
+        
+    //TODO: make this an option (run 3 times faster)
+    for (int i = 0; i < 3; i++) {
+        int di = gi % man.organizedMessagesList.size();
+        MessageData current = man.organizedMessagesList.get(di);
+        processCurrentmessageData(current);
+        gi++;
+    }
 
     background(0);
 
@@ -62,20 +72,30 @@ void draw() {
     // Draw and update payload
     drawPayload();
 
-    gi++;
+    fx.render()
+    .bloom(0.5, 20, 30)
+    .compose();
+
+    // Draw current date
+    // TODO: put this somewhere
+    MessageData current = man.organizedMessagesList.get(gi % man.organizedMessagesList.size());
+    String date = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm").format(new java.util.Date(current.timestamp));
+    textSize(20); //<>//
+    fill(255);
+    text(date, width/2, 20);
 }
 
 void processCurrentmessageData(MessageData current) {
     // check if sender and receiver in the persons map
     if (!nameToPersonIndexMap.hasKey(current.sender)) {
-
+ //<>//
         // Add to array and get the index and put it in the map
         addNewPerson(current.sender);
     }
     
     for (String receiver : current.receivers) {
         if (!nameToPersonIndexMap.hasKey(receiver)) {
-            addNewPerson(receiver);
+            addNewPerson(receiver); //<>//
         }
 
         // For each receiving end, we make a payload

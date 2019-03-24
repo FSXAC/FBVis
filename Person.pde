@@ -40,6 +40,7 @@ class Person {
         
         // Draw circle node
         final float circleSize = 15;
+        strokeWeight(1);
         fill(80 + f);
         ellipse(0, 0, circleSize, circleSize);
         textAlign(CENTER, CENTER);
