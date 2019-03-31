@@ -17,7 +17,7 @@ final boolean FULLSCREEN = false;
 
 final float DESIRED_FPS = 60;
 
-final boolean USE_UNIFORM_TIME = true;
+final boolean USE_UNIFORM_TIME = false;
 
 // Start from very beginning
 final long START_TIMESTAMP = 0;
@@ -32,4 +32,4 @@ final long AUTO_SKIP_TIMESTAMP = int(3600 * 24 * 100 * DAYS_PER_SECOND * AUTO_SK
 
 // If not using uniform time, then how much faster is the thing is visualized
 // Value of 2 means 2 messages are visualized per frame
-final int SPEED_SCALE = 2;
+final int SPEED_SCALE = 1;

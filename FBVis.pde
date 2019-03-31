@@ -65,9 +65,14 @@ void draw() {
         noStroke();
         text("NOW LOADING...", 50, 50);
         
+        stroke(50);
+        line(50, 70, 50 + 300, 70);
+        line(50, 90, 50 + 300, 90);
+        line(50, 110, 50 + 300, 110);
         stroke(255);
-        line(50, 70, 50 + 3 * progress.getLoadingProgress(), 70);
-        line(50, 90, 50 + 3 * progress.getSortingProgress(), 90);
+        line(50, 70, 50 + 3 * progress.getLoadingLargeProgress(), 70);
+        line(50, 90, 50 + 3 * progress.getLoadingProgress(), 90);
+        line(50, 110, 50 + 3 * progress.getSortingProgress(), 110);
         return;
     }
 
@@ -111,15 +116,8 @@ void draw() {
 
             msgCount++;
 
-            println("MTP=" + str(messageTimestamp));
-            println("NTP=" + str(nextTimestamp));
-
         } while (messageTimestamp < nextTimestamp);
-
-        if (verbose) {
-            println("Next time step; gi=" + str(gi) + " msg in this time step=" + str(msgCount));
-        }
-
+        
         currentTimestamp = nextTimestamp;
 
     } else {

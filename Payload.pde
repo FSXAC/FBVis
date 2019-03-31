@@ -178,7 +178,7 @@ class PayloadSegment extends Payload{
 class PayloadSegment2 extends PayloadSegment {
     public PayloadSegment2(Person source, Person target) {
         super(source, target);
-        this.travel_lerp = 0.3;
+        this.travel_lerp = random(0.28, 0.32);
     }
 
     @Override

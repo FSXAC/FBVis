@@ -3,31 +3,41 @@ class MessageManager {
     ArrayList<MessageData> organizedMessagesList;
     ArrayList<MessageUtil> messageUtils;
     String rootPath;
+    ArrayList<String> rootPaths;
 
     public MessageManager(String root) {
         this.organizedMessagesList = new ArrayList<MessageData>();
         this.messageUtils = new ArrayList<MessageUtil>();
+        this.rootPaths = new ArrayList<String>();
         
         
-        this.rootPath = pathJoin(root, "messages\\inbox");
-        String[] filenames = listFileNames(this.rootPath);
-        //printArray(filenames);
-        
-        // create a new messageutil for each entry
-        int i = 0;
-        for (String filename : filenames) {
-            String[] pathSegments = {this.rootPath, filename, "message.json"};
-            String messageDataPath = pathJoins(pathSegments);
+        this.rootPaths.add(pathJoin(root, "messages\\inbox"));
+        this.rootPaths.add(pathJoin(root, "messages\\archived_threads"));
+        this.rootPaths.add(pathJoin(root, "messages\\filtered_threads"));
+
+        int j = 0;
+        for (String path : this.rootPaths ) {
+            String[] filenames = listFileNames(path);
             
-            println("Loading: " + messageDataPath);
-            MessageUtil newMessageUtil = new MessageUtil(messageDataPath);
-            
-            this.messageUtils.add(newMessageUtil);
-            
-            i++;
-            
-            // Status
-            progress.setLoadingProgress(100.0 * i / filenames.length);
+            // create a new messageutil for each entry
+            int i = 0;
+            for (String filename : filenames) {
+                String[] pathSegments = {path, filename, "message.json"};
+                String messageDataPath = pathJoins(pathSegments);
+                
+                println("Loading: " + messageDataPath);
+                MessageUtil newMessageUtil = new MessageUtil(messageDataPath);
+                
+                this.messageUtils.add(newMessageUtil);
+                
+                i++;
+                
+                // Status
+                progress.setLoadingProgress(100.0 * (i / filenames.length));
+            }
+
+            j++;
+            progress.setLoadingLargeProgress(100.0 * (j / this.rootPaths.size()));
         }
         
         this.buildMessagesList();
