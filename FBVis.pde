@@ -58,12 +58,12 @@ void draw() {
     }
         
     //TODO: make this an option (run 3 times faster)
-    for (int i = 0; i < 1; i++) {
+    // for (int i = 0; i < 1; i++) {
         int di = gi % man.organizedMessagesList.size();
         MessageData current = man.organizedMessagesList.get(di);
         processCurrentmessageData(current);
         gi++;
-    }
+    // }
 
     background(0);
 
@@ -84,7 +84,7 @@ void draw() {
 
     // Draw current date
     // TODO: put this somewhere
-    MessageData current = man.organizedMessagesList.get(gi % man.organizedMessagesList.size());
+    // MessageData current = man.organizedMessagesList.get(gi % man.organizedMessagesList.size());
     String date = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm").format(new java.util.Date(current.timestamp));
     textSize(20); 
     fill(255);
@@ -153,10 +153,6 @@ void drawPayload() {
         
         if (payload.hasArrived()) {
             toBeRemoved.add(payload);
-
-            // Update the target
-            // TODO: rename to smoething better
-            payload.targetPerson.receive();
         }
     }
 

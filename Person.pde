@@ -79,7 +79,11 @@ class Person {
         this.isMaster = master;
     }
 
-    public void receive() {
+    public void refresh() {
         this.fresh = 1.0;
+    }
+
+    public boolean equals(String name) {
+        return this.name.equals(name);
     }
 }
