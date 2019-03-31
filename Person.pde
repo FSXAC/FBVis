@@ -40,27 +40,14 @@ class Person {
         
         // Draw circle node
         final float circleSize = 15;
-        strokeWeight(1);
+        strokeWeight(4);
+        stroke(50);
         fill(80 + f);
         ellipse(0, 0, circleSize, circleSize);
         textAlign(CENTER, CENTER);
-        noStroke();
         fill(255, f);
         textSize(10);
         text(this.name, circleSize, circleSize);
-
-        ///////////// Draw square node:
-        // noFill();
-        // strokeWeight(1);
-        // stroke(80 + f, 80 + f, 80);
-        // rect(-10, -10, 20, 20);
-
-        // textAlign(CENTER, CENTER);
-        // noStroke();
-        // fill(80);
-        // textSize(10);
-        // text(this.name, 0, 0);
-        /////// END OF draw square node
 
         popMatrix();
 

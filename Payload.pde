@@ -94,6 +94,7 @@ class PayloadLine extends Payload{
 
     public void draw() {
         stroke(255, 255, 0);
+        strokeWeight(1);
         line(this.x, this.y, this.targetPerson.x, this.targetPerson.y);
     }
 
@@ -131,10 +132,7 @@ class PayloadSegment extends Payload{
         stroke(this.f);
         strokeWeight(this.r / 2);
         line(this.x, this.y, this.prevX, this.prevY);
-        
-        // translate(this.x, this.y);
-        // fill(this.f);
-        // ellipse(0, 0, this.r, this.r);
+
         popMatrix();
 
         this.update();
@@ -157,62 +155,39 @@ class PayloadSegment extends Payload{
     }
 }
 
-class PayloadSegmentPhysics extends PayloadSegment {
-    final static float MAX_VEL = 5;
+enum payload_mode {
+    PAYLOAD_DOT,
+    PAYLOAD_LINE,
+    PAYLOAD_SEGMENT
+}
 
-    PVector velocity;
-    PVector acceleration;
+class PayloadFactory {
 
-    float mass;
+    ArrayList<Payload> payloads;
+    payload_mode individual_mode;
+    payload_mode group_mode;
 
-    int grace;
-
-    public PayloadSegmentPhysics(Person source, Person target) {
-        super(source, target);
-        this.mass = this.r * this.r;
-        
-        // Random magnitude * Random direction
-        float randomMag = 0.75;
-        float randomDir = random(0, TWO_PI);
-
-        this.velocity = new PVector(randomMag * cos(randomDir), randomMag * sin(randomDir));
-
-        this.grace = 12;
+    public PayloadFactory(ArrayList<Payload> payloads) {
+        this.payloads = payloads;
+        this.individual_mode = payload_mode.PAYLOAD_SEGMENT;
+        this.group_mode = payload_mode.PAYLOAD_LINE;
     }
 
-    @Override
-    public void update() {
-        this.prevX = this.x;
-        this.prevY = this.y;
+    public void makeIndividualPayload(Person sender, Person receiver) {
+        this.makePayload(this.individual_mode, sender, receiver);
+    }
 
-        this.x += this.velocity.x;
-        this.y += this.velocity.y;
+    public void makeGroupPayload(Person sender, Person receiver) {
+        this.makePayload(this.group_mode, sender, receiver);
+    }
 
-        if (this.grace != 0) {
-            this.grace--;
-            return;
+    private void makePayload(payload_mode mode, Person sender, Person receiver) {
+        if (mode == payload_mode.PAYLOAD_DOT) {
+            this.payloads.add(new PayloadDot(sender, receiver));
+        } else if (mode == payload_mode.PAYLOAD_LINE) {
+            this.payloads.add(new PayloadLine(sender, receiver));
+        } else if (mode == payload_mode.PAYLOAD_SEGMENT) {
+            this.payloads.add(new PayloadSegment(sender, receiver));
         }
-
-        final float dx = this.targetPerson.x - this.x;
-        final float dy = this.targetPerson.y - this.y;
-
-        // get acceleration
-        this.acceleration = new PVector(dx - this.velocity.x, dy - this.velocity.y);
-        this.acceleration.mult(1 / this.mass);
-        // this.acceleration.mult(1000 / (sq(dx) + sq(dy)));
-        // forceVec.normalize();
-        // forceVec.mult(10);
-        // forceVec.mult(100 / (sq(dx) + sq(dy)));
-        // forceVec.mult(1 / this.mass);
-
-        // this.velX += forceVec.x;
-        // this.velY += forceVec.y;
-        this.velocity.add(this.acceleration);
-        this.velocity.setMag(PayloadSegmentPhysics.MAX_VEL);
-
-        // if (sq(this.velX) + sq(this.velY) < sq(PayloadSegmentPhysics.MAX_VEL)) {
-        //     this.velX += forceVec.x;
-        //     this.velY += forceVec.y;
-        // }
     }
 }

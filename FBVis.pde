@@ -12,6 +12,7 @@ IntDict nameToPersonIndexMap;
 ArrayList<Person> persons;
 
 ArrayList<Payload> payloads;
+PayloadFactory payloadFactory;
 
 MessageManager man;
 boolean initialized = false;
@@ -32,12 +33,15 @@ void setup() {
 
     nameToPersonIndexMap = new IntDict();
     persons = new ArrayList<Person>();
-    payloads = new ArrayList<Payload>();
 
-    fx = new PostFX(this);
+    payloads = new ArrayList<Payload>();
+    payloadFactory = new PayloadFactory(payloads);
+
+    if (shaders)
+        fx = new PostFX(this);
 }
 
-int gi = 100000;
+int gi = 0;
 void draw() {
 
     // If uninitialized, then display the loading screen
@@ -72,36 +76,43 @@ void draw() {
     // Draw and update payload
     drawPayload();
 
-    fx.render()
-    .bloom(0.5, 20, 30)
-    .compose();
+    if (shaders) {
+        fx.render()
+        .bloom(0.5, 20, 30)
+        .compose();
+    } //<>//
 
     // Draw current date
     // TODO: put this somewhere
     MessageData current = man.organizedMessagesList.get(gi % man.organizedMessagesList.size());
     String date = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm").format(new java.util.Date(current.timestamp));
-    textSize(20); //<>//
+    textSize(20); 
     fill(255);
-    text(date, width/2, 20);
+    text(date, width/2, 20); //<>//
 }
 
 void processCurrentmessageData(MessageData current) {
     // check if sender and receiver in the persons map
     if (!nameToPersonIndexMap.hasKey(current.sender)) {
- //<>//
-        // Add to array and get the index and put it in the map
+ 
+        // Add to array and get the index and put it in the map //<>//
         addNewPerson(current.sender);
     }
     
     for (String receiver : current.receivers) {
-        if (!nameToPersonIndexMap.hasKey(receiver)) {
-            addNewPerson(receiver); //<>//
+        if (!nameToPersonIndexMap.hasKey(receiver)) { //<>//
+            addNewPerson(receiver); 
         }
 
         // For each receiving end, we make a payload
         Person senderPerson = persons.get(nameToPersonIndexMap.get(current.sender));
-        Person receivePerson = persons.get(nameToPersonIndexMap.get(receiver)); //<>// //<>// //<>//
-        addPayload(senderPerson, receivePerson);
+        Person receivePerson = persons.get(nameToPersonIndexMap.get(receiver));   
+    
+        if (current.receivers.size() <= 1) {
+            payloadFactory.makeIndividualPayload(senderPerson, receivePerson);
+        } else {
+            payloadFactory.makeGroupPayload(senderPerson, receivePerson);
+        }
     }
 }
 
@@ -121,19 +132,6 @@ void addNewPerson(String name) {
     persons.add(new_person);
 
     nameToPersonIndexMap.set(name, index);
-}
-
-final int PAYLOAD_SELECT = 2;
-void addPayload(Person sender, Person receiver) {
-    if (PAYLOAD_SELECT == 0) {
-        payloads.add(new PayloadDot(sender, receiver));
-    } else if (PAYLOAD_SELECT == 1) {
-        payloads.add(new PayloadLine(sender, receiver));
-    } else if (PAYLOAD_SELECT == 2) {
-        payloads.add(new PayloadSegment(sender, receiver));
-    } else if (PAYLOAD_SELECT == 3) {
-        payloads.add(new PayloadSegmentPhysics(sender, receiver));
-    }
 }
 
 void drawPersons() {
