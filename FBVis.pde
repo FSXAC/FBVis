@@ -28,7 +28,16 @@ void initData() {
 }
 
 void setup() {
+
+    //if (FULLSCREEN) {
+    //    fullScreen();
+    //} else {
+    //    size(1280, 960, P2D);
+    //}
+    
     size(1280, 960, P2D);
+    frame.setResizable(true);
+    
     thread("initData");
 
     nameToPersonIndexMap = new IntDict();
@@ -71,7 +80,7 @@ void draw() {
     // drawListMode(current);
 
     // Draw a grid of people
-    drawPersons();
+    drawPersons(); //<>//
 
     // Draw and update payload
     drawPayload();
@@ -79,19 +88,19 @@ void draw() {
     if (shaders) {
         fx.render()
         .bloom(0.5, 20, 30)
-        .compose();
+        .compose(); //<>//
     } //<>//
 
     // Draw current date
     // TODO: put this somewhere
     // MessageData current = man.organizedMessagesList.get(gi % man.organizedMessagesList.size());
     String date = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm").format(new java.util.Date(current.timestamp));
-    textSize(20); 
+    textSize(20);  //<>//
     fill(255);
     text(date, width/2, 20); //<>//
 }
 
-void processCurrentmessageData(MessageData current) {
+void processCurrentmessageData(MessageData current) { //<>//
     // check if sender and receiver in the persons map
     if (!nameToPersonIndexMap.hasKey(current.sender)) {
  

@@ -1,5 +1,6 @@
 // This is a graphic version of the message
 
+// Abstract payload
 class Payload {
     float x;
     float y;
@@ -127,10 +128,6 @@ class PayloadSegment extends Payload{
 
     float travel_lerp;
 
-    // TODO: cleanup
-    final color fillColor = color(173, 255, 173);
-    final color fillColor2 = color(255, 173, 173);
-
     boolean isMasterSending = false;
 
     public PayloadSegment(Person source, Person target) {
@@ -153,7 +150,7 @@ class PayloadSegment extends Payload{
     @Override
     public void draw() {
         pushMatrix();
-        stroke(this.isMasterSending ? this.fillColor : this.fillColor2, this.opacity);
+        stroke(this.isMasterSending ? SEND_COLOR : RECEIVE_COLOR, this.opacity);
         strokeWeight(this.radius);
         line(this.x, this.y, this.prevX, this.prevY);
         popMatrix();
@@ -181,14 +178,13 @@ class PayloadSegment extends Payload{
 class PayloadSegment2 extends PayloadSegment {
     public PayloadSegment2(Person source, Person target) {
         super(source, target);
-
-        this.travel_lerp = 0.5;
+        this.travel_lerp = 0.3;
     }
 
     @Override
     public void draw() {
         pushMatrix();
-        stroke(173, 173, 255, this.opacity);
+        stroke(GROUP_COLOR, this.opacity);
         strokeWeight(this.radius);
         line(this.x, this.y, this.prevX, this.prevY);
         popMatrix();
