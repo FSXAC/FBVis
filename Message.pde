@@ -10,7 +10,7 @@ class MessageManager {
         this.messageUtils = new ArrayList<MessageUtil>();
         this.rootPaths = new ArrayList<String>();
         
-        
+        // TODO: this should go in the config
         this.rootPaths.add(pathJoin(root, "messages\\inbox"));
         this.rootPaths.add(pathJoin(root, "messages\\archived_threads"));
         this.rootPaths.add(pathJoin(root, "messages\\filtered_threads"));
@@ -25,7 +25,7 @@ class MessageManager {
                 String[] pathSegments = {path, filename, "message.json"};
                 String messageDataPath = pathJoins(pathSegments);
                 
-                println("Loading: " + messageDataPath);
+                if (VERBOSE) println("Loading: " + messageDataPath);
                 MessageUtil newMessageUtil = new MessageUtil(messageDataPath);
                 
                 this.messageUtils.add(newMessageUtil);
@@ -45,11 +45,11 @@ class MessageManager {
     
     // Builds an timely ordered list
     public void buildMessagesList() {
-        println("Building ordered messages list, sorting through all messages by time");
+        if (VERBOSE) println("Building ordered messages list, sorting through all messages by time");
         for (int i = 0; i < this.messageUtils.size(); i++) {
 
             // Status
-            println("Sorting " + str(i) + "/" + str(messageUtils.size()) + " entries");
+            if (VERBOSE) println("Sorting " + str(i) + "/" + str(messageUtils.size()) + " entries");
             progress.setSortingProgress(100.0 * i / messageUtils.size());
 
             MessageUtil mu = this.messageUtils.get(i);
@@ -234,7 +234,9 @@ class MessageUtil {
             }
         }
 
-        println("Finished processsing file");
-        println("Total of " + str(this.messagesList.size()) + " messages");
+        if (VERBOSE) {
+            println("Finished processsing file");
+            println("Total of " + str(this.messagesList.size()) + " messages");
+        }
     }
 }

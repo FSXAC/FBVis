@@ -1,5 +1,10 @@
 // Main entry point of the program
 
+// TODO: re arrange the persons based on groups
+// TODO: filter out specific groups
+// TODO: broadcast effect for personal wall postings
+// TODO: stattrak send & receive metrics per person
+
 import java.util.Map;
 import ch.bildspur.postfx.builder.*;
 import ch.bildspur.postfx.pass.*;
@@ -46,7 +51,7 @@ void setup() {
     payloads = new ArrayList<Payload>();
     payloadFactory = new PayloadFactory(payloads);
 
-    if (shaders)
+    if (SHADERS)
         fx = new PostFX(this);
         
     smooth(4);
@@ -86,38 +91,43 @@ void draw() {
             }
 
             // println("currentTimestamp: " + string(currentTimestamp));
-            println("currentTimestamp: " + new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm").format(new java.util.Date(currentTimestamp)));
+            if (VERBOSE)
+                println("currentTimestamp: " + new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm").format(new java.util.Date(currentTimestamp)));
 
             startFlag = false;
         }
 
         // Get all the messages for the next time stamp
         long nextTimestamp = currentTimestamp + DELTA_TIMESTAMP;
-        int msgCount = 0;
-        long messageTimestamp;
 
-        do {
-            int di = gi % man.organizedMessagesList.size();
-            MessageData current = man.organizedMessagesList.get(di);
-            messageTimestamp = current.timestamp;
-
-            if (messageTimestamp > nextTimestamp) {
-                break;
-            }
-            // else if (nextTimestamp - messageTimestamp > AUTO_SKIP_TIMESTAMP){
-            //     print("Auto skipping from " + str(currentTimestamp));
-            //     print(" to " + str(messageTimestamp));
-            //     nextTimestamp = messageTimestamp;
-            //     break;
-            // }
-
-            processCurrentmessageData(current);
-            gi++;
-
-            msgCount++;
-
-        } while (messageTimestamp < nextTimestamp);
         
+
+        // int msgCount = 0;
+        // long messageTimestamp;
+        // do {
+        //     int di = gi % man.organizedMessagesList.size();
+        //     MessageData current = man.organizedMessagesList.get(di);
+        //     messageTimestamp = current.timestamp;
+
+        //     if (messageTimestamp > nextTimestamp) {
+        //         break;
+        //     }
+
+        //     processCurrentmessageData(current);
+        //     gi++;
+
+        //     msgCount++;
+
+        // } while (messageTimestamp < nextTimestamp);
+
+        // // Time skipping
+        // if (nextTimestamp - messageTimestamp > AUTO_SKIP_TIMESTAMP){
+        //     print("Auto skipping from " + str(currentTimestamp));
+        //     println(" to " + str(messageTimestamp));
+        //     nextTimestamp = messageTimestamp;
+        //     break;
+        // }
+
         currentTimestamp = nextTimestamp;
 
     } else {
@@ -138,10 +148,10 @@ void draw() {
     // Draw and update payload
     drawPayload(); 
 
-    if (shaders) {
+    if (SHADERS) {
         fx.render()
         .bloom(0.5, 20, 30)
-        .compose(); 
+        .compose();
     } 
 
     // Draw current date 
