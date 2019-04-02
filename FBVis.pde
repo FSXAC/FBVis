@@ -229,3 +229,11 @@ void drawListMode(MessageData current) {
     text(current.sender, 80, y);
     text(current.content, 200, y);
 }
+
+
+// Input handling
+void keyPressed() {
+    if (key == 'l') {
+        currentTimestamp += SKIP_TIMESTAMP;
+    }
+}

@@ -30,6 +30,8 @@ final long DELTA_TIMESTAMP = (long) (3600 * 24 * 1000 * DAYS_PER_SECOND / DESIRE
 final float AUTO_SKIP_SECONDS = 4;
 final long AUTO_SKIP_TIMESTAMP = (long) (DELTA_TIMESTAMP * AUTO_SKIP_SECONDS * DESIRED_FPS);
 
+final long SKIP_TIMESTAMP = (long) (DELTA_TIMESTAMP * DESIRED_FPS * 10);
+
 // If not using uniform time, then how much faster is the thing is visualized
 // Value of 2 means 2 messages are visualized per frame
 final int SPEED_SCALE = 1;
