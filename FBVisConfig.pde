@@ -35,3 +35,8 @@ final long SKIP_TIMESTAMP = (long) (DELTA_TIMESTAMP * DESIRED_FPS * 10);
 // If not using uniform time, then how much faster is the thing is visualized
 // Value of 2 means 2 messages are visualized per frame
 final int SPEED_SCALE = 1;
+
+final String[] IGNORE_LIST = {
+    "ecess20162017nobusinessallowed_xb_5gacbmw",
+    "catobsession_bgzdw1_z_w"
+};

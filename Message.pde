@@ -22,6 +22,20 @@ class MessageManager {
             // create a new messageutil for each entry
             int i = 0;
             for (String filename : filenames) {
+                
+                // If in the ignore list, then skip
+                boolean ignore = false;
+                for (String ignoredItem : IGNORE_LIST) {
+                    if (ignoredItem.equals(filename)) {
+                        ignore = true;
+                        break;
+                    }
+                }
+                if (ignore) {
+                    i++;
+                    continue;
+                }
+
                 String[] pathSegments = {path, filename, "message.json"};
                 String messageDataPath = pathJoins(pathSegments);
                 

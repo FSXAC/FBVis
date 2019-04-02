@@ -103,7 +103,6 @@ void draw() {
 
         long dt = messageTimestamp - nextTimestamp;
         if (dt > AUTO_SKIP_TIMESTAMP) {
-            println(str(dt), str(DELTA_TIMESTAMP));
             // Then we know that we need to skip
             nextTimestamp = messageTimestamp;
         } else if (dt > 0) {
