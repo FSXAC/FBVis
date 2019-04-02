@@ -39,8 +39,8 @@ void setup() {
 
     initialized = false;
 
-    // fullScreen(P2D);
-    size(1280, 960, P2D);
+    fullScreen(P2D);
+    // size(1280, 960, P2D);
     // frame.setResizable(true);
     
     thread("initData");
@@ -90,7 +90,6 @@ void draw() {
                 currentTimestamp = START_TIMESTAMP;
             }
 
-            // println("currentTimestamp: " + string(currentTimestamp));
             if (VERBOSE)
                 println("currentTimestamp: " + new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm").format(new java.util.Date(currentTimestamp)));
 
@@ -100,33 +99,26 @@ void draw() {
         // Get all the messages for the next time stamp
         long nextTimestamp = currentTimestamp + DELTA_TIMESTAMP;
 
-        
+        long messageTimestamp = man.organizedMessagesList.get(gi % man.organizedMessagesList.size()).timestamp;
 
-        // int msgCount = 0;
-        // long messageTimestamp;
-        // do {
-        //     int di = gi % man.organizedMessagesList.size();
-        //     MessageData current = man.organizedMessagesList.get(di);
-        //     messageTimestamp = current.timestamp;
+        long dt = messageTimestamp - nextTimestamp;
+        if (dt > AUTO_SKIP_TIMESTAMP) {
+            println(str(dt), str(DELTA_TIMESTAMP));
+            // Then we know that we need to skip
+            nextTimestamp = messageTimestamp;
+        } else if (dt > 0) {
+            // Don't do anything
+        } else {
+            while (messageTimestamp < nextTimestamp) {
+                int di = gi % man.organizedMessagesList.size();
+                MessageData current = man.organizedMessagesList.get(di);
 
-        //     if (messageTimestamp > nextTimestamp) {
-        //         break;
-        //     }
+                processCurrentmessageData(current);
+                gi++;
 
-        //     processCurrentmessageData(current);
-        //     gi++;
-
-        //     msgCount++;
-
-        // } while (messageTimestamp < nextTimestamp);
-
-        // // Time skipping
-        // if (nextTimestamp - messageTimestamp > AUTO_SKIP_TIMESTAMP){
-        //     print("Auto skipping from " + str(currentTimestamp));
-        //     println(" to " + str(messageTimestamp));
-        //     nextTimestamp = messageTimestamp;
-        //     break;
-        // }
+                messageTimestamp = current.timestamp;
+            }
+        }
 
         currentTimestamp = nextTimestamp;
 

@@ -23,12 +23,12 @@ final boolean USE_UNIFORM_TIME = true;
 final long START_TIMESTAMP = 0;
 
 // 1 day per frame
-final float DAYS_PER_SECOND = 10;
-final long DELTA_TIMESTAMP = int(3600 * 24 * 1000 * DAYS_PER_SECOND / DESIRED_FPS);
+final float DAYS_PER_SECOND = 1;
+final long DELTA_TIMESTAMP = (long) (3600 * 24 * 1000 * DAYS_PER_SECOND / DESIRED_FPS);
 
 // Number of seconds without anything to autoskip
 final float AUTO_SKIP_SECONDS = 4;
-final long AUTO_SKIP_TIMESTAMP = int(3600 * 24 * 100 * DAYS_PER_SECOND * AUTO_SKIP_SECONDS / DESIRED_FPS);
+final long AUTO_SKIP_TIMESTAMP = (long) (DELTA_TIMESTAMP * AUTO_SKIP_SECONDS * DESIRED_FPS);
 
 // If not using uniform time, then how much faster is the thing is visualized
 // Value of 2 means 2 messages are visualized per frame
