@@ -1,5 +1,6 @@
 // This is a graphic version of the message
 
+// Abstract payload
 class Payload {
     float x;
     float y;
@@ -9,6 +10,9 @@ class Payload {
         this.x = source.x;
         this.y = source.y;
         this.targetPerson = target;
+
+        // Sender gets refreshed
+        source.refresh();
     }
 
     public void draw() {
@@ -20,6 +24,15 @@ class Payload {
     }
 
     public boolean hasArrived() {
+        if (this.getArrived()) {
+            this.targetPerson.refresh();
+            return true;
+        }
+
+        return false;
+    }
+
+    protected boolean getArrived() {
         return true;
     }
 }
@@ -68,7 +81,7 @@ class PayloadDot extends Payload{
     }
 
     @Override
-    public boolean hasArrived() {
+    protected boolean getArrived() {
         final float dx = abs(this.targetPerson.x - this.x);
         final float dy = abs(this.targetPerson.y - this.y);
 
@@ -94,10 +107,11 @@ class PayloadLine extends Payload{
 
     public void draw() {
         stroke(255, 255, 0);
+        strokeWeight(1);
         line(this.x, this.y, this.targetPerson.x, this.targetPerson.y);
     }
 
-    public boolean hasArrived() {
+    protected boolean getArrived() {
         return life-- == 0;
     }
 }
@@ -109,8 +123,12 @@ class PayloadSegment extends Payload{
     float prevY;
     Person targetPerson;
 
-    float r;
-    float f;
+    final float radius = random(3, 8);
+    final float opacity = random(PAYLOAD_OPACITY_MIN, PAYLOAD_OPACITY_MAX);
+
+    float travel_lerp;
+
+    boolean isMasterSending = false;
 
     public PayloadSegment(Person source, Person target) {
         super(source, target);
@@ -118,23 +136,23 @@ class PayloadSegment extends Payload{
         this.y = source.y + random(-RANDOM_START_D, RANDOM_START_D);
         this.prevX = this.x;
         this.prevY = this.y;
+
+        this.travel_lerp = random(0.08, 0.12);
         
         this.targetPerson = target;
-
-        this.r = random(5, 12);
-        this.f = random(80, 200);
+        
+        // TODO: FIXME:
+        if (source.equals(MASTER_NAME)) {
+            this.isMasterSending = true;
+        }
     }
 
     @Override
     public void draw() {
         pushMatrix();
-        stroke(this.f);
-        strokeWeight(this.r / 2);
+        stroke(this.isMasterSending ? SEND_COLOR : RECEIVE_COLOR, this.opacity);
+        strokeWeight(this.radius);
         line(this.x, this.y, this.prevX, this.prevY);
-        
-        // translate(this.x, this.y);
-        // fill(this.f);
-        // ellipse(0, 0, this.r, this.r);
         popMatrix();
 
         this.update();
@@ -144,15 +162,50 @@ class PayloadSegment extends Payload{
     public void update() {
         this.prevX = this.x;
         this.prevY = this.y;
-        this.x = lerp(this.x, this.targetPerson.x, PAYLOAD_LERP);
-        this.y = lerp(this.y, this.targetPerson.y, PAYLOAD_LERP);
+        this.x = lerp(this.x, this.targetPerson.x, this.travel_lerp);
+        this.y = lerp(this.y, this.targetPerson.y, this.travel_lerp);
     }
 
     @Override
-    public boolean hasArrived() {
+    protected boolean getArrived() {
         final float dx = abs(this.targetPerson.x - this.x);
         final float dy = abs(this.targetPerson.y - this.y);
 
         return dx < ARRIVE_THRESHOLD_PX && dy < ARRIVE_THRESHOLD_PX;
+    }
+}
+
+class PayloadSegment2 extends PayloadSegment {
+    public PayloadSegment2(Person source, Person target) {
+        super(source, target);
+        this.travel_lerp = random(0.28, 0.32);
+    }
+
+    @Override
+    public void draw() {
+        pushMatrix();
+        stroke(GROUP_COLOR, this.opacity);
+        strokeWeight(this.radius);
+        line(this.x, this.y, this.prevX, this.prevY);
+        popMatrix();
+
+        this.update();
+    }
+}
+
+class PayloadFactory {
+
+    ArrayList<Payload> payloads;
+
+    public PayloadFactory(ArrayList<Payload> payloads) {
+        this.payloads = payloads;
+    }
+
+    public void makeIndividualPayload(Person sender, Person receiver) {
+        this.payloads.add(new PayloadSegment(sender, receiver));
+    }
+
+    public void makeGroupPayload(Person sender, Person receiver) {
+        this.payloads.add(new PayloadSegment2(sender, receiver));
     }
 }

@@ -1,5 +1,10 @@
 // Main entry point of the program
 
+// TODO: re arrange the persons based on groups
+// TODO: filter out specific groups
+// TODO: broadcast effect for personal wall postings
+// TODO: stattrak send & receive metrics per person
+
 import java.util.Map;
 import ch.bildspur.postfx.builder.*;
 import ch.bildspur.postfx.pass.*;
@@ -12,12 +17,30 @@ IntDict nameToPersonIndexMap;
 ArrayList<Person> persons;
 
 ArrayList<Payload> payloads;
+PayloadFactory payloadFactory;
 
 MessageManager man;
-boolean initialized = false;
+boolean initialized;
 
 // For display loading bars on splashscreen
 Progress progress;
+
+// timing
+long currentTimestamp;
+
+Timeline timeline;
+
+// Font
+PFont font;
+PFont monospaceFont;
+
+void initFont() {
+    font = createFont("Suisse Int'l Medium", 32);
+    monospaceFont = createFont("Fira Code", 32);
+    
+    String[] fontList = PFont.list();
+    printArray(fontList);
+}
 
 void initData() {
     progress = new Progress();
@@ -27,17 +50,37 @@ void initData() {
 }
 
 void setup() {
+
+    initialized = false;
+
+    // fullScreen(P2D);
     size(1280, 960, P2D);
+    frame.setResizable(true);
+
+    initFont();
+    
     thread("initData");
 
     nameToPersonIndexMap = new IntDict();
     persons = new ArrayList<Person>();
-    payloads = new ArrayList<Payload>();
 
-    fx = new PostFX(this);
+    payloads = new ArrayList<Payload>();
+    payloadFactory = new PayloadFactory(payloads);
+
+    timeline = new Timeline(50, height - 100, width - 100, 50);
+
+    if (SHADERS)
+        fx = new PostFX(this);
+        fx.preload(RGBSplitPass.class);
+        fx.preload(BloomPass.class);
+        
+    smooth(4);
+    frameRate(DESIRED_FPS);
 }
 
-int gi = 300000;
+int gi = 0;
+boolean startFlag = true;
+
 void draw() {
 
     // If uninitialized, then display the loading screen
@@ -47,61 +90,120 @@ void draw() {
         noStroke();
         text("NOW LOADING...", 50, 50);
         
+        stroke(50);
+        line(50, 70, 50 + 300, 70);
+        line(50, 90, 50 + 300, 90);
+        line(50, 110, 50 + 300, 110);
         stroke(255);
-        line(50, 70, 50 + 3 * progress.getLoadingProgress(), 70);
-        line(50, 90, 50 + 3 * progress.getSortingProgress(), 90);
+        line(50, 70, 50 + 3 * progress.getLoadingLargeProgress(), 70);
+        line(50, 90, 50 + 3 * progress.getLoadingProgress(), 90);
+        line(50, 110, 50 + 3 * progress.getSortingProgress(), 110);
         return;
     }
-        
-    //TODO: make this an option (run 3 times faster)
-    for (int i = 0; i < 3; i++) {
-        int di = gi % man.organizedMessagesList.size();
-        MessageData current = man.organizedMessagesList.get(di);
-        processCurrentmessageData(current);
-        gi++;
+
+    textFont(font);
+
+    if (USE_UNIFORM_TIME) {
+        if (startFlag) {
+            long firstTimeStamp = man.organizedMessagesList.get(gi).timestamp;
+            if (firstTimeStamp > START_TIMESTAMP) {
+                currentTimestamp = firstTimeStamp;
+            } else {
+                currentTimestamp = START_TIMESTAMP;
+            }
+
+            if (VERBOSE)
+                println("currentTimestamp: " + new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm").format(new java.util.Date(currentTimestamp)));
+
+            startFlag = false;
+        }
+
+        // Get all the messages for the next time stamp
+        long nextTimestamp = currentTimestamp + DELTA_TIMESTAMP;
+
+        long messageTimestamp = man.organizedMessagesList.get(gi % man.organizedMessagesList.size()).timestamp;
+
+        long dt = messageTimestamp - nextTimestamp;
+        if (dt > AUTO_SKIP_TIMESTAMP) {
+            // Then we know that we need to skip
+            nextTimestamp = messageTimestamp;
+        } else if (dt > 0) {
+            // Don't do anything
+        } else {
+            while (messageTimestamp < nextTimestamp) {
+                int di = gi % man.organizedMessagesList.size();
+                MessageData current = man.organizedMessagesList.get(di);
+
+                processCurrentmessageData(current);
+                gi++;
+
+                messageTimestamp = current.timestamp;
+            }
+        }
+
+        currentTimestamp = nextTimestamp;
+
+    } else {
+        for (int i = 0; i < SPEED_SCALE; i++) {
+            int di = gi % man.organizedMessagesList.size();
+            MessageData current = man.organizedMessagesList.get(di);
+            processCurrentmessageData(current);
+            gi++;
+            currentTimestamp = current.timestamp;
+        }
     }
 
     background(0);
 
-    // Display the list of messages in the back
-    // drawListMode(current);
-
     // Draw a grid of people
-    drawPersons();
+    drawPersons(); 
 
     // Draw and update payload
+    blendMode(SCREEN);
     drawPayload();
+    blendMode(BLEND);
 
-    fx.render()
-    .bloom(0.5, 20, 30)
-    .compose();
+    if (SHADERS) {
+        fx.render()
+        .bloom(0.5, 20, 30)
+        .rgbSplit(constrain(payloads.size(), 0, 500))
+        .compose();
+    } 
 
     // Draw current date
-    // TODO: put this somewhere
-    MessageData current = man.organizedMessagesList.get(gi % man.organizedMessagesList.size());
-    String date = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm").format(new java.util.Date(current.timestamp));
-    textSize(20); //<>//
+    textFont(monospaceFont);
+    String date = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm").format(new java.util.Date(currentTimestamp));
+    textSize(20);
     fill(255);
     text(date, width/2, 20);
-}
 
-void processCurrentmessageData(MessageData current) {
+    timeline.setPercentage(((float) gi % man.organizedMessagesList.size()) / man.organizedMessagesList.size());
+    timeline.draw();
+    timeline.handleMouseInput();
+} 
+
+void processCurrentmessageData(MessageData current) { 
     // check if sender and receiver in the persons map
     if (!nameToPersonIndexMap.hasKey(current.sender)) {
- //<>//
-        // Add to array and get the index and put it in the map
+  
+        // Add to array and get the index and put it in the map 
         addNewPerson(current.sender);
     }
     
     for (String receiver : current.receivers) {
         if (!nameToPersonIndexMap.hasKey(receiver)) {
-            addNewPerson(receiver); //<>//
+            addNewPerson(receiver); 
         }
 
         // For each receiving end, we make a payload
         Person senderPerson = persons.get(nameToPersonIndexMap.get(current.sender));
-        Person receivePerson = persons.get(nameToPersonIndexMap.get(receiver)); //<>// //<>// //<>//
-        addPayload(senderPerson, receivePerson);
+        Person receivePerson = persons.get(nameToPersonIndexMap.get(receiver));   
+    
+        if (current.receivers.size() <= 1) {
+            payloadFactory.makeIndividualPayload(senderPerson, receivePerson);
+        } else {
+            payloadFactory.makeGroupPayload(senderPerson, receivePerson);
+        }
     }
 }
 
@@ -110,28 +212,11 @@ void addNewPerson(String name) {
 
     Person new_person = new Person(name);
     final PVector new_position = spiral(index, width/2, height/2);
-    // TODO: make it an option to start from either middle or outside
-    // - Middle: don't change anything
-    // - Outside:
-    // float t = random(0, TWO_PI);
-    // new_person.setPosition(width * cos(t), width * sin(t));
-    // - Upper center
-    // new_person.setPosition(width/2, 0);
+
     new_person.setTargetPosition(new_position.x, new_position.y);
     persons.add(new_person);
 
     nameToPersonIndexMap.set(name, index);
-}
-
-final int PAYLOAD_SELECT = 2;
-void addPayload(Person sender, Person receiver) {
-    if (PAYLOAD_SELECT == 0) {
-        payloads.add(new PayloadDot(sender, receiver));
-    } else if (PAYLOAD_SELECT == 1) {
-        payloads.add(new PayloadLine(sender, receiver));
-    } else if (PAYLOAD_SELECT == 2) {
-        payloads.add(new PayloadSegment(sender, receiver));
-    }
 }
 
 void drawPersons() {
@@ -153,10 +238,6 @@ void drawPayload() {
         
         if (payload.hasArrived()) {
             toBeRemoved.add(payload);
-
-            // Update the target
-            // TODO: rename to smoething better
-            payload.targetPerson.receive();
         }
     }
 
@@ -166,10 +247,8 @@ void drawPayload() {
     }
 }
 
-void drawListMode(MessageData current) {
     // Draw by listing all the messages one per frame
-    // fill(0, 20);
-    // rect(0, 0, width, height);
+void drawListMode(MessageData current) {
     float y = (frameCount % 40) * height / 40;
     fill(50);
     String date = new java.text.SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date(current.timestamp));
@@ -178,4 +257,12 @@ void drawListMode(MessageData current) {
     text(date, 10, y);
     text(current.sender, 80, y);
     text(current.content, 200, y);
+}
+
+
+// Input handling
+void keyPressed() {
+    if (key == 'l') {
+        currentTimestamp += SKIP_TIMESTAMP;
+    }
 }

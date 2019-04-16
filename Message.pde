@@ -3,31 +3,55 @@ class MessageManager {
     ArrayList<MessageData> organizedMessagesList;
     ArrayList<MessageUtil> messageUtils;
     String rootPath;
+    ArrayList<String> rootPaths;
 
     public MessageManager(String root) {
         this.organizedMessagesList = new ArrayList<MessageData>();
         this.messageUtils = new ArrayList<MessageUtil>();
+        this.rootPaths = new ArrayList<String>();
         
-        
-        this.rootPath = pathJoin(root, "messages\\inbox");
-        String[] filenames = listFileNames(this.rootPath);
-        //printArray(filenames);
-        
-        // create a new messageutil for each entry
-        int i = 0;
-        for (String filename : filenames) {
-            String[] pathSegments = {this.rootPath, filename, "message.json"};
-            String messageDataPath = pathJoins(pathSegments);
+        // TODO: this should go in the config
+        this.rootPaths.add(pathJoin(root, "messages\\inbox"));
+        this.rootPaths.add(pathJoin(root, "messages\\archived_threads"));
+        this.rootPaths.add(pathJoin(root, "messages\\filtered_threads"));
+
+        int j = 0;
+        for (String path : this.rootPaths ) {
+            String[] filenames = listFileNames(path);
             
-            println("Loading: " + messageDataPath);
-            MessageUtil newMessageUtil = new MessageUtil(messageDataPath);
-            
-            this.messageUtils.add(newMessageUtil);
-            
-            i++;
-            
-            // Status
-            progress.setLoadingProgress(100.0 * i / filenames.length);
+            // create a new messageutil for each entry
+            int i = 0;
+            for (String filename : filenames) {
+                
+                // If in the ignore list, then skip
+                boolean ignore = false;
+                for (String ignoredItem : IGNORE_LIST) {
+                    if (ignoredItem.equals(filename)) {
+                        ignore = true;
+                        break;
+                    }
+                }
+                if (ignore) {
+                    i++;
+                    continue;
+                }
+
+                String[] pathSegments = {path, filename, "message.json"};
+                String messageDataPath = pathJoins(pathSegments);
+                
+                if (VERBOSE) println("Loading: " + messageDataPath);
+                MessageUtil newMessageUtil = new MessageUtil(messageDataPath);
+                
+                this.messageUtils.add(newMessageUtil);
+                
+                i++;
+                
+                // Status
+                progress.setLoadingProgress(100.0 * (i / filenames.length));
+            }
+
+            j++;
+            progress.setLoadingLargeProgress(100.0 * (j / this.rootPaths.size()));
         }
         
         this.buildMessagesList();
@@ -35,11 +59,11 @@ class MessageManager {
     
     // Builds an timely ordered list
     public void buildMessagesList() {
-        println("Building ordered messages list, sorting through all messages by time");
+        if (VERBOSE) println("Building ordered messages list, sorting through all messages by time");
         for (int i = 0; i < this.messageUtils.size(); i++) {
 
             // Status
-            println("Sorting " + str(i) + "/" + str(messageUtils.size()) + " entries");
+            if (VERBOSE) println("Sorting " + str(i) + "/" + str(messageUtils.size()) + " entries");
             progress.setSortingProgress(100.0 * i / messageUtils.size());
 
             MessageUtil mu = this.messageUtils.get(i);
@@ -224,7 +248,9 @@ class MessageUtil {
             }
         }
 
-        println("Finished processsing file");
-        println("Total of " + str(this.messagesList.size()) + " messages");
+        if (VERBOSE) {
+            println("Finished processsing file");
+            println("Total of " + str(this.messagesList.size()) + " messages");
+        }
     }
 }
