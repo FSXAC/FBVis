@@ -5,6 +5,8 @@ final String DATA_ROOT_DIR = "F:\\OneDrive\\Documents\\Facebook Data 2019";
 
 final String FACEBOOK_USER_NAME = "Facebook User";
 
+final String MASTER_NAME = "Muchen He";
+
 final boolean VERBOSE = false;
 
 final boolean SHADERS = true;

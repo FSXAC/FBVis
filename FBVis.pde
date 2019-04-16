@@ -71,6 +71,8 @@ void setup() {
 
     if (SHADERS)
         fx = new PostFX(this);
+        fx.preload(RGBSplitPass.class);
+        fx.preload(BloomPass.class);
         
     smooth(4);
     frameRate(DESIRED_FPS);
@@ -100,6 +102,8 @@ void draw() {
     }
 
     textFont(font);
+
+    int delta = 0;
     if (USE_UNIFORM_TIME) {
         if (startFlag) {
             long firstTimeStamp = man.organizedMessagesList.get(gi).timestamp;
@@ -133,6 +137,7 @@ void draw() {
 
                 processCurrentmessageData(current);
                 gi++;
+                delta++;
 
                 messageTimestamp = current.timestamp;
             }
@@ -147,6 +152,7 @@ void draw() {
             processCurrentmessageData(current);
             gi++;
             currentTimestamp = current.timestamp;
+            delta++;
         }
     }
 
@@ -161,6 +167,7 @@ void draw() {
     if (SHADERS) {
         fx.render()
         .bloom(0.5, 20, 30)
+        .rgbSplit(delta)
         .compose();
     } 
 
