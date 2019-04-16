@@ -157,9 +157,7 @@ void draw() {
 
     timeline.setPercentage(((float) gi % man.organizedMessagesList.size()) / man.organizedMessagesList.size());
     timeline.draw();
-    if (mousePressed) {
-        timeline.handleMousePressed();
-    }
+    timeline.handleMouseInput();
 } 
 
 void processCurrentmessageData(MessageData current) { 
