@@ -28,6 +28,8 @@ Progress progress;
 // timing
 long currentTimestamp;
 
+Timeline timeline;
+
 void initData() {
     progress = new Progress();
     man = new MessageManager(DATA_ROOT_DIR);
@@ -50,6 +52,8 @@ void setup() {
 
     payloads = new ArrayList<Payload>();
     payloadFactory = new PayloadFactory(payloads);
+
+    timeline = new Timeline(50, height - 100, width - 100, 50);
 
     if (SHADERS)
         fx = new PostFX(this);
@@ -149,7 +153,13 @@ void draw() {
     String date = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm").format(new java.util.Date(currentTimestamp));
     textSize(20);
     fill(255);
-    text(date, width/2, 20); 
+    text(date, width/2, 20);
+
+    timeline.setPercentage(((float) gi % man.organizedMessagesList.size()) / man.organizedMessagesList.size());
+    timeline.draw();
+    if (mousePressed) {
+        timeline.handleMousePressed();
+    }
 } 
 
 void processCurrentmessageData(MessageData current) { 
@@ -161,7 +171,7 @@ void processCurrentmessageData(MessageData current) {
     }
     
     for (String receiver : current.receivers) {
-        if (!nameToPersonIndexMap.hasKey(receiver)) { 
+        if (!nameToPersonIndexMap.hasKey(receiver)) {
             addNewPerson(receiver); 
         }
 
