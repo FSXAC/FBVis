@@ -27,7 +27,7 @@ class Timeline {
         rect(this.x, this.y, this.w, this.h);
         
         final float percentageX = map(this.percentage, 0, 1, this.x, this.x + this.w);
-        strokeWeight(1);
+        strokeWeight(3);
         line(percentageX, this.y, percentageX, this.y + this.h);
     }
 

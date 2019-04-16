@@ -30,6 +30,18 @@ long currentTimestamp;
 
 Timeline timeline;
 
+// Font
+PFont font;
+PFont monospaceFont;
+
+void initFont() {
+    font = createFont("Suisse Int'l Medium", 32);
+    monospaceFont = createFont("Fira Code", 32);
+    
+    String[] fontList = PFont.list();
+    printArray(fontList);
+}
+
 void initData() {
     progress = new Progress();
     man = new MessageManager(DATA_ROOT_DIR);
@@ -41,9 +53,11 @@ void setup() {
 
     initialized = false;
 
-    fullScreen(P2D);
-    // size(1280, 960, P2D);
-    // frame.setResizable(true);
+    // fullScreen(P2D);
+    size(1280, 960, P2D);
+    frame.setResizable(true);
+
+    initFont();
     
     thread("initData");
 
@@ -85,6 +99,7 @@ void draw() {
         return;
     }
 
+    textFont(font);
     if (USE_UNIFORM_TIME) {
         if (startFlag) {
             long firstTimeStamp = man.organizedMessagesList.get(gi).timestamp;
@@ -149,7 +164,8 @@ void draw() {
         .compose();
     } 
 
-    // Draw current date 
+    // Draw current date
+    textFont(monospaceFont);
     String date = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm").format(new java.util.Date(currentTimestamp));
     textSize(20);
     fill(255);

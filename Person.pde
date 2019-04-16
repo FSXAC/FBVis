@@ -47,10 +47,9 @@ class Person {
         textAlign(CENTER, CENTER);
         fill(255, f);
         textSize(10);
-        text(this.name, circleSize, circleSize);
-
+        text(this.name, 0, circleSize);
+        
         popMatrix();
-
 
         if (this.autoUpdate) {
             this.update();
