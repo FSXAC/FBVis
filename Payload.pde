@@ -124,7 +124,7 @@ class PayloadSegment extends Payload{
     Person targetPerson;
 
     final float radius = random(3, 8);
-    final float opacity = random(150, 250);
+    final float opacity = random(PAYLOAD_OPACITY_MIN, PAYLOAD_OPACITY_MAX);
 
     float travel_lerp;
 
@@ -142,7 +142,7 @@ class PayloadSegment extends Payload{
         this.targetPerson = target;
         
         // TODO: FIXME:
-        if (source.equals("Muchen He")) {
+        if (source.equals(MASTER_NAME)) {
             this.isMasterSending = true;
         }
     }

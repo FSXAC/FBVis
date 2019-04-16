@@ -103,7 +103,6 @@ void draw() {
 
     textFont(font);
 
-    int delta = 0;
     if (USE_UNIFORM_TIME) {
         if (startFlag) {
             long firstTimeStamp = man.organizedMessagesList.get(gi).timestamp;
@@ -137,7 +136,6 @@ void draw() {
 
                 processCurrentmessageData(current);
                 gi++;
-                delta++;
 
                 messageTimestamp = current.timestamp;
             }
@@ -152,7 +150,6 @@ void draw() {
             processCurrentmessageData(current);
             gi++;
             currentTimestamp = current.timestamp;
-            delta++;
         }
     }
 
@@ -162,12 +159,14 @@ void draw() {
     drawPersons(); 
 
     // Draw and update payload
-    drawPayload(); 
+    blendMode(SCREEN);
+    drawPayload();
+    blendMode(BLEND);
 
     if (SHADERS) {
         fx.render()
         .bloom(0.5, 20, 30)
-        .rgbSplit(delta)
+        .rgbSplit(constrain(payloads.size(), 0, 500))
         .compose();
     } 
 

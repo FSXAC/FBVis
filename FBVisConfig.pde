@@ -11,6 +11,8 @@ final boolean VERBOSE = false;
 
 final boolean SHADERS = true;
 
+final float PAYLOAD_OPACITY_MIN = 20;
+final float PAYLOAD_OPACITY_MAX = 50;
 final color SEND_COLOR = color(150, 255, 150);
 final color RECEIVE_COLOR = color(255, 150, 150);
 final color GROUP_COLOR = color(80, 150, 255);
