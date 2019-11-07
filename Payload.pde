@@ -137,7 +137,7 @@ class PayloadSegment extends Payload{
         this.prevX = this.x;
         this.prevY = this.y;
 
-        this.travel_lerp = random(0.08, 0.12);
+        this.travel_lerp = random(PAYLOAD_SEGMENT_LERP_MIN, PAYLOAD_SEGMENT_LERP_MAX);
         
         this.targetPerson = target;
         
@@ -163,7 +163,7 @@ class PayloadSegment extends Payload{
         this.prevX = this.x;
         this.prevY = this.y;
         this.x = lerp(this.x, this.targetPerson.x, this.travel_lerp);
-        this.y = lerp(this.y, this.targetPerson.y, this.travel_lerp);
+        this.y = lerp(this.y, this.targetPerson.y, this.travel_lerp * 0.5);
     }
 
     @Override
@@ -178,7 +178,7 @@ class PayloadSegment extends Payload{
 class PayloadSegment2 extends PayloadSegment {
     public PayloadSegment2(Person source, Person target) {
         super(source, target);
-        this.travel_lerp = random(0.28, 0.32);
+        this.travel_lerp = random(PAYLOAD_SEGMENT_GROUP_LERP_MIN, PAYLOAD_SEGMENT_GROUP_LERP_MAX);
     }
 
     @Override

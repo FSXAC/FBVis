@@ -1,7 +1,7 @@
 // Configuration
 
 final String PATH_SEPARATOR = "\\";
-final String DATA_ROOT_DIR = "F:\\OneDrive\\Documents\\Facebook Data 2019";
+final String DATA_ROOT_DIR = "C:\\Users\\mansu\\OneDrive\\Documents\\Facebook Data 2019";
 
 final String FACEBOOK_USER_NAME = "Facebook User";
 
@@ -13,6 +13,10 @@ final boolean SHADERS = true;
 
 final float PAYLOAD_OPACITY_MIN = 20;
 final float PAYLOAD_OPACITY_MAX = 50;
+final float PAYLOAD_SEGMENT_LERP_MIN = 0.10;
+final float PAYLOAD_SEGMENT_LERP_MAX = 0.15;
+final float PAYLOAD_SEGMENT_GROUP_LERP_MIN = 0.28;
+final float PAYLOAD_SEGMENT_GROUP_LERP_MAX = 0.32;
 final color SEND_COLOR = color(150, 255, 150);
 final color RECEIVE_COLOR = color(255, 150, 150);
 final color GROUP_COLOR = color(80, 150, 255);
