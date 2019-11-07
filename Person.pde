@@ -41,6 +41,7 @@ class Person {
         pushMatrix();
         translate(this.x, this.y);
 
+        // Todo: master user should be a separate class to avoid redundant check
         if (this.isMaster) {
             strokeWeight(4);
             stroke(50);

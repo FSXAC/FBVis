@@ -22,7 +22,7 @@ class Timeline {
 
     public void draw() {
         noFill();
-        stroke(255, this.hovered ? 255 : 50);
+        stroke(255, this.hovered ? 255 : 10);
         strokeWeight(1);
         rect(this.x, this.y, this.w, this.h);
         

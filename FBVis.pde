@@ -166,7 +166,7 @@ void draw() {
     if (SHADERS) {
         fx.render()
         .bloom(0.5, 20, 30)
-        .rgbSplit(constrain(payloads.size(), 0, 500))
+        .rgbSplit(constrain(payloads.size(), 0, 300))
         .compose();
     } 
 
