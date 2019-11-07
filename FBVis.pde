@@ -53,8 +53,8 @@ void setup() {
 
     initialized = false;
 
-     fullScreen(P2D);
-    //size(1280, 960, P2D);
+     //fullScreen(P2D);
+    size(1280, 960, P2D);
     frame.setResizable(true);
 
     initFont();

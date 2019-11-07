@@ -28,6 +28,8 @@ class Person {
         
         if (name.equals(MASTER_NAME)) {
             this.isMaster = true;
+        } else if (ANNON_NAMES) {
+            this.name = ANNON_NAME_DEFAULT;
         }
     }
     

@@ -22,6 +22,8 @@ final color RECEIVE_COLOR = color(255, 150, 150);
 final color GROUP_COLOR = color(80, 150, 255);
 
 final boolean FULLSCREEN = false;
+final boolean ANNON_NAMES = true;
+final String ANNON_NAME_DEFAULT = "Friend";
 
 final float DESIRED_FPS = 60;
 
