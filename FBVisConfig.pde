@@ -11,18 +11,23 @@ final boolean VERBOSE = false;
 
 final boolean SHADERS = true;
 
-final float PAYLOAD_OPACITY_MIN = 20;
-final float PAYLOAD_OPACITY_MAX = 50;
-final float PAYLOAD_SEGMENT_LERP_MIN = 0.10;
-final float PAYLOAD_SEGMENT_LERP_MAX = 0.15;
-final float PAYLOAD_SEGMENT_GROUP_LERP_MIN = 0.28;
-final float PAYLOAD_SEGMENT_GROUP_LERP_MAX = 0.32;
-final color SEND_COLOR = color(150, 255, 150);
-final color RECEIVE_COLOR = color(255, 150, 150);
-final color GROUP_COLOR = color(80, 150, 255);
+final float PAYLOAD_OPACITY_MIN = 50;
+final float PAYLOAD_OPACITY_MAX = 60;
+final float PAYLOAD_SEGMENT_LERP_MIN = 0.3;
+final float PAYLOAD_SEGMENT_LERP_MAX = 0.5;
+final float PAYLOAD_SEGMENT_GROUP_LERP_MIN = 0.5;
+final float PAYLOAD_SEGMENT_GROUP_LERP_MAX = 0.7;
+//final color SEND_COLOR = color(150, 255, 150);
+//final color RECEIVE_COLOR = color(255, 150, 150);
+//final color GROUP_COLOR = color(80, 150, 255);
+final color SEND_COLOR = color(42, 153, 42);
+final color RECEIVE_COLOR = color(153, 62, 62);
+final color GROUP_COLOR = color(20, 41, 83);
+
+final boolean USE_MESSAGE_CONTENT_AS_SIZE = true;
 
 final boolean FULLSCREEN = false;
-final boolean ANNON_NAMES = true;
+final boolean ANNON_NAMES = false;
 final String ANNON_NAME_DEFAULT = "Friend";
 
 final float DESIRED_FPS = 60;

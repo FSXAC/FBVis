@@ -123,21 +123,27 @@ class PayloadSegment extends Payload{
     float prevY;
     Person targetPerson;
 
-    final float radius = random(3, 8);
-    final float opacity = random(PAYLOAD_OPACITY_MIN, PAYLOAD_OPACITY_MAX);
+    float radius = random(3, 8);
+    float opacity = random(PAYLOAD_OPACITY_MIN, PAYLOAD_OPACITY_MAX);
 
     float travel_lerp;
+    float travel_y_lerp_mult;
 
     boolean isMasterSending = false;
 
-    public PayloadSegment(Person source, Person target) {
+    public PayloadSegment(Person source, Person target, float size) {
         super(source, target);
         this.x = source.x + random(-RANDOM_START_D, RANDOM_START_D);
         this.y = source.y + random(-RANDOM_START_D, RANDOM_START_D);
         this.prevX = this.x;
         this.prevY = this.y;
+        
+        if (USE_MESSAGE_CONTENT_AS_SIZE) {
+            this.radius = size;
+        }
 
         this.travel_lerp = random(PAYLOAD_SEGMENT_LERP_MIN, PAYLOAD_SEGMENT_LERP_MAX);
+        this.travel_y_lerp_mult = random(0.5, 0.8);
         
         this.targetPerson = target;
         
@@ -163,7 +169,7 @@ class PayloadSegment extends Payload{
         this.prevX = this.x;
         this.prevY = this.y;
         this.x = lerp(this.x, this.targetPerson.x, this.travel_lerp);
-        this.y = lerp(this.y, this.targetPerson.y, this.travel_lerp * 0.5);
+        this.y = lerp(this.y, this.targetPerson.y, this.travel_lerp * travel_y_lerp_mult);
     }
 
     @Override
@@ -176,8 +182,8 @@ class PayloadSegment extends Payload{
 }
 
 class PayloadSegment2 extends PayloadSegment {
-    public PayloadSegment2(Person source, Person target) {
-        super(source, target);
+    public PayloadSegment2(Person source, Person target, float size) {
+        super(source, target, size);
         this.travel_lerp = random(PAYLOAD_SEGMENT_GROUP_LERP_MIN, PAYLOAD_SEGMENT_GROUP_LERP_MAX);
     }
 
@@ -201,11 +207,11 @@ class PayloadFactory {
         this.payloads = payloads;
     }
 
-    public void makeIndividualPayload(Person sender, Person receiver) {
-        this.payloads.add(new PayloadSegment(sender, receiver));
+    public void makeIndividualPayload(Person sender, Person receiver, float size) {
+        this.payloads.add(new PayloadSegment(sender, receiver, size));
     }
 
-    public void makeGroupPayload(Person sender, Person receiver) {
-        this.payloads.add(new PayloadSegment2(sender, receiver));
+    public void makeGroupPayload(Person sender, Person receiver, float size) {
+        this.payloads.add(new PayloadSegment2(sender, receiver, size));
     }
 }

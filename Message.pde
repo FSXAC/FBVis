@@ -120,6 +120,7 @@ class MessageData{
     String sender;
     ArrayList<String> receivers;
     String content;
+    float contentSizeSqrt;
 
     public MessageData(long timestamp, String sender, ArrayList<String> receivers, String content) {
         super();
@@ -127,6 +128,7 @@ class MessageData{
         this.sender = sender;
         this.receivers = receivers;
         this.content = content;
+        this.contentSizeSqrt = sqrt(this.content.length());
     }
 }
 

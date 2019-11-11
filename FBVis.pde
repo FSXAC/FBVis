@@ -153,8 +153,11 @@ void draw() {
         }
     }
 
-    background(0);
-
+    //background(0);
+    fill(0, 100);
+    noStroke();
+    rect(0, 0, width, height);
+    
     // Draw a grid of people
     drawPersons(); 
 
@@ -165,8 +168,8 @@ void draw() {
 
     if (SHADERS) {
         fx.render()
-        .bloom(0.5, 20, 30)
-        .rgbSplit(constrain(payloads.size(), 0, 300))
+        .bloom(0.8, 10, 30)
+        //.rgbSplit(constrain(payloads.size(), 0, 300))
         .compose();
     } 
 
@@ -200,9 +203,9 @@ void processCurrentmessageData(MessageData current) {
         Person receivePerson = persons.get(nameToPersonIndexMap.get(receiver));   
     
         if (current.receivers.size() <= 1) {
-            payloadFactory.makeIndividualPayload(senderPerson, receivePerson);
+            payloadFactory.makeIndividualPayload(senderPerson, receivePerson, current.contentSizeSqrt);
         } else {
-            payloadFactory.makeGroupPayload(senderPerson, receivePerson);
+            payloadFactory.makeGroupPayload(senderPerson, receivePerson, current.contentSizeSqrt);
         }
     }
 }

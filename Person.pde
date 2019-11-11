@@ -40,6 +40,11 @@ class Person {
     }
     
     public void draw() {
+        if (this.fresh < 0.01) {
+            // TODO: put this threshold in a constant
+            return;
+        }
+      
         pushMatrix();
         translate(this.x, this.y);
 
@@ -54,13 +59,13 @@ class Person {
             text(this.name, 0, 20);
 
         } else {
-            float f = map(this.fresh, 0, 1, 0, 175);
+            float f = map(this.fresh, 0, 1, 0, 245);
             
             // Draw circle node
             final float circleSize = 15;
             strokeWeight(4);
-            stroke(50);
-            fill(80 + f);
+            stroke(map(this.fresh, 0, 1, 5, 50));
+            fill(10 + f);
             ellipse(0, 0, circleSize, circleSize);
             textAlign(CENTER, CENTER);
             fill(255, f);
