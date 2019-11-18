@@ -46,7 +46,7 @@ public class FBVisConfig {
     public FBVisConfig() {
 
         // Read the configuration file and populate the configurations
-        final String[] configLines = loadStrings("config.ini");
+        final String[] configLines = loadStrings("data/config.ini");
 
         // Create string-dictionary from config file
         StringDict configMapping = generateConfigMapping(configLines);
@@ -55,7 +55,7 @@ public class FBVisConfig {
         populateConfig(configMapping);
 
         // Populate ignore list
-        this.ignoreList = loadStrings("ignorelist.txt");
+        this.ignoreList = loadStrings("data/ignorelist.txt");
     }
 
     /* 
