@@ -87,7 +87,7 @@ public class FBVisConfig {
     private boolean payloadSizeBasedOnMessageLength = true;
 
     private boolean enableUniformTime = true;
-    private int startTimestamp = 0;
+    private long startTimestamp = 0;
     private float daysPerSecond = 0.1;
     private long deltaTimestamp = 144000; /* (long) (3600 * 24 * 1000 * DAYS_PER_SECOND / DESIRED_FPS) */
     private float autoSkipSeconds = 4.0;
@@ -104,14 +104,16 @@ public class FBVisConfig {
     public FBVisConfig() {
 
         // Read the configuration file and populate the configurations
-        final String configPath = "config.ini";
-        final String[] configLines = loadStrings(configPath);
+        final String[] configLines = loadStrings("config.ini");
 
         // Create string-dictionary from config file
         StringDict configMapping = generateConfigMapping(configLines);
 
         // Populate FBVisConfig members using the config mapping
         populateConfig(configMapping);
+
+        // Populate ignore list
+        this.ignoreList = loadStrings("ignorelist.txt");
     }
 
     /* 
@@ -144,5 +146,56 @@ public class FBVisConfig {
     private void populateConfig(StringDict mapping) {
         this.pathSeparator = File.separator;
         this.dataRootPath = mapping.get("data_root_path").replace("/", this.pathSeparator);
+        this.masterName = mapping.get("master_name");
+        this.defaultName = mapping.get("facebook_default_name");
+        this.enableVerbose = readConfigBoolean(mapping.get("run_verbose"));
+        this.enableShaders = readConfigBoolean(mapping.get("run_shaders"));
+        this.enableFullscreen = readConfigBoolean(mapping.get("run_fullscreen"));
+        this.fps = readConfigInt(mapping.get("run_fps"));
+        this.payloadOpacityMin = readConfigInt(mapping.get("payload_opacity_min"));
+        this.payloadOpacityMax = readConfigInt(mapping.get("payload_opacity_max"));
+        this.payloadSegmentLerpMin = readConfigFloat(mapping.get("payload_segment_lerp_min"));
+        this.payloadSegmentLerpMax = readConfigFloat(mapping.get("payload_segment_lerp_max"));
+        this.payloadSegmentGroupLerpMin = readConfigFloat(mapping.get("payload_segment_group_lerp_min"));
+        this.payloadSegmentGroupLerpMax = readConfigFloat(mapping.get("payload_segment_group_lerp_max"));
+        this.payloadSendColor = color(
+            readConfigInt(mapping.get("payload_send_color_r")),
+            readConfigInt(mapping.get("payload_send_color_b")),
+            readConfigInt(mapping.get("payload_send_color_g"))
+        );
+        this.payloadReceiveColor = color(
+            readConfigInt(mapping.get("payload_receive_color_r")),
+            readConfigInt(mapping.get("payload_receive_color_g")),
+            readConfigInt(mapping.get("payload_receive_color_b"))
+        );
+        this.payloadGroupColor = color(
+            readConfigInt(mapping.get("payload_group_color_r")),
+            readConfigInt(mapping.get("payload_group_color_g")),
+            readConfigInt(mapping.get("payload_group_color_b"))
+        );
+        this.payloadSizeBasedOnMessageLength = readConfigBoolean(mapping.get("payload_size_based_on_message_length"));
+        this.enableUniformTime = readConfigBoolean(mapping.get("use_uniform_time"));
+        this.startTimestamp = (long) readConfigInt(mapping.get("start_time"));
+        this.daysPerSecond = readConfigFloat(mapping.get("days_per_second"));
+        this.deltaTimestamp = (long) (3600 * 24 * 1000 * this.daysPerSecond / this.fps);
+        this.autoSkipSeconds = readConfigFloat(mapping.get("auto_skip_seconds"));
+        this.deltaAutoSkipTimestamp = (long) (this.deltaTimestamp * this.autoSkipSeconds * this.fps);
+        this.deltaSkipTimestamp = (long) (this.deltaTimestamp * this.fps * 10);
+        this.numMsgPerFrame = readConfigInt(mapping.get("num_msgs_per_frame"));
+        this.hideRealNames = readConfigBoolean(mapping.get("hide_real_names"));
+        this.hideNameReplacement = mapping.get("name_replacement");
+    }
+
+    /* Helper function for reading config values */
+    private boolean readConfigBoolean(String val) {
+        return val.toLowerCase().equals("yes");
+    }
+
+    private int readConfigInt(String val) {
+        return int(val);
+    }
+
+    private float readConfigFloat(String val) {
+        return float(val);
     }
 }
