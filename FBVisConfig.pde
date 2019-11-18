@@ -38,7 +38,7 @@ final boolean USE_UNIFORM_TIME = true;
 final long START_TIMESTAMP = 0;
 
 // 1 day per frame
-final float DAYS_PER_SECOND = 1;
+final float DAYS_PER_SECOND = 0.1;
 final long DELTA_TIMESTAMP = (long) (3600 * 24 * 1000 * DAYS_PER_SECOND / DESIRED_FPS);
 
 // Number of seconds without anything to autoskip

@@ -168,8 +168,8 @@ void draw() {
 
     if (SHADERS) {
         fx.render()
-        .bloom(0.8, 10, 30)
-        //.rgbSplit(constrain(payloads.size(), 0, 300))
+        .bloom(0.8, 5, 30)
+        .rgbSplit(constrain(payloads.size(), 0, 20))
         .compose();
     } 
 
