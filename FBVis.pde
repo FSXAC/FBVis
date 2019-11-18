@@ -4,6 +4,7 @@
 // TODO: filter out specific groups
 // TODO: broadcast effect for personal wall postings
 // TODO: stattrak send & receive metrics per person
+// TODO: make rendering of the people and messages with shaders on a separate graphic layer
 
 import java.util.Map;
 import ch.bildspur.postfx.builder.*;
@@ -39,7 +40,7 @@ void initFont() {
     monospaceFont = createFont("Fira Code", 32);
     
     String[] fontList = PFont.list();
-    printArray(fontList);
+    // printArray(fontList);
 }
 
 void initData() {
@@ -53,9 +54,11 @@ void setup() {
 
     initialized = false;
 
+    FBVisConfig config = new FBVisConfig();
+
      //fullScreen(P2D);
     size(1280, 960, P2D);
-    frame.setResizable(true);
+    frame.setResizable(true); /* Make config */
 
     initFont();
     
