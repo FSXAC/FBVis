@@ -25,7 +25,7 @@ class MessageManager {
                 
                 // If in the ignore list, then skip
                 boolean ignore = false;
-                for (String ignoredItem : IGNORE_LIST) {
+                for (String ignoredItem : CONFIG.ignoreList) {
                     if (ignoredItem.equals(filename)) {
                         ignore = true;
                         break;
@@ -39,7 +39,7 @@ class MessageManager {
                 String[] pathSegments = {path, filename, "message.json"};
                 String messageDataPath = pathJoins(pathSegments);
                 
-                if (VERBOSE) println("Loading: " + messageDataPath);
+                if (CONFIG.enableVerbose) println("Loading: " + messageDataPath);
                 MessageUtil newMessageUtil = new MessageUtil(messageDataPath);
                 
                 this.messageUtils.add(newMessageUtil);
@@ -59,11 +59,11 @@ class MessageManager {
     
     // Builds an timely ordered list
     public void buildMessagesList() {
-        if (VERBOSE) println("Building ordered messages list, sorting through all messages by time");
+        if (CONFIG.enableVerbose) println("Building ordered messages list, sorting through all messages by time");
         for (int i = 0; i < this.messageUtils.size(); i++) {
 
             // Status
-            if (VERBOSE) println("Sorting " + str(i) + "/" + str(messageUtils.size()) + " entries");
+            if (CONFIG.enableVerbose) println("Sorting " + str(i) + "/" + str(messageUtils.size()) + " entries");
             progress.setSortingProgress(100.0 * i / messageUtils.size());
 
             MessageUtil mu = this.messageUtils.get(i);
@@ -190,7 +190,7 @@ class MessageUtil {
 
             String name = nameObj.getString("name");
 
-            if (name.equals(FACEBOOK_USER_NAME)) {
+            if (name.equals(CONFIG.defaultName)) {
                 name += ' ' + str(globalUnknownUserCount);
                 globalUnknownUserCount++;
             }
@@ -250,7 +250,7 @@ class MessageUtil {
             }
         }
 
-        if (VERBOSE) {
+        if (CONFIG.enableVerbose) {
             println("Finished processsing file");
             println("Total of " + str(this.messagesList.size()) + " messages");
         }

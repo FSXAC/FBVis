@@ -124,7 +124,7 @@ class PayloadSegment extends Payload{
     Person targetPerson;
 
     float radius = random(3, 8);
-    float opacity = random(PAYLOAD_OPACITY_MIN, PAYLOAD_OPACITY_MAX);
+    float opacity = random(CONFIG.payloadOpacityMin, CONFIG.payloadOpacityMax);
 
     float travel_lerp;
     float travel_y_lerp_mult;
@@ -138,17 +138,17 @@ class PayloadSegment extends Payload{
         this.prevX = this.x;
         this.prevY = this.y;
         
-        if (USE_MESSAGE_CONTENT_AS_SIZE) {
+        if (CONFIG.payloadSizeBasedOnMessageLength) {
             this.radius = size;
         }
 
-        this.travel_lerp = random(PAYLOAD_SEGMENT_LERP_MIN, PAYLOAD_SEGMENT_LERP_MAX);
+        this.travel_lerp = random(CONFIG.payloadSegmentLerpMin, CONFIG.payloadSegmentLerpMax);
         this.travel_y_lerp_mult = random(0.5, 0.8);
         
         this.targetPerson = target;
         
         // TODO: FIXME:
-        if (source.equals(MASTER_NAME)) {
+        if (source.equals(CONFIG.masterName)) {
             this.isMasterSending = true;
         }
     }
@@ -156,7 +156,7 @@ class PayloadSegment extends Payload{
     @Override
     public void draw() {
         pushMatrix();
-        stroke(this.isMasterSending ? SEND_COLOR : RECEIVE_COLOR, this.opacity);
+        stroke(this.isMasterSending ? CONFIG.payloadSendColor : CONFIG.payloadReceiveColor, this.opacity);
         strokeWeight(this.radius);
         line(this.x, this.y, this.prevX, this.prevY);
         popMatrix();
@@ -184,13 +184,13 @@ class PayloadSegment extends Payload{
 class PayloadSegment2 extends PayloadSegment {
     public PayloadSegment2(Person source, Person target, float size) {
         super(source, target, size);
-        this.travel_lerp = random(PAYLOAD_SEGMENT_GROUP_LERP_MIN, PAYLOAD_SEGMENT_GROUP_LERP_MAX);
+        this.travel_lerp = random(CONFIG.payloadSegmentGroupLerpMin, CONFIG.payloadSegmentGroupLerpMax);
     }
 
     @Override
     public void draw() {
         pushMatrix();
-        stroke(GROUP_COLOR, this.opacity);
+        stroke(CONFIG.payloadGroupColor, this.opacity);
         strokeWeight(this.radius);
         line(this.x, this.y, this.prevX, this.prevY);
         popMatrix();

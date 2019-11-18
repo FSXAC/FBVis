@@ -11,6 +11,9 @@ import ch.bildspur.postfx.builder.*;
 import ch.bildspur.postfx.pass.*;
 import ch.bildspur.postfx.*;
 
+// Configuration is the most important so it needs to be set up first
+FBVisConfig CONFIG;
+
 PostFX fx;
 
 // Hash map to hold to the person
@@ -45,16 +48,15 @@ void initFont() {
 
 void initData() {
     progress = new Progress();
-    man = new MessageManager(DATA_ROOT_DIR);
+    man = new MessageManager(CONFIG.dataRootPath);
 
     initialized = true;
 }
 
 void setup() {
-
+    CONFIG = new FBVisConfig();
+  
     initialized = false;
-
-    FBVisConfig config = new FBVisConfig();
 
      //fullScreen(P2D);
     size(1280, 960, P2D);
@@ -72,13 +74,14 @@ void setup() {
 
     timeline = new Timeline(50, height - 100, width - 100, 50);
 
-    if (SHADERS)
+    if (CONFIG.enableShaders) {
         fx = new PostFX(this);
         fx.preload(RGBSplitPass.class);
         fx.preload(BloomPass.class);
+    }
         
     smooth(4);
-    frameRate(DESIRED_FPS);
+    frameRate(CONFIG.fps);
 }
 
 int gi = 0;
@@ -106,28 +109,28 @@ void draw() {
 
     textFont(font);
 
-    if (USE_UNIFORM_TIME) {
+    if (CONFIG.enableUniformTime) {
         if (startFlag) {
             long firstTimeStamp = man.organizedMessagesList.get(gi).timestamp;
-            if (firstTimeStamp > START_TIMESTAMP) {
+            if (firstTimeStamp > CONFIG.startTimestamp) {
                 currentTimestamp = firstTimeStamp;
             } else {
-                currentTimestamp = START_TIMESTAMP;
+                currentTimestamp = CONFIG.startTimestamp;
             }
 
-            if (VERBOSE)
+            if (CONFIG.enableVerbose)
                 println("currentTimestamp: " + new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm").format(new java.util.Date(currentTimestamp)));
 
             startFlag = false;
         }
 
         // Get all the messages for the next time stamp
-        long nextTimestamp = currentTimestamp + DELTA_TIMESTAMP;
+        long nextTimestamp = currentTimestamp + CONFIG.deltaTimestamp;
 
         long messageTimestamp = man.organizedMessagesList.get(gi % man.organizedMessagesList.size()).timestamp;
 
         long dt = messageTimestamp - nextTimestamp;
-        if (dt > AUTO_SKIP_TIMESTAMP) {
+        if (dt > CONFIG.deltaAutoSkipTimestamp) {
             // Then we know that we need to skip
             nextTimestamp = messageTimestamp;
         } else if (dt > 0) {
@@ -147,7 +150,7 @@ void draw() {
         currentTimestamp = nextTimestamp;
 
     } else {
-        for (int i = 0; i < SPEED_SCALE; i++) {
+        for (int i = 0; i < CONFIG.numMsgPerFrame; i++) {
             int di = gi % man.organizedMessagesList.size();
             MessageData current = man.organizedMessagesList.get(di);
             processCurrentmessageData(current);
@@ -169,7 +172,7 @@ void draw() {
     drawPayload();
     blendMode(BLEND);
 
-    if (SHADERS) {
+    if (CONFIG.enableShaders) {
         fx.render()
         .bloom(0.8, 5, 30)
         .rgbSplit(constrain(payloads.size(), 0, 20))
@@ -269,6 +272,6 @@ void drawListMode(MessageData current) {
 // Input handling
 void keyPressed() {
     if (key == 'l') {
-        currentTimestamp += SKIP_TIMESTAMP;
+        currentTimestamp += CONFIG.deltaSkipTimestamp;
     }
 }

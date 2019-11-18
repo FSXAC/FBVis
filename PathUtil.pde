@@ -1,12 +1,12 @@
 String pathJoin(String a, String b) {
-    return a + PATH_SEPARATOR + b;
+    return a + CONFIG.pathSeparator + b;
 }
 
 String pathJoins(String[] segments) {
     String output = "";
     for (int i = 0; i < segments.length; i++) {
         if (i != 0) {
-            output += PATH_SEPARATOR;
+            output += CONFIG.pathSeparator;
         }
         output += segments[i];
     }

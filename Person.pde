@@ -26,10 +26,10 @@ class Person {
 
         this.init();
         
-        if (name.equals(MASTER_NAME)) {
+        if (name.equals(CONFIG.masterName)) {
             this.isMaster = true;
-        } else if (ANNON_NAMES) {
-            this.name = ANNON_NAME_DEFAULT;
+        } else if (CONFIG.hideRealNames) {
+            this.name = CONFIG.hideNameReplacement;
         }
     }
     
