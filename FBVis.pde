@@ -39,10 +39,13 @@ PFont font;
 PFont monospaceFont;
 
 void initFont() {
-    font = createFont("Suisse Int'l Medium", 32);
-    monospaceFont = createFont("Fira Code", 32);
+    // font = createFont("Suisse Int'l Medium", 32);
+    // monospaceFont = createFont("Fira Code", 32);
     
-    String[] fontList = PFont.list();
+    font = createFont("Arial", 32);
+    monospaceFont = createFont("Consolas", 32);
+    
+    // String[] fontList = PFont.list();
     // printArray(fontList);
 }
 
@@ -60,7 +63,7 @@ void setup() {
 
      //fullScreen(P2D);
     size(1280, 960, P2D);
-    frame.setResizable(true); /* Make config */
+    //frame.setResizable(true); /* Make config */
 
     initFont();
     
