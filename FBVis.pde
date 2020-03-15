@@ -32,6 +32,7 @@ Progress progress;
 
 // timing
 long currentTimestamp;
+long nextTimestamp;
 Timeline timeline;
 
 // Font
@@ -144,7 +145,7 @@ void draw() {
         }
 
         // Get all the messages for the next time stamp
-        long nextTimestamp = currentTimestamp + CONFIG.deltaTimestamp;
+        nextTimestamp = currentTimestamp + CONFIG.deltaTimestamp;
 
         long messageTimestamp = man.organizedMessagesList.get(gi % man.organizedMessagesList.size()).timestamp;
 

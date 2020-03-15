@@ -27,7 +27,7 @@ class Person {
     public Person(String name) {
         this.name = name;
         this.autoUpdate = true;
-        this.fresh = 0;
+        this.fresh = 1.0;
 
         this.init();
         
