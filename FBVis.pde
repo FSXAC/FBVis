@@ -121,20 +121,6 @@ void draw() {
 
     // If uninitialized, then display the loading screen
     if (!initialized) {
-        // background(0);
-        // fill(255);
-        // noStroke();
-        // text("NOW LOADING...", 50, 50);
-        
-        // stroke(50);
-        // line(50, 70, 50 + 300, 70);
-        // line(50, 90, 50 + 300, 90);
-        // line(50, 110, 50 + 300, 110);
-        // stroke(255);
-        // line(50, 70, 50 + 3 * progress.getLoadingLargeProgress(), 70);
-        // line(50, 90, 50 + 3 * progress.getLoadingProgress(), 90);
-        // line(50, 110, 50 + 3 * progress.getSortingProgress(), 110);
-        // return;
         drawLoadingScreen();
         return;
     }
