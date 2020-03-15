@@ -99,6 +99,9 @@ void drawLoadingScreen() {
     background(0);
     fill(255);
     noStroke();
+    textAlign(LEFT, TOP);
+    text("FBVis version 0.4.1", 10, 10);
+    text("github.com/FSXAC/FBVis", 10, 25);
     textAlign(CENTER, CENTER);
     text("Loading Messenger data . . .", width/2, height/2);
 
