@@ -21,6 +21,7 @@ IntDict nameToPersonIndexMap;
 ArrayList<Person> persons;
 
 ArrayList<Payload> payloads;
+final int PAYLOADS_MAXSIZE = 2048;
 PayloadFactory payloadFactory;
 
 MessageManager man;

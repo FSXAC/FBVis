@@ -208,10 +208,12 @@ class PayloadFactory {
     }
 
     public void makeIndividualPayload(Person sender, Person receiver, float size) {
-        this.payloads.add(new PayloadSegment(sender, receiver, size));
+        if (PAYLOADS_MAXSIZE > this.payload.size())
+            this.payloads.add(new PayloadSegment(sender, receiver, size));
     }
 
     public void makeGroupPayload(Person sender, Person receiver, float size) {
-        this.payloads.add(new PayloadSegment2(sender, receiver, size));
+        if (PAYLOADS_MAXSIZE > this.payload.size())
+            this.payloads.add(new PayloadSegment2(sender, receiver, size));
     }
 }
