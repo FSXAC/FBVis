@@ -19,6 +19,11 @@ class Person {
 
     float fresh;
 
+    // Stats
+    int msgReceived;
+    int msgSent;
+    long lastInteraction;
+
     public Person(String name) {
         this.name = name;
         this.autoUpdate = true;
@@ -31,6 +36,11 @@ class Person {
         } else if (CONFIG.hideRealNames) {
             this.name = CONFIG.hideNameReplacement;
         }
+
+        // Reset stats
+        msgReceived = 0;
+        msgSent = 0;
+        lastInteraction = 0;
     }
     
     public void init() {
@@ -107,7 +117,13 @@ class Person {
         fill(255);
         textSize(10);
         text(this.name, 0, circleSize);
+        drawPersonStats();
         popMatrix();
+    }
+
+    private void drawPersonStats() {
+        text("Sent: " + str(this.msgSent), 100, 100);
+        text("Received: " + str(this.msgReceived), 100, 120);
     }
     
     public void update() {
@@ -134,5 +150,13 @@ class Person {
 
     public boolean equals(String name) {
         return this.name.equals(name);
+    }
+
+    public void incrementMsgReceived() {
+        this.msgReceived++;
+    }
+
+    public void incrementMsgSent() {
+        this.msgSent++;
     }
 }

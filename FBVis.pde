@@ -231,6 +231,12 @@ void processCurrentmessageData(MessageData current) {
         } else {
             payloadFactory.makeGroupPayload(senderPerson, receivePerson, current.contentSizeSqrt);
         }
+
+        // For each person, update their stats
+        senderPerson.incrementMsgSent();
+        receivePerson.incrementMsgReceived();
+        senderPerson.lastInteraction = current.timestamp;
+        receivePerson.lastInteraction = current.timestamp;
     }
 }
 
