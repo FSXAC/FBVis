@@ -140,4 +140,50 @@ public class FBVisConfig {
     private float readConfigFloat(String val) {
         return float(val);
     }
+
+    /* Write a new config file to file */
+    private void createNewConfigFile() {
+        PrintWriter output = createWriter("data/config.ini");
+        output.println("[data config]");
+        output.println("data_root_path=C:/Users/mansu/OneDrive/Documents/Facebook Data 2019");
+        output.println("master_name=Muchen He");
+        output.println("facebook_default_name=Unnamed");
+        output.println("");
+        output.println("[program config]");
+        output.println("run_verbose=no");
+        output.println("run_shaders=no");
+        output.println("run_fullscreen=yes");
+        output.println("run_fps=60");
+        output.println("");
+        output.println("[message payload appearance]");
+        output.println("payload_opacity_min=50");
+        output.println("payload_opacity_max=60");
+        output.println("payload_segment_lerp_min=0.3");
+        output.println("payload_segment_lerp_max=0.5");
+        output.println("payload_segment_group_lerp_min=0.5");
+        output.println("payload_segment_group_lerp_max=0.7");
+        output.println("payload_send_color_r=42");
+        output.println("payload_send_color_b=153");
+        output.println("payload_send_color_g=42");
+        output.println("payload_receive_color_r=153");
+        output.println("payload_receive_color_g=62");
+        output.println("payload_receive_color_b=62");
+        output.println("payload_group_color_r=20");
+        output.println("payload_group_color_g=41");
+        output.println("payload_group_color_b=83");
+        output.println("payload_size_based_on_message_length=yes");
+        output.println("");
+        output.println("[replay time setting]");
+        output.println("use_uniform_time=no");
+        output.println("start_time=0");
+        output.println("days_per_second=0.1");
+        output.println("auto_skip_seconds=4");
+        output.println("num_msgs_per_frame=2");
+        output.println("");
+        output.println("[misc]");
+        output.println("hide_real_names=no");
+        output.println("name_replacement=Friend");
+        output.flush();
+        output.close();
+    }
 }
