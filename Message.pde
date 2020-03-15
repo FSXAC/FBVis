@@ -47,11 +47,11 @@ class MessageManager {
                 i++;
                 
                 // Status
-                progress.setLoadingProgress(100.0 * (i / filenames.length));
+                progress.setLoadingProgress(i / filenames.length);
             }
 
             j++;
-            progress.setLoadingLargeProgress(100.0 * (j / this.rootPaths.size()));
+            progress.setLoadingLargeProgress(j / this.rootPaths.size());
         }
         
         this.buildMessagesList();
@@ -64,7 +64,7 @@ class MessageManager {
 
             // Status
             if (CONFIG.enableVerbose) println("Sorting " + str(i) + "/" + str(messageUtils.size()) + " entries");
-            progress.setSortingProgress(100.0 * i / messageUtils.size());
+            progress.setSortingProgress(i / messageUtils.size());
 
             MessageUtil mu = this.messageUtils.get(i);
             for (MessageData md : mu.getMessagesList()) {

@@ -14,8 +14,9 @@ public class FBVisConfig {
     
     public boolean enableVerbose = false;
     public boolean enableShaders = true;
-    public boolean enableFullscreen = false;
+    public boolean enableFullscreen = false; /* FIXME: NOT WORKING */
     public int fps = 60;
+    public float smoothing = 2;
 
     public int payloadOpacityMin = 50;
     public int payloadOpacityMax = 60;
@@ -94,6 +95,7 @@ public class FBVisConfig {
         this.enableShaders = readConfigBoolean(mapping.get("run_shaders"));
         this.enableFullscreen = readConfigBoolean(mapping.get("run_fullscreen"));
         this.fps = readConfigInt(mapping.get("run_fps"));
+        this.smoothing = readConfigFloat(mapping.get("smoothing"));
         this.payloadOpacityMin = readConfigInt(mapping.get("payload_opacity_min"));
         this.payloadOpacityMax = readConfigInt(mapping.get("payload_opacity_max"));
         this.payloadSegmentLerpMin = readConfigFloat(mapping.get("payload_segment_lerp_min"));

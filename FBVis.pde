@@ -31,44 +31,43 @@ Progress progress;
 
 // timing
 long currentTimestamp;
-
 Timeline timeline;
 
 // Font
 PFont font;
 PFont monospaceFont;
 
-void initFont() {
-    // font = createFont("Suisse Int'l Medium", 32);
-    // monospaceFont = createFont("Fira Code", 32);
-    
+// Async initialization function
+void initialize() {
+    // Load types
     font = createFont("Arial", 32);
     monospaceFont = createFont("Consolas", 32);
-    
-    // String[] fontList = PFont.list();
-    // printArray(fontList);
-}
 
-void initData() {
+    // Load and process 
     progress = new Progress();
     man = new MessageManager(CONFIG.dataRootPath);
 
+    // Set flag to true when done
     initialized = true;
 }
 
+void settings() {
+    // Size and fullscreen should go inside here
+    // But none of the Processing functions are available
+    size(1920, 1080, P2D);
+    smooth(2);
+}
+
 void setup() {
+    // There are 3 main stages in the setup function
+    // [1] Load and read configuration file
+    // [2] Run regular Processing 3 setup stuff
+    // [3] Run the initialization routine
+
+    // [1] Configuration
     CONFIG = new FBVisConfig();
-  
-    initialized = false;
-
-     //fullScreen(P2D);
-    size(1280, 960, P2D);
-    //frame.setResizable(true); /* Make config */
-
-    initFont();
     
-    thread("initData");
-
+    // [2]
     nameToPersonIndexMap = new IntDict();
     persons = new ArrayList<Person>();
 
@@ -82,31 +81,61 @@ void setup() {
         fx.preload(RGBSplitPass.class);
         fx.preload(BloomPass.class);
     }
-        
-    smooth(4);
     frameRate(CONFIG.fps);
+
+    // [3]
+    initialized = false;
+    thread("initialize");
 }
 
 int gi = 0;
 boolean startFlag = true;
 
+
+void drawLoadingScreen() {
+    // Draws the loading screen (before finished initialization)
+    background(0);
+    fill(255);
+    noStroke();
+    textAlign(CENTER, CENTER);
+    text("Loading Messenger data . . .", width/2, height/2);
+
+    if (progress != null) {
+        stroke(50);
+        float start = 0.4 * width;
+        float end = 0.6 * width;
+        float y = height / 2 + 20;
+        line(start, y, end, y);
+
+        stroke(255);
+        float totalProgress = (
+            progress.getLoadingLargeProgress() + progress.getLoadingProgress() + 
+            progress.getSortingProgress()
+        ) / 3;
+        float totalWidth = map(totalProgress, 0, 1, 0, 0.2 * width);
+        line(start, y, start + totalWidth, y);
+    }
+}
+
 void draw() {
 
     // If uninitialized, then display the loading screen
     if (!initialized) {
-        background(0);
-        fill(255);
-        noStroke();
-        text("NOW LOADING...", 50, 50);
+        // background(0);
+        // fill(255);
+        // noStroke();
+        // text("NOW LOADING...", 50, 50);
         
-        stroke(50);
-        line(50, 70, 50 + 300, 70);
-        line(50, 90, 50 + 300, 90);
-        line(50, 110, 50 + 300, 110);
-        stroke(255);
-        line(50, 70, 50 + 3 * progress.getLoadingLargeProgress(), 70);
-        line(50, 90, 50 + 3 * progress.getLoadingProgress(), 90);
-        line(50, 110, 50 + 3 * progress.getSortingProgress(), 110);
+        // stroke(50);
+        // line(50, 70, 50 + 300, 70);
+        // line(50, 90, 50 + 300, 90);
+        // line(50, 110, 50 + 300, 110);
+        // stroke(255);
+        // line(50, 70, 50 + 3 * progress.getLoadingLargeProgress(), 70);
+        // line(50, 90, 50 + 3 * progress.getLoadingProgress(), 90);
+        // line(50, 110, 50 + 3 * progress.getSortingProgress(), 110);
+        // return;
+        drawLoadingScreen();
         return;
     }
 
