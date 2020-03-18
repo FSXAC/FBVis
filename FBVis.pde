@@ -13,8 +13,10 @@ import ch.bildspur.postfx.*;
 
 // Configuration is the most important so it needs to be set up first
 FBVisConfig CONFIG;
-
 PostFX fx;
+
+// Render layers
+RenderUILayer g_uiLayer;
 
 // Hash map to hold to the person
 IntDict nameToPersonIndexMap;
@@ -57,7 +59,7 @@ void initialize() {
     man = new MessageManager(CONFIG.dataRootPath);
 
     // Initialize layers
-
+    g_uiLayer = new RenderUILayer();
 
     // Set flag to true when done
     initialized = true;
@@ -156,11 +158,14 @@ void draw() {
     } 
 
     // Draw current date
-    textFont(monospaceFont);
-    String date = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm").format(new java.util.Date(currentTimestamp));
-    textSize(20);
-    fill(255);
-    text(date, width/2, 20);
+    g_uiLayer.timestamp = currentTimestamp;
+    g_uiLayer.render();
+    image(g_uiLayer.pg, 0, 0);
+    // textFont(monospaceFont);
+    // String date = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm").format(new java.util.Date(currentTimestamp));
+    // textSize(20);
+    // fill(255);
+    // text(date, width/2, 20);
 
     // Draw timeline
     timeline.draw();
