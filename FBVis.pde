@@ -39,6 +39,13 @@ Timeline timeline;
 PFont font;
 PFont monospaceFont;
 
+void settings() {
+    // Size and fullscreen should go inside here
+    // But none of the Processing functions are available
+    size(1920, 1080, P2D);
+    smooth(2);
+}
+
 // Async initialization function
 void initialize() {
     // Load types
@@ -49,15 +56,11 @@ void initialize() {
     progress = new Progress();
     man = new MessageManager(CONFIG.dataRootPath);
 
+    // Initialize layers
+
+
     // Set flag to true when done
     initialized = true;
-}
-
-void settings() {
-    // Size and fullscreen should go inside here
-    // But none of the Processing functions are available
-    size(1920, 1080, P2D);
-    smooth(2);
 }
 
 void setup() {
@@ -123,15 +126,47 @@ void drawLoadingScreen() {
 }
 
 void draw() {
-
     // If uninitialized, then display the loading screen
     if (!initialized) {
         drawLoadingScreen();
         return;
     }
 
-    textFont(font);
+    updateState();
 
+    //background(0);
+    fill(0, 100);
+    noStroke();
+    rect(0, 0, width, height);
+    
+    // Draw a grid of people
+    textFont(font);
+    drawPersons(); 
+
+    // Draw and update payload
+    blendMode(SCREEN);
+    drawPayload();
+    blendMode(BLEND);
+
+    if (CONFIG.enableShaders) {
+        fx.render()
+        .bloom(0.8, 5, 30)
+        .rgbSplit(constrain(payloads.size(), 0, 20))
+        .compose();
+    } 
+
+    // Draw current date
+    textFont(monospaceFont);
+    String date = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm").format(new java.util.Date(currentTimestamp));
+    textSize(20);
+    fill(255);
+    text(date, width/2, 20);
+
+    // Draw timeline
+    timeline.draw();
+}
+
+void updateState() {
     if (CONFIG.enableUniformTime) {
         if (startFlag) {
             long firstTimeStamp = man.organizedMessagesList.get(gi).timestamp;
@@ -182,37 +217,10 @@ void draw() {
         }
     }
 
-    //background(0);
-    fill(0, 100);
-    noStroke();
-    rect(0, 0, width, height);
-    
-    // Draw a grid of people
-    drawPersons(); 
-
-    // Draw and update payload
-    blendMode(SCREEN);
-    drawPayload();
-    blendMode(BLEND);
-
-    if (CONFIG.enableShaders) {
-        fx.render()
-        .bloom(0.8, 5, 30)
-        .rgbSplit(constrain(payloads.size(), 0, 20))
-        .compose();
-    } 
-
-    // Draw current date
-    textFont(monospaceFont);
-    String date = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm").format(new java.util.Date(currentTimestamp));
-    textSize(20);
-    fill(255);
-    text(date, width/2, 20);
-
+    // Update timeline
     timeline.setPercentage(((float) gi % man.organizedMessagesList.size()) / man.organizedMessagesList.size());
-    timeline.draw();
     timeline.handleMouseInput();
-} 
+}
 
 void processCurrentmessageData(MessageData current) { 
     // check if sender and receiver in the persons map

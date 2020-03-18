@@ -59,33 +59,6 @@ class Timeline {
                     gi = new_gi;
                     currentTimestamp = man.organizedMessagesList.get(gi).timestamp;
                 }
-
-                // nextTimestamp = man.organizedMessagesList.get(gi).timestamp;
-                // currentTimestamp = man.organizedMessagesList.get(gi).timestamp;
-
-                // FIXME: TODO: HACK:
-                // long messageTimestamp = man.organizedMessagesList.get(gi % man.organizedMessagesList.size()).timestamp;
-                // while (messageTimestamp < nextTimestamp) {
-                //     int di = gi % man.organizedMessagesList.size();
-                //     MessageData current = man.organizedMessagesList.get(di);
-
-                //     processCurrentmessageData(current);
-                //     gi++;
-                // }
-
-                // if (keyPressed) {
-                //     fill(255, 0, 0);
-                //     rect(0, 0, 100, 100);
-                //     if (keyCode == SHIFT) {
-                //         // TODO: should not change global variable
-                //         nextTimestamp = man.organizedMessagesList.get(gi).timestamp;
-                //     }
-
-                // } else {
-                //     // TODO: should not change global variable
-                //     gi = new_gi;
-                //     currentTimestamp = man.organizedMessagesList.get(gi).timestamp;
-                // }
             }
         }
     }
