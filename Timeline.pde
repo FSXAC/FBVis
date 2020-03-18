@@ -6,7 +6,6 @@ class Timeline {
     float h;
 
     float percentage;
-    
     boolean hovered;
 
     public Timeline(float x, float y, float w, float h) {
@@ -18,17 +17,6 @@ class Timeline {
         this.percentage = 0;
         
         this.hovered = false;
-    }
-
-    public void draw() {
-        noFill();
-        stroke(255, this.hovered ? 255 : 10);
-        strokeWeight(1);
-        rect(this.x, this.y, this.w, this.h);
-        
-        final float percentageX = map(this.percentage, 0, 1, this.x, this.x + this.w);
-        strokeWeight(3);
-        line(percentageX, this.y, percentageX, this.y + this.h);
     }
 
     public void setPercentage(float percentage) {

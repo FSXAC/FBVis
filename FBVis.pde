@@ -41,6 +41,9 @@ Timeline timeline;
 PFont font;
 PFont monospaceFont;
 
+// Global togglable flags
+Boolean g_toggle_UI = true;
+
 void settings() {
     // Size and fullscreen should go inside here
     // But none of the Processing functions are available
@@ -60,6 +63,7 @@ void initialize() {
 
     // Initialize layers
     g_uiLayer = new RenderUILayer();
+    g_uiLayer.timeline = timeline;
 
     // Set flag to true when done
     initialized = true;
@@ -81,7 +85,7 @@ void setup() {
     payloads = new ArrayList<Payload>();
     payloadFactory = new PayloadFactory(payloads);
 
-    timeline = new Timeline(50, height - 100, width - 100, 50);
+    timeline = new Timeline(50, height - 50, width - 100, 30);
 
     if (CONFIG.enableShaders) {
         fx = new PostFX(this);
@@ -157,18 +161,13 @@ void draw() {
         .compose();
     } 
 
-    // Draw current date
-    g_uiLayer.timestamp = currentTimestamp;
-    g_uiLayer.render();
-    image(g_uiLayer.pg, 0, 0);
-    // textFont(monospaceFont);
-    // String date = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm").format(new java.util.Date(currentTimestamp));
-    // textSize(20);
-    // fill(255);
-    // text(date, width/2, 20);
-
-    // Draw timeline
-    timeline.draw();
+    // Draw current date and timeline
+    if (g_toggle_UI) {
+        updateTimeline();
+        g_uiLayer.timestamp = currentTimestamp;
+        g_uiLayer.render();
+        image(g_uiLayer.pg, 0, 0);
+    }
 }
 
 void updateState() {
@@ -221,8 +220,9 @@ void updateState() {
             currentTimestamp = current.timestamp;
         }
     }
+}
 
-    // Update timeline
+void updateTimeline() {
     timeline.setPercentage(((float) gi % man.organizedMessagesList.size()) / man.organizedMessagesList.size());
     timeline.handleMouseInput();
 }
@@ -315,5 +315,7 @@ void drawListMode(MessageData current) {
 void keyPressed() {
     if (key == 'l') {
         currentTimestamp += CONFIG.deltaSkipTimestamp;
+    } else if (key == 'h') {
+        g_toggle_UI = !g_toggle_UI;
     }
 }

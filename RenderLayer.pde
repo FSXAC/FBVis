@@ -37,6 +37,9 @@ class RenderUILayer extends RenderLayer {
 	// Layer states
 	long timestamp;
 
+	// Reference to the timeline object
+	Timeline timeline;
+
 	public RenderUILayer() {
 		super();
 		this.timestamp = 0;
@@ -46,6 +49,7 @@ class RenderUILayer extends RenderLayer {
 	protected void renderGraphics() {
 		this.pg.clear();
 		this.renderTimestamp();
+		this.renderTimeline();
 	}
 
 	private void renderTimestamp() {
@@ -55,5 +59,19 @@ class RenderUILayer extends RenderLayer {
 		this.pg.textSize(20);
 		this.pg.fill(255);
 		this.pg.text(date, width/2, 20);
+	}
+
+	private void renderTimeline() {
+		this.pg.noFill();
+
+		// Set opacity of the timeline to 70 if not hovered or 255 if hovered
+		this.pg.stroke(255, this.timeline.hovered ? 255 : 70);
+		this.pg.strokeWeight(1);
+		this.pg.rect(this.timeline.x, this.timeline.y, this.timeline.w, this.timeline.h);
+		
+		// Draw a cursor of where in the timeline we're currently are at
+		final float percentX = map(this.timeline.percentage, 0, 1, this.timeline.x, this.timeline.x + this.timeline.w);
+		this.pg.strokeWeight(3);
+		this.pg.line(percentX, this.timeline.y, percentX, this.timeline.y + this.timeline.h);
 	}
 }
