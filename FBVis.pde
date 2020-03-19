@@ -17,10 +17,11 @@ PostFX fx;
 
 // Render layers
 RenderUILayer g_uiLayer;
+RenderPeopleLayer g_pplLayer;
 
 // Hash map to hold to the person
 IntDict nameToPersonIndexMap;
-ArrayList<Person> persons;
+ArrayList<PersonNode> persons;
 
 ArrayList<Payload> payloads;
 final int PAYLOADS_MAXSIZE = 2048;
@@ -65,6 +66,9 @@ void initialize() {
     g_uiLayer = new RenderUILayer();
     g_uiLayer.timeline = timeline;
 
+    g_pplLayer = new RenderPeopleLayer();
+    g_pplLayer.persons = persons;
+
     // Set flag to true when done
     initialized = true;
 }
@@ -80,7 +84,7 @@ void setup() {
     
     // [2]
     nameToPersonIndexMap = new IntDict();
-    persons = new ArrayList<Person>();
+    persons = new ArrayList<PersonNode>();
 
     payloads = new ArrayList<Payload>();
     payloadFactory = new PayloadFactory(payloads);
@@ -146,8 +150,8 @@ void draw() {
     rect(0, 0, width, height);
     
     // Draw a grid of people
-    textFont(font);
-    drawPersons(); 
+    g_pplLayer.render();
+    image(g_pplLayer.pg, 0, 0);
 
     // Draw and update payload
     blendMode(SCREEN);
@@ -241,8 +245,8 @@ void processCurrentmessageData(MessageData current) {
         }
 
         // For each receiving end, we make a payload
-        Person senderPerson = persons.get(nameToPersonIndexMap.get(current.sender));
-        Person receivePerson = persons.get(nameToPersonIndexMap.get(receiver));   
+        PersonNode senderPerson = persons.get(nameToPersonIndexMap.get(current.sender));
+        PersonNode receivePerson = persons.get(nameToPersonIndexMap.get(receiver));   
     
         if (current.receivers.size() <= 1) {
             payloadFactory.makeIndividualPayload(senderPerson, receivePerson, current.contentSizeSqrt);
@@ -253,28 +257,27 @@ void processCurrentmessageData(MessageData current) {
         // For each person, update their stats
         senderPerson.incrementMsgSent();
         receivePerson.incrementMsgReceived();
-        senderPerson.lastInteraction = current.timestamp;
-        receivePerson.lastInteraction = current.timestamp;
+        senderPerson.statLastInteractionTime = current.timestamp;
+        receivePerson.statLastInteractionTime = current.timestamp;
     }
 }
 
 void addNewPerson(String name) {
     final int index = persons.size();
 
-    Person new_person = new Person(name);
+    PersonNode new_person;
+    if (name.equals(CONFIG.masterName)) {
+        new_person = new PersonMasterNode(name);
+    } else {
+        new_person = new PersonNode(name);
+    }
+
     final PVector new_position = spiral(index, width/2, height/2);
 
     new_person.setTargetPosition(new_position.x, new_position.y);
     persons.add(new_person);
 
     nameToPersonIndexMap.set(name, index);
-}
-
-void drawPersons() {
-    for (Person person : persons) {
-        // person.setTargetPosition(map(x, 0, xcols, padding, width - padding), map(y, 0, yrows, padding, height - padding));
-        person.draw();
-    }
 }
 
 // TODO: could be instanciated elsewhere and just cleared

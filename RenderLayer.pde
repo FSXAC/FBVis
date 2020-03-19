@@ -75,3 +75,25 @@ class RenderUILayer extends RenderLayer {
 		this.pg.line(percentX, this.timeline.y, percentX, this.timeline.y + this.timeline.h);
 	}
 }
+
+class RenderPeopleLayer extends RenderLayer {
+	ArrayList<PersonNode> persons;
+
+	public RenderPeopleLayer() {
+		super();
+	}
+
+	@Override
+	protected void renderGraphics() {
+		this.pg.clear();
+
+		if (this.persons == null) {
+			println("Error: reference to persons arraylist is null");
+			return;
+		}
+
+		for (PersonNode person : persons) {
+			person.draw(this.pg);
+		}
+	}
+}

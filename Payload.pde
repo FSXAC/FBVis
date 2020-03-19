@@ -4,8 +4,8 @@
 class Payload {
     float x;
     float y;
-    Person targetPerson;
-    public Payload(Person source, Person target)
+    PersonNode targetPerson;
+    public Payload(PersonNode source, PersonNode target)
     {
         this.x = source.x;
         this.y = source.y;
@@ -47,12 +47,12 @@ final float RANDOM_START_D = 5.0;
 class PayloadDot extends Payload{
     float x;
     float y;
-    Person targetPerson;
+    PersonNode targetPerson;
 
     float r;
     float f;
 
-    public PayloadDot(Person source, Person target) {
+    public PayloadDot(PersonNode source, PersonNode target) {
         super(source, target);
         this.x = source.x + random(-RANDOM_START_D, RANDOM_START_D);
         this.y = source.y + random(-RANDOM_START_D, RANDOM_START_D);
@@ -92,11 +92,11 @@ class PayloadDot extends Payload{
 class PayloadLine extends Payload{
     float x;
     float y;
-    Person targetPerson;
+    PersonNode targetPerson;
 
     int life;
 
-    public PayloadLine(Person source, Person target) {
+    public PayloadLine(PersonNode source, PersonNode target) {
         super(source, target);
         this.x = source.x + random(-RANDOM_START_D, RANDOM_START_D);
         this.y = source.y + random(-RANDOM_START_D, RANDOM_START_D);
@@ -121,7 +121,7 @@ class PayloadSegment extends Payload{
     float y;
     float prevX;
     float prevY;
-    Person targetPerson;
+    PersonNode targetPerson;
 
     float radius = random(3, 8);
     float opacity = random(CONFIG.payloadOpacityMin, CONFIG.payloadOpacityMax);
@@ -131,7 +131,7 @@ class PayloadSegment extends Payload{
 
     boolean isMasterSending = false;
 
-    public PayloadSegment(Person source, Person target, float size) {
+    public PayloadSegment(PersonNode source, PersonNode target, float size) {
         super(source, target);
         this.x = source.x + random(-RANDOM_START_D, RANDOM_START_D);
         this.y = source.y + random(-RANDOM_START_D, RANDOM_START_D);
@@ -182,7 +182,7 @@ class PayloadSegment extends Payload{
 }
 
 class PayloadSegment2 extends PayloadSegment {
-    public PayloadSegment2(Person source, Person target, float size) {
+    public PayloadSegment2(PersonNode source, PersonNode target, float size) {
         super(source, target, size);
         this.travel_lerp = random(CONFIG.payloadSegmentGroupLerpMin, CONFIG.payloadSegmentGroupLerpMax);
     }
@@ -207,12 +207,12 @@ class PayloadFactory {
         this.payloads = payloads;
     }
 
-    public void makeIndividualPayload(Person sender, Person receiver, float size) {
+    public void makeIndividualPayload(PersonNode sender, PersonNode receiver, float size) {
         if (PAYLOADS_MAXSIZE > this.payloads.size())
             this.payloads.add(new PayloadSegment(sender, receiver, size));
     }
 
-    public void makeGroupPayload(Person sender, Person receiver, float size) {
+    public void makeGroupPayload(PersonNode sender, PersonNode receiver, float size) {
         if (PAYLOADS_MAXSIZE > this.payloads.size())
             this.payloads.add(new PayloadSegment2(sender, receiver, size));
     }
