@@ -23,14 +23,6 @@ class PersonNode {
 	long statLastInteractionTime;
 
 	public PersonNode(String name) {
-
-		// Set name
-		if (CONFIG.hideRealNames) {
-			this.name = CONFIG.hideNameReplacement;
-		} else {
-			this.name = name;
-		}
-
 		this.refreshScore = 1.0;
 
 		this.x = width / 2;
@@ -40,6 +32,13 @@ class PersonNode {
 		this.statMsgReceived = 0;
 		this.statMsgSent = 0;
 		this.statLastInteractionTime = 0;
+
+		// Set name
+		if (CONFIG.hideRealNames) {
+			this.name = CONFIG.hideNameReplacement;
+		} else {
+			this.name = name;
+		}
 	}
 
 	public void setPosition(float x, float y) {
@@ -103,6 +102,7 @@ class PersonNode {
 		pg.textAlign(CENTER, CENTER);
 		pg.fill(255);
 		pg.textSize(PERSON_NAME_TEXT_SIZE);
+	
 		pg.text(this.name, 0, PERSON_NODE_SIZE);
 
 		// Done
@@ -147,6 +147,9 @@ class PersonNode {
 class PersonMasterNode extends PersonNode {
 	public PersonMasterNode(String name) {
 		super(name);
+
+		// Actually don't hide the name
+		this.name = name;
 	}
 
 	@Override
