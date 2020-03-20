@@ -7,7 +7,7 @@ A Facebook Messenger chat archive visualizer. The screen is populated by nodes c
 
 ## Requirements
 
-This program can either run from the Processing window, or executed as a standalone application. The former would require [Processing 3 or above](https://processing.org/download/). The latter requires nothing :slightly_smiling_face:.​
+This program can either run from the Processing window, or executed as a standalone application. The former would require [Processing 3 or above](https://processing.org/download/). The latter requires [Java Runtime Environment](https://www.java.com/en/download/).
 
 ## How to Use
 
