@@ -1,5 +1,5 @@
 class StatCardHover {
-	final float STATCARD_HOVER_TEXT_SIZE = 16;
+	final float STATCARD_HOVER_TEXT_SIZE = 14;
 	final float STATCARD_HOVER_V_PADDING = 8;
 	final float STATCARD_HOVER_H_PADDING = 20;
 
@@ -16,15 +16,16 @@ class StatCardHover {
 		if (this.person == null) return;
 
 		pg.pushMatrix();
-		pg.translate(mouseX, mouseY);
-		float tw = textWidth(this.person.name);
+		pg.translate(mouseX + 10, mouseY + 10);
+		float w = textWidth(this.person.name) + (STATCARD_HOVER_H_PADDING * 2);
+		float h = STATCARD_HOVER_TEXT_SIZE + (STATCARD_HOVER_V_PADDING * 2);
 		pg.noStroke();
 		pg.textSize(STATCARD_HOVER_TEXT_SIZE);
 		pg.fill(20, 200);
-		pg.rect(0, 0, tw + STATCARD_HOVER_H_PADDING * 2, STATCARD_HOVER_TEXT_SIZE + STATCARD_HOVER_V_PADDING * 2);
+		pg.rect(0, 0, w, h);
 		pg.fill(255);
-		pg.textAlign(LEFT, TOP);
-		pg.text(this.person.name, STATCARD_HOVER_H_PADDING, STATCARD_HOVER_V_PADDING);
+		pg.textAlign(CENTER, CENTER);
+		pg.text(this.person.name, w / 2, h / 2);
 		pg.popMatrix();
 
 		this.show = false;
