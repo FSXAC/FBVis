@@ -179,6 +179,12 @@ void draw() {
         g_uiLayer.render();
         image(g_uiLayer.pg, 0, 0);
     }
+
+    // HACK: we need another robust way to indicate global index
+    if (gi >= man.organizedMessagesList.size()) {
+        gi = 0;
+        resetPersonStats();
+    }
 }
 
 void updateState() {
@@ -318,6 +324,12 @@ void drawListMode(MessageData current) {
     text(date, 10, y);
     text(current.sender, 80, y);
     text(current.content, 200, y);
+}
+
+void resetPersonStats() {
+    for (PersonNode p : persons) {
+        p.stats.reset();
+    }
 }
 
 
