@@ -260,8 +260,8 @@ void processCurrentmessageData(MessageData current) {
         // For each person, update their stats
         senderPerson.incrementMsgSent();
         receivePerson.incrementMsgReceived();
-        senderPerson.statLastInteractionTime = current.timestamp;
-        receivePerson.statLastInteractionTime = current.timestamp;
+        senderPerson.stats.lastInteractTimestamp = current.timestamp;
+        receivePerson.stats.lastInteractTimestamp = current.timestamp;
     }
 }
 

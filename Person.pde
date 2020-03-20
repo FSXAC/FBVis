@@ -10,6 +10,18 @@ final float PERSON_NAME_TEXT_SIZE = 12;
 final float REFRESH_DECAY = 0.99;
 final float REFRESH_THRES = 0.01;
 
+class PersonStat { 
+	int msgReceived;
+	int msgSent;
+	long lastInteractTimestamp;
+
+	public PersonStat() {
+		msgReceived = 0;
+		msgSent = 0;
+		lastInteractTimestamp = 0;
+	}
+}
+
 class PersonNode {
 	float x, targetX; 
 	float y, targetY;
@@ -18,10 +30,8 @@ class PersonNode {
 	float refreshScore;
 
 	// Stats
-	int statMsgReceived;
-	int statMsgSent;
-	long statLastInteractionTime;
-
+	PersonStat stats;
+	
 	public PersonNode(String name) {
 		this.refreshScore = 1.0;
 
@@ -29,9 +39,7 @@ class PersonNode {
 		this.y = height / 2;
 
 		// Reset stats
-		this.statMsgReceived = 0;
-		this.statMsgSent = 0;
-		this.statLastInteractionTime = 0;
+		this.stats = new PersonStat();
 
 		// Set name
 		if (CONFIG.hideRealNames) {
@@ -60,11 +68,11 @@ class PersonNode {
 	}
 
 	public void incrementMsgReceived() {
-		this.statMsgReceived++;
+		this.stats.msgReceived++;
 	}
 
 	public void incrementMsgSent() {
-		this.statMsgSent++;
+		this.stats.msgSent++;
 	}
 
 	public void draw() {
