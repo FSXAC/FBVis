@@ -37,6 +37,7 @@ Progress progress;
 long currentTimestamp;
 long nextTimestamp;
 Timeline timeline;
+SpeedControl speedControl;
 
 // Font
 PFont font;
@@ -50,27 +51,6 @@ void settings() {
     // But none of the Processing functions are available
     size(1920, 1080, P2D);
     smooth(2);
-}
-
-// Async initialization function
-void initialize() {
-    // Load types
-    font = createFont("Arial", 32);
-    monospaceFont = createFont("Consolas", 32);
-
-    // Load and process 
-    progress = new Progress();
-    man = new MessageManager(CONFIG.dataRootPath);
-
-    // Initialize layers
-    g_uiLayer = new RenderUILayer();
-    g_uiLayer.timeline = timeline;
-
-    g_pplLayer = new RenderPeopleLayer();
-    g_pplLayer.persons = persons;
-
-    // Set flag to true when done
-    initialized = true;
 }
 
 void setup() {
@@ -90,6 +70,7 @@ void setup() {
     payloadFactory = new PayloadFactory(payloads);
 
     timeline = new Timeline(50, height - 50, width - 100, 30);
+    speedControl = new SpeedControl();
 
     if (CONFIG.enableShaders) {
         fx = new PostFX(this);
@@ -101,6 +82,28 @@ void setup() {
     // [3]
     initialized = false;
     thread("initialize");
+}
+
+// Async initialization function
+void initialize() {
+    // Load types
+    font = createFont("Arial", 32);
+    monospaceFont = createFont("Consolas", 32);
+
+    // Load and process 
+    progress = new Progress();
+    man = new MessageManager(CONFIG.dataRootPath);
+
+    // Initialize layers
+    g_uiLayer = new RenderUILayer();
+    g_uiLayer.timeline = timeline;
+    g_uiLayer.speedControl = speedControl;
+
+    g_pplLayer = new RenderPeopleLayer();
+    g_pplLayer.persons = persons;
+
+    // Set flag to true when done
+    initialized = true;
 }
 
 int gi = 0;
@@ -191,7 +194,7 @@ void updateState() {
         }
 
         // Get all the messages for the next time stamp
-        nextTimestamp = currentTimestamp + CONFIG.deltaTimestamp;
+        nextTimestamp = currentTimestamp + (CONFIG.deltaTimestamp * speedControl.getSpeed());
 
         long messageTimestamp = man.organizedMessagesList.get(gi % man.organizedMessagesList.size()).timestamp;
 
@@ -216,7 +219,7 @@ void updateState() {
         currentTimestamp = nextTimestamp;
 
     } else {
-        for (int i = 0; i < CONFIG.numMsgPerFrame; i++) {
+        for (int i = 0; i < (CONFIG.numMsgPerFrame * speedControl.getSpeed()); i++) {
             int di = gi % man.organizedMessagesList.size();
             MessageData current = man.organizedMessagesList.get(di);
             processCurrentmessageData(current);
@@ -320,5 +323,13 @@ void keyPressed() {
         currentTimestamp += CONFIG.deltaSkipTimestamp;
     } else if (key == 'h') {
         g_toggle_UI = !g_toggle_UI;
+    }
+
+    // Speed control (test)
+    else if (key == '=') {
+        speedControl.incrementSpeed();
+    }
+    else if (key == '-') {
+        speedControl.decrementSpeed();
     }
 }

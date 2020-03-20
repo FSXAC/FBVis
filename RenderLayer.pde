@@ -39,6 +39,7 @@ class RenderUILayer extends RenderLayer {
 
 	// Reference to the timeline object
 	Timeline timeline;
+	SpeedControl speedControl;
 
 	public RenderUILayer() {
 		super();
@@ -50,6 +51,7 @@ class RenderUILayer extends RenderLayer {
 		this.pg.clear();
 		this.renderTimestamp();
 		this.renderTimeline();
+		this.renderSpeedControl();
 	}
 
 	private void renderTimestamp() {
@@ -73,6 +75,11 @@ class RenderUILayer extends RenderLayer {
 		final float percentX = map(this.timeline.percentage, 0, 1, this.timeline.x, this.timeline.x + this.timeline.w);
 		this.pg.strokeWeight(3);
 		this.pg.line(percentX, this.timeline.y, percentX, this.timeline.y + this.timeline.h);
+	}
+
+	private void renderSpeedControl() {
+		if (this.speedControl == null) return;
+		this.pg.image(this.speedControl.getSpeedIcon(), 10, 10);
 	}
 }
 
