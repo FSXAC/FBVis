@@ -18,6 +18,9 @@ class MessageManager {
         int j = 0;
         for (String path : this.rootPaths ) {
             String[] filenames = listFileNames(path);
+
+            // Null check
+            if (filenames == null) continue;
             
             // create a new messageutil for each entry
             int i = 0;
