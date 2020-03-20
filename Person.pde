@@ -115,6 +115,10 @@ class PersonNode {
 
 		// Done
 		pg.popMatrix();
+
+		// Set hover state for UI (todo: add mutex lock so only one hover is possible and mouse input is consumed)
+		statcardHover.person = this;
+		statcardHover.show = true;
 	}
 
 	protected void drawNode(PGraphics pg) {

@@ -40,6 +40,7 @@ class RenderUILayer extends RenderLayer {
 	// Reference to the timeline object
 	Timeline timeline;
 	SpeedControl speedControl;
+	StatCardHover statCardHover;
 
 	public RenderUILayer() {
 		super();
@@ -52,6 +53,7 @@ class RenderUILayer extends RenderLayer {
 		this.renderTimestamp();
 		this.renderTimeline();
 		this.renderSpeedControl();
+		this.renderStatCardHover();
 	}
 
 	private void renderTimestamp() {
@@ -80,6 +82,12 @@ class RenderUILayer extends RenderLayer {
 	private void renderSpeedControl() {
 		if (this.speedControl == null) return;
 		this.pg.image(this.speedControl.getSpeedIcon(), 10, 10);
+	}
+
+	private void renderStatCardHover() {
+		this.pg.textFont(font);
+		if (this.statCardHover == null) return;
+		this.statCardHover.draw(this.pg);
 	}
 }
 

@@ -19,6 +19,8 @@ PostFX fx;
 RenderUILayer g_uiLayer;
 RenderPeopleLayer g_pplLayer;
 
+StatCardHover statcardHover;
+
 // Hash map to hold to the person
 IntDict nameToPersonIndexMap;
 ArrayList<PersonNode> persons;
@@ -71,6 +73,7 @@ void setup() {
 
     timeline = new Timeline(50, height - 50, width - 100, 30);
     speedControl = new SpeedControl();
+    statcardHover = new StatCardHover();
 
     if (CONFIG.enableShaders) {
         fx = new PostFX(this);
@@ -98,6 +101,7 @@ void initialize() {
     g_uiLayer = new RenderUILayer();
     g_uiLayer.timeline = timeline;
     g_uiLayer.speedControl = speedControl;
+    g_uiLayer.statCardHover = statcardHover;
 
     g_pplLayer = new RenderPeopleLayer();
     g_pplLayer.persons = persons;
