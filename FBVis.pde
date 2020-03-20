@@ -28,9 +28,7 @@ ArrayList<PersonNode> persons;
 ArrayList<Payload> payloads;
 final int PAYLOADS_MAXSIZE = 2048;
 PayloadFactory payloadFactory;
-
 MessageManager man;
-boolean initialized;
 
 // For display loading bars on splashscreen
 Progress progress;
@@ -47,6 +45,11 @@ PFont monospaceFont;
 
 // Global togglable flags
 Boolean g_toggle_UI = true;
+
+int g_state;
+final int STATE_UNINIT = 0;
+final int STATE_RUN = 1;
+final int STATE_PAUSE = 2;
 
 void settings() {
     // Size and fullscreen should go inside here
@@ -65,6 +68,7 @@ void setup() {
     CONFIG = new FBVisConfig();
     
     // [2]
+    g_state = STATE_UNINIT;
     nameToPersonIndexMap = new IntDict();
     persons = new ArrayList<PersonNode>();
 
@@ -83,7 +87,6 @@ void setup() {
     frameRate(CONFIG.fps);
 
     // [3]
-    initialized = false;
     thread("initialize");
 }
 
@@ -92,7 +95,7 @@ void initialize() {
     // Load types
     font = createFont("Arial", 32);
     monospaceFont = createFont("Consolas", 32);
-
+ //<>// //<>//
     // Load and process 
     progress = new Progress();
     man = new MessageManager(CONFIG.dataRootPath);
@@ -107,12 +110,16 @@ void initialize() {
     g_pplLayer.persons = persons;
 
     // Set flag to true when done
-    initialized = true;
+    g_state = STATE_RUN;
 }
 
 int gi = 0;
 boolean startFlag = true;
 
+// TODO: reset program
+void reset() {
+    // not implemented
+}
 
 void drawLoadingScreen() {
     // Draws the loading screen (before finished initialization)
@@ -143,13 +150,21 @@ void drawLoadingScreen() {
 }
 
 void draw() {
-    // If uninitialized, then display the loading screen
-    if (!initialized) {
-        drawLoadingScreen();
-        return;
+    switch (g_state) {
+        case STATE_UNINIT:
+            drawLoadingScreen();
+            break;
+        case STATE_RUN:
+            updateState();
+            drawRun();
+            break;
+        case STATE_PAUSE:
+            drawRun();
+            break;
     }
+}
 
-    updateState();
+void drawRun() {
 
     //background(0);
     fill(0, 100);
@@ -183,11 +198,15 @@ void draw() {
     // HACK: we need another robust way to indicate global index
     if (gi >= man.organizedMessagesList.size()) {
         gi = 0;
-        resetPersonStats();
+        g_state = STATE_PAUSE;
     }
 }
 
 void updateState() {
+    if (gi == 0) {
+        resetPersonStats();
+    }
+
     if (CONFIG.enableUniformTime) {
         if (startFlag) {
             long firstTimeStamp = man.organizedMessagesList.get(gi).timestamp;
@@ -236,6 +255,11 @@ void updateState() {
             gi++;
             currentTimestamp = current.timestamp;
         }
+    }
+
+    // Update persons
+    for (PersonNode person : persons) {
+        person.update();
     }
 }
 
@@ -347,5 +371,14 @@ void keyPressed() {
     }
     else if (key == '-') {
         speedControl.decrementSpeed();
+    }
+
+    // play/pause
+    else if (key == ' ') {
+        if (g_state == STATE_RUN) {
+            g_state = STATE_PAUSE;
+        } else if (g_state == STATE_PAUSE) {
+            g_state = STATE_RUN;
+        }
     }
 }

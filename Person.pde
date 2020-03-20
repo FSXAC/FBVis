@@ -16,6 +16,10 @@ class PersonStat {
 	long lastInteractTimestamp;
 
 	public PersonStat() {
+		this.reset();
+	}
+
+	public void reset() {
 		msgReceived = 0;
 		msgSent = 0;
 		lastInteractTimestamp = 0;
@@ -89,9 +93,6 @@ class PersonNode {
 		} else {
 			this.drawNode(pg);
 		}
-
-		// Update upon draw
-		this.update();
 	}
 
 	protected void drawNodeInFocus(PGraphics pg) {
