@@ -1,16 +1,41 @@
-final boolean USE_ARCHIMEDEAN_SPIRAL = true;
+
+final int SPIRAL_ARCHIMEDEAN = 0;
+final int SPIRAL_QUADRATIC = 1;
+final int SPIRAL_NOTSPIRAL = 2;
+
+final int SPIRAL_SELECT = SPIRAL_ARCHIMEDEAN;
 
 // Function that gives a vector around a point 
 PVector spiral(int n, float centerX, float centerY) {
-    float x, y;
-    if (USE_ARCHIMEDEAN_SPIRAL) {
-        float a = (n + 0) * 137.5;
-        float r = 30 * sqrt(n + 0);
-        x = r * cos(a) + centerX;
-        y = r * sin(a) + centerY;
-    } else {
-        x = (100 + 6 * n) * sin(n * PI/5) + centerX;
-        y = (100 + 6 * n) * cos(n * PI/5) + centerY;
+    float x = 0, y = 0;
+
+    switch (SPIRAL_SELECT) {
+        case SPIRAL_ARCHIMEDEAN:
+            if (n > 0) {
+                n += 1;
+            }
+
+            float a = (n) * 2.4;
+            float r = 30 * sqrt(n);
+            x = r * cos(a) + centerX;
+            y = r * sin(a) + centerY;
+            break;
+        case SPIRAL_QUADRATIC:
+            float sqrtn = sqrt(n);
+            x = 30 * sqrtn * cos(TWO_PI * sqrtn) + centerX;
+            y = 30 * sqrtn * sin(TWO_PI * sqrtn) + centerY;
+            break;
+        case SPIRAL_NOTSPIRAL:
+            if (n == 0) {
+                x = centerX;
+                y = centerY;
+            } else {
+                float dx = (width - 50) / 20;
+                float dy = (height - 50) / 10;
+                x = (n % 20) * dx + 25;
+                y = floor(n / 20) * dy + 25;
+            }
+            break;
     }
 
     return new PVector(x, y);
