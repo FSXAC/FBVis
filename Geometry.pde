@@ -16,7 +16,7 @@ PVector spiral(int n, float centerX, float centerY) {
             }
 
             float a = (n) * 2.4;
-            float r = 30 * sqrt(n);
+            float r = 16 * sqrt(n);
             x = r * cos(a) + centerX;
             y = r * sin(a) + centerY;
             break;

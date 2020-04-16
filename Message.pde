@@ -39,7 +39,7 @@ class MessageManager {
                     continue;
                 }
 
-                String[] pathSegments = {path, filename, "message.json"};
+                String[] pathSegments = {path, filename, "message_1.json"};
                 String messageDataPath = pathJoins(pathSegments);
                 
                 if (CONFIG.enableVerbose) println("Loading: " + messageDataPath);
