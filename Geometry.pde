@@ -2,6 +2,7 @@
 final int SPIRAL_ARCHIMEDEAN = 0;
 final int SPIRAL_QUADRATIC = 1;
 final int SPIRAL_NOTSPIRAL = 2;
+final float SPIRAL_ARCHIMEDEAN_R = 30;
 
 final int SPIRAL_SELECT = SPIRAL_ARCHIMEDEAN;
 
@@ -16,7 +17,7 @@ PVector spiral(int n, float centerX, float centerY) {
             }
 
             float a = (n) * 2.4;
-            float r = 16 * sqrt(n);
+            float r = SPIRAL_ARCHIMEDEAN_R * sqrt(n);
             x = r * cos(a) + centerX;
             y = r * sin(a) + centerY;
             break;

@@ -47,21 +47,26 @@ class MessageManager {
                     i++;
                     continue;
                 }
-
+                
                 String messageDataPath = pathJoin(path, filename);
-                println(messageDataPath);
+
+                /* Find all the JSON files in the path */
+                String[] sortedJsonFiles;
                 try {
-                    StringList jsonFiles = listFileNames(messageDataPath, "json");
-                    String[] sortedJsonFiles = sortFilenamesNumerically(jsonFiles);
-                    for (String s: sortedJsonFiles) {
-                        println(s);
-                    }
+                    sortedJsonFiles = sortFilenamesNumerically(listFileNames(messageDataPath, "json"));
                 } catch (NotDirectoryException e) {
                     continue;
                 }
                 
+                /* Get message util object and populate with all the json files */
                 if (CONFIG.enableVerbose) println("Loading: " + messageDataPath);
                 MessageUtil newMessageUtil = new MessageUtil(messageDataPath);
+
+                /* Populate in reverse order */
+                for (int idx = sortedJsonFiles.length - 1; idx >= 0; idx--) {
+                    String jsonFilePath = pathJoin(messageDataPath, sortedJsonFiles[idx]);
+                    newMessageUtil.processMessageFile(jsonFilePath);
+                }
                 
                 this.messageUtils.add(newMessageUtil);
                 
@@ -74,8 +79,6 @@ class MessageManager {
             j++;
             progress.setLoadingLargeProgress(j / this.rootPaths.size());
         }
-
-        exit();
         
         this.buildMessagesList();
     }

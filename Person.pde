@@ -7,7 +7,8 @@ final float PERSON_NODE_SIZE = 15;
 final float PERSON_MASTER_NODE_SIZE = 20;
 final float PERSON_NAME_TEXT_SIZE = 12;
 
-final float REFRESH_DECAY = 0.99;
+final float REFRESH_DECAY = 0.9999;
+// final float REFRESH_DECAY = 0.99;
 final float REFRESH_THRES = 0.01;
 
 class PersonStat { 
