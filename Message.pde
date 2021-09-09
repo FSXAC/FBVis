@@ -11,13 +11,22 @@ class MessageManager {
         this.rootPaths = new ArrayList<String>();
         
         // TODO: this should go in the config
-        this.rootPaths.add(pathJoin(root, "messages\\inbox"));
-        this.rootPaths.add(pathJoin(root, "messages\\archived_threads"));
-        this.rootPaths.add(pathJoin(root, "messages\\filtered_threads"));
+        this.rootPaths.add(pathJoin(root, "messages", "inbox"));
+        this.rootPaths.add(pathJoin(root, "messages", "archived_threads"));
+        this.rootPaths.add(pathJoin(root, "messages", "filtered_threads"));
 
         int j = 0;
-        for (String path : this.rootPaths ) {
-            String[] filenames = listFileNames(path);
+        StringList filenames;
+        for (String path : this.rootPaths) {
+            try {
+                filenames = listFileNames(path);
+            } catch (NotDirectoryException e) {
+                println("Error");
+                exit();
+                return;
+                
+                // TODO: throw exception
+            }
 
             // Null check
             if (filenames == null) continue;
@@ -39,8 +48,17 @@ class MessageManager {
                     continue;
                 }
 
-                String[] pathSegments = {path, filename, "message_1.json"};
-                String messageDataPath = pathJoins(pathSegments);
+                String messageDataPath = pathJoin(path, filename);
+                println(messageDataPath);
+                try {
+                    StringList jsonFiles = listFileNames(messageDataPath, "json");
+                    String[] sortedJsonFiles = sortFilenamesNumerically(jsonFiles);
+                    for (String s: sortedJsonFiles) {
+                        println(s);
+                    }
+                } catch (NotDirectoryException e) {
+                    continue;
+                }
                 
                 if (CONFIG.enableVerbose) println("Loading: " + messageDataPath);
                 MessageUtil newMessageUtil = new MessageUtil(messageDataPath);
@@ -50,12 +68,14 @@ class MessageManager {
                 i++;
                 
                 // Status
-                progress.setLoadingProgress(i / filenames.length);
+                progress.setLoadingProgress(i / filenames.size());
             }
 
             j++;
             progress.setLoadingLargeProgress(j / this.rootPaths.size());
         }
+
+        exit();
         
         this.buildMessagesList();
     }
@@ -147,13 +167,14 @@ class MessageUtil {
 
     boolean initialized;
 
-    ////////////////// CONSTRUCTOR
-    public MessageUtil(String filePath) {
+    /* Message util takes a file path and populates
+     * messagesList with the data read from the file
+     * @param path, the path to the inbox mail folder
+     */
+    public MessageUtil(String path) {
         this.filePath = filePath;
         this.messagesList = new ArrayList<MessageData>();
-
-        this.processMessageFile(filePath);
-        this.initialized = true;
+        this.initialized = false;
     }
 
     ////////////////// PUBLIC FUNCTIONS
@@ -177,8 +198,7 @@ class MessageUtil {
         return messagesList;
     }
 
-    ////////////////// PRIVATE FUNCTIONS
-    private void processMessageFile(String filePath) {
+    public void processMessageFile(String filePath) {
         // We expect the file path to be JSON
 
         // TODO: wrap in try

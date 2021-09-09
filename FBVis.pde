@@ -54,7 +54,7 @@ final int STATE_PAUSE = 2;
 void settings() {
     // Size and fullscreen should go inside here
     // But none of the Processing functions are available
-    size(1920, 1080, P2D);
+    size(1200, 700, P2D);
     smooth(2);
 }
 
@@ -93,9 +93,9 @@ void setup() {
 // Async initialization function
 void initialize() {
     // Load types
-    font = createFont("Arial", 32);
-    monospaceFont = createFont("Consolas", 32);
- //<>// //<>//
+    font = createFont("Helvetica", 32);
+    monospaceFont = createFont("Courier", 32);
+     //<>// //<>//
     // Load and process 
     progress = new Progress();
     man = new MessageManager(CONFIG.dataRootPath);
