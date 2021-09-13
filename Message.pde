@@ -1,3 +1,6 @@
+// if number of participants in a thread is bigger than this number, ignore it
+final int LARGE_GROUP_PARTICIPANT_THRES = 20;
+
 // This should be a class that manages all messages, and message utils
 class MessageManager {
     ArrayList<MessageData> organizedMessagesList;
@@ -68,6 +71,7 @@ class MessageManager {
                     newMessageUtil.processMessageFile(jsonFilePath);
                 }
                 
+                newMessageUtil.initialized = true;
                 this.messageUtils.add(newMessageUtil);
                 
                 i++;
@@ -209,7 +213,12 @@ class MessageUtil {
 
         // Get participants
         JSONArray participantsData = jsonData.getJSONArray("participants");
+        if (participantsData.size() > LARGE_GROUP_PARTICIPANT_THRES) {
+            return;
+        }
+
         ArrayList<String> participants = new ArrayList<String>();
+
         for (int i = 0; i < participantsData.size(); i++) {
             JSONObject nameObj = participantsData.getJSONObject(i);
 
