@@ -2,9 +2,10 @@
 final int SPIRAL_ARCHIMEDEAN = 0;
 final int SPIRAL_QUADRATIC = 1;
 final int SPIRAL_NOTSPIRAL = 2;
+final int SPIRAL_CUSTOM = 3;
 final float SPIRAL_ARCHIMEDEAN_R = 30;
 
-final int SPIRAL_SELECT = SPIRAL_ARCHIMEDEAN;
+final int SPIRAL_SELECT = SPIRAL_CUSTOM;
 
 // Function that gives a vector around a point 
 PVector spiral(int n, float centerX, float centerY) {
@@ -37,6 +38,11 @@ PVector spiral(int n, float centerX, float centerY) {
                 y = floor(n / 20) * dy + 25;
             }
             break;
+        case SPIRAL_CUSTOM:
+            r = -1 * pow(70, pow(0.3 * n, 0.07));
+            float m = 1.001;
+            x = width/2 + r * cos(n * m);
+            y = height/2 + r * sin(n * m);
     }
 
     return new PVector(x, y);
