@@ -6,8 +6,8 @@ class SpeedControl {
 
 	// TODO: put this in config
 	final int SPEED_MULTIPLIER_LOW = 1;
-	final int SPEED_MULTIPLIER_MED = 2;
-	final int SPEED_MULTIPLIER_HIGH = 4;
+	final int SPEED_MULTIPLIER_MED = 4;
+	final int SPEED_MULTIPLIER_HIGH = 16;
 
 	public SpeedControl() {
 		state = 0;
