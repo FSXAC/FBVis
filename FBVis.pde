@@ -46,6 +46,14 @@ PFont monospaceFont;
 // Global togglable flags
 Boolean g_toggle_UI = true;
 
+// Mouse dragging control
+Boolean g_mouseLocked = false;
+float mouseDown_x = 0;
+float mouseDown_y = 0;
+
+float g_offsetX = 0.0;
+float g_offsetY = 0.0;
+
 int g_state;
 final int STATE_UNINIT = 0;
 final int STATE_RUN = 1;
@@ -165,13 +173,14 @@ void draw() {
 }
 
 void drawRun() {
-
-    //background(0);
+    // background(0);
     fill(0, 100);
     noStroke();
     rect(0, 0, width, height);
     
     // Draw a grid of people
+    pushMatrix();
+    translate(g_offsetX, g_offsetY);
     g_pplLayer.render();
     image(g_pplLayer.pg, 0, 0);
 
@@ -185,7 +194,8 @@ void drawRun() {
         .bloom(0.8, 5, 30)
         .rgbSplit(constrain(payloads.size(), 0, 20))
         .compose();
-    } 
+    }
+    popMatrix();
 
     // Draw current date and timeline
     if (g_toggle_UI) {
@@ -381,4 +391,32 @@ void keyPressed() {
             g_state = STATE_RUN;
         }
     }
+}
+
+
+// Mouse input handling
+void mousePressed() {
+    g_mouseLocked = true;
+
+    mouseDown_x = mouseX - g_offsetX;
+    mouseDown_y = mouseY - g_offsetY;
+}
+
+void mouseDragged() {
+    if (g_mouseLocked) {
+        g_offsetX = mouseX - mouseDown_x;
+        g_offsetY = mouseY - mouseDown_y;
+    }
+}
+
+void mouseReleased() {
+    g_mouseLocked = false;
+}
+
+float mouseXSpace() {
+    return mouseX - g_offsetX;
+}
+
+float mouseYSpace() {
+    return mouseY - g_offsetY;
 }
