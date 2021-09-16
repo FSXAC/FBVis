@@ -86,7 +86,7 @@ class PersonNode {
 
 	public void draw(PGraphics pg) {
 		// If mouse position is over the person, change UI
-		if (abs(mouseX - this.x) < PERSON_HITBOX_R && abs(mouseY - this.y) < PERSON_HITBOX_R) {
+		if (abs(mouseXSpace() - this.x) < PERSON_HITBOX_R && abs(mouseYSpace() - this.y) < PERSON_HITBOX_R) {
 			this.drawNodeInFocus(pg);
 		} else if (this.refreshScore < REFRESH_THRES) {
 			return;

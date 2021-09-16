@@ -30,6 +30,8 @@ final int PAYLOADS_MAXSIZE = 2048;
 PayloadFactory payloadFactory;
 MessageManager man;
 
+PackedSpiral g_layoutGen;
+
 // For display loading bars on splashscreen
 Progress progress;
 
@@ -93,6 +95,9 @@ void setup() {
         fx.preload(BloomPass.class);
     }
     frameRate(CONFIG.fps);
+
+    // Geometry and layout
+    g_layoutGen = new PackedSpiral(70, width/2, height/2);
 
     // [3]
     thread("initialize");
@@ -319,7 +324,7 @@ void addNewPerson(String name) {
         new_person = new PersonNode(name);
     }
 
-    final PVector new_position = spiral(index, width/2, height/2);
+    final PVector new_position = g_layoutGen.pos(index);
 
     new_person.setTargetPosition(new_position.x, new_position.y);
     persons.add(new_person);
@@ -403,6 +408,10 @@ void mousePressed() {
 }
 
 void mouseDragged() {
+    if (g_state < STATE_RUN) {
+        return;
+    }
+
     if (g_mouseLocked) {
         g_offsetX = mouseX - mouseDown_x;
         g_offsetY = mouseY - mouseDown_y;
