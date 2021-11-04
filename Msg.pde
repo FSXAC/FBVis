@@ -55,7 +55,7 @@ class MsgManager {
 }
 
 /* Parses a single thread */
-class MsgThread extends Counter {
+class MsgThread {
 
     /* Reference to parent/manager (for people look up) */
     private MsgManager manager;
@@ -152,7 +152,7 @@ class MsgThread extends Counter {
 
             /* Check if the name is "default name/no name" */
             if (name.equals(CONFIG.defaultName)) {
-                name += ' '  + str(Counter.count++);
+                name += ' '  + str(UnknownPersonCounter.count++);
             }
 
             /* Get ID from manager and populate member array */
