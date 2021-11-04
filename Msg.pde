@@ -46,10 +46,15 @@ class MsgThread {
     /* Reference to parent/manager (for people look up) */
     private MsgManager manager;
 
-    /* Members */
+    /* Message data */
     private String threadRootPath;
     private String[] jsonFiles;
-    private ArrayList<MsgData> messagesList;
+
+    /* Contains all the message data */
+    private ArrayList<MsgData> messagesData;
+
+    /* The index that points to the head of messagesData */
+    private int head;
 
     /* Participants (ids of people) */
     private IntList participant_ids;
@@ -88,6 +93,9 @@ class MsgThread {
 
         /* process all files */
         this.processAllJsonFiles();
+
+        /* reset data pointer */
+        this.head = 0;
     }
 
     /**
@@ -191,14 +199,51 @@ class MsgThread {
                 );
 
                 /* Add msg to list of msgs */
-                messagesList.add(msg);
+                messagesData.add(msg);
             }
         }
     }
 
     /**
-     * 
+     * Reset messages data index/pointer
      */
+    public void resetHead() {
+        this.head = 0;
+    }
+
+    /**
+     * Get HEAD msg
+     * @return HEAD MsgData
+     */
+    public MsgData getHeadMsgData() {
+        return this.messagesData.get(this.head);
+    }
+
+    /**
+     * Get the timestamp of the HEAD
+     * @return the timestamp of the MsgData at HEAD
+     */
+    public long getHeadTimestamp() {
+        return this.getHeadMsgData().getTimestamp();
+    }
+
+    /**
+     * Get a list of messages from head to a specified timestamp
+     * Then increase the HEAD index up to the time
+     * @param endTime the end timestamp
+     */
+    public ArrayList<MsgData> getMsgsUntil(long endTime) {
+
+        ArrayList<MsgData> msgs = new ArrayList<MsgData>();
+        while (this.getHeadTimestamp() < endTime) {
+
+            /* Add head msg and increment head */
+            msgs.add(this.getHeadMsgData());
+            this.head++;
+        }
+
+        return msgs;
+    }
 }
 
 /**
@@ -232,4 +277,9 @@ class MsgData {
     public Boolean isGroupMessage() {
         return this.receiver_ids.size() > 1;
     }
+
+    /**
+     * Getters
+     */
+    public long getTimestamp() { return this.timestamp; }
 }
