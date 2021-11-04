@@ -6,6 +6,11 @@ class MsgManager {
     /* TODO: instead of mapping to string, map to person obj */
     HashMap<int, String> personMap;
     
+    /**
+     * MsgManager handles all the data processing of the messages
+     * .json files, as well as holding onto the data containers of msgs
+     * @param rootPath the rootpath where the downloaded messages are archived
+     */
     public MsgManager(String rootPath) {
 
         /* Add messages paths to be searched */
@@ -18,6 +23,11 @@ class MsgManager {
         this.personMap = new HashMap<int, String>();
     }
 
+    /**
+     * Get an ID given a name
+     * @param name the name
+     * @return the id associated with the name; -1 if is not found
+     */
     public int getPersonIDFromName(String name) {
         for (Map.Entry person : this.personMap.entrySet()) {
             if (person.getValue().equals(name)) {
@@ -28,6 +38,11 @@ class MsgManager {
         return -1;
     }
 
+    /**
+     * Get an ID given a name; allocate a new ID->name mapping if not found
+     * @param name the name
+     * @param the id associated with the name
+     */
     public int getAndSetPersonIDFromName(String name) {
         final int id = this.getPersonIDFromName(name);
         if (id == -1) {
