@@ -4,7 +4,7 @@ class MsgManager {
 
     /* ID to person hash map */
     /* TODO: instead of mapping to string, map to person obj */
-    HashMap<int, String> personMap;
+    HashMap<Integer, String> personMap;
     
     /**
      * MsgManager handles all the data processing of the messages
@@ -14,13 +14,12 @@ class MsgManager {
     public MsgManager(String rootPath) {
 
         /* Add messages paths to be searched */
-        this.msgRootPaths = {
-            pathJoin(rootPath, "messages", "inbox"),
-            pathJoin(rootPath, "messages", "archived_threads"),
-            pathJoin(rootPath, "messages", "filtered_threads")
-        };
+        this.msgRootPaths = new String[3];
+        this.msgRootPaths[0] = pathJoin(rootPath, "messages", "inbox");
+        this.msgRootPaths[1] = pathJoin(rootPath, "messages", "archived_threads");
+        this.msgRootPaths[2] = pathJoin(rootPath, "messages", "filtered_threads");
 
-        this.personMap = new HashMap<int, String>();
+        this.personMap = new HashMap<Integer, String>();
     }
 
     /**
@@ -31,7 +30,7 @@ class MsgManager {
     public int getPersonIDFromName(String name) {
         for (Map.Entry person : this.personMap.entrySet()) {
             if (person.getValue().equals(name)) {
-                return person.getKey();
+                return (int) person.getKey();
             }
         }
 
@@ -56,7 +55,7 @@ class MsgManager {
 }
 
 /* Parses a single thread */
-class MsgThread {
+class MsgThread extends Counter {
 
     /* Reference to parent/manager (for people look up) */
     private MsgManager manager;
@@ -72,10 +71,7 @@ class MsgThread {
     private int head;
 
     /* Participants (ids of people) */
-    private IntList participant_ids;
-
-    /* Unknown person counter (for renaming) */
-    private static int unknownCounter = 0;
+    private ArrayList<Integer> participant_ids;
 
     /**
      * Constructor for the thread parser; takes in a path to where the
@@ -97,14 +93,13 @@ class MsgThread {
         try {
             sortedJsonFiles = sortFilenamesNumerically(
                 listFileNames(threadPath, "json"));
-        } catch (NotDirectoryException e) {
-            println("Not a directory exception occured while \
-                    attempting to parse " + threadPath);
-            exit();
-        }
 
-        /* initialize message containers */
-        this.jsonFiles = new String[sortedJsonFiles.length];
+            /* initialize message containers */
+            this.jsonFiles = new String[sortedJsonFiles.length];
+        } catch (NotDirectoryException e) {
+            println("Not a directory exception occured while "
+                    + "attempting to parse " + threadPath);
+        }
 
         /* process all files */
         this.processAllJsonFiles();
@@ -137,7 +132,7 @@ class MsgThread {
      * (only need to run once even for multiple json files)
      * @param filepath the full path to the .json file
      */
-    private int processParticipants(String filepath) {
+    private void processParticipants(String filepath) {
         /* Load JSON object using Processing's JSON function */
         final JSONObject jsonData = loadJSONObject(filepath);
 
@@ -149,7 +144,7 @@ class MsgThread {
          */
 
         /* Instantiate array of participant ids */
-        this.participant_ids = new ArrayList<int>();
+        this.participant_ids = new ArrayList<Integer>();
 
         /* Get participants from file */
         for (int i = 0; i < participantsData.size(); i++) {
@@ -157,8 +152,7 @@ class MsgThread {
 
             /* Check if the name is "default name/no name" */
             if (name.equals(CONFIG.defaultName)) {
-                name += ' '  + str(unknownCounter);
-                unknownCounter++;
+                name += ' '  + str(Counter.count++);
             }
 
             /* Get ID from manager and populate member array */
@@ -182,16 +176,16 @@ class MsgThread {
         for (int i = msgsData.size() - 1; i >= 0; i--) {
             final JSONObject msgData = msgsData.getJSONObject(i);
 
-            if (msgData.getBoolean(is_unsent))
+            if (msgData.getBoolean("is_unsent"))
                 continue;
 
-            if (msgData.getString("type").equals("Generic") {
+            if (msgData.getString("type").equals("Generic")) {
                 
                 /* Read and verify the data from file */
                 final String content = msgData.getString("content");
                 final String sender = msgData.getString("sender_name");
-                assert content;
-                assert sender;
+                assert content != null;
+                assert sender != null;
 
                 final int sender_id = this.manager.getPersonIDFromName(sender);
                 assert sender_id != -1;
@@ -202,8 +196,9 @@ class MsgThread {
                  * -- which should just be a copy of the participants
                  * list minus the sender
                  */
-                final ArrayList<int> receiver_ids = this.participant_ids.copy()
-                    .remove(Integer.valueOf(sender_id));
+                ArrayList<Integer> receiver_ids = new ArrayList<Integer>(
+                    this.participant_ids);
+                receiver_ids.remove(Integer.valueOf(sender_id));
 
                 /* Create new message data container */
                 MsgData msg = new MsgData(
@@ -273,10 +268,10 @@ class MsgData {
     /* Msg data members */
     private long timestamp;
     private int sender_id;
-    private ArrayList<int> receiver_ids;
+    private ArrayList<Integer> receiver_ids;
     private String content;
 
-    public MsgData(long timestamp, int sender_id, ArrayList<int> receiver_ids,
+    public MsgData(long timestamp, int sender_id, ArrayList<Integer> receiver_ids,
                    String content) {
 
         this.timestamp = timestamp;
@@ -297,4 +292,7 @@ class MsgData {
      * Getters
      */
     public long getTimestamp() { return this.timestamp; }
+    public int getSenderId() { return this.sender_id; }
+    public String getContent() { return this.content; }
+    public int getContentLength() { return this.content.length(); }
 }
