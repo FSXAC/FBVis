@@ -309,17 +309,14 @@ class MsgThread {
         /* Get message data */
         final JSONArray msgsData = jsonData.getJSONArray("messages");
 
-        // DEBUG:
-        print(filepath);
-        print(" ");
-        println(msgsData.size());
-
         /* Loop in reverse such that it's sorted oldest to newest */
         for (int i = msgsData.size() - 1; i >= 0; i--) {
             final JSONObject msgData = msgsData.getJSONObject(i);
 
             if (msgData.getBoolean("is_unsent"))
                 continue;
+
+            processMsg(MsgData);
         }
     }
 
