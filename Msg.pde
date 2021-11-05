@@ -130,7 +130,12 @@ class MsgThread {
     private String threadRootPath;
     private String[] jsonFiles;
     private String name;
-    private String threadType;
+
+    enum ThreadType {
+        REGULAR,        /* Regular chat (1-1) */
+        REGULAR_GROUP   /* Regular group chat */
+    }
+    private ThreadType threadType;
 
     private Boolean initialized;
 
@@ -220,13 +225,28 @@ class MsgThread {
 
         /* Get thread metadata */
         this.name = jsonData.getString("title");
-        this.threadType = jsonData.getString("thread_type");
+        this.setThreadType(jsonData.getString("thread_type"));
 
         /* Get thread participants */
         if (!processJSONParticipants())
             return false;
 
         return true;
+    }
+
+    /**
+     * Sets the thread type based on the string listed in the json file
+     * @param type A string denoting what type it is
+     */
+    private void setThreadType(String type) {
+        if (type.equals("Regular")) {
+            this.threadType = ThreadType.REGULAR;
+        } else if (type.equals("RegularGroup")) {
+            this.threadType = ThreadType.REGULAR_GROUP;
+        } else {
+            println("This should not happen");
+            assert false;
+        }
     }
 
     /**
