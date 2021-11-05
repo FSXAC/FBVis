@@ -148,6 +148,10 @@ class MsgThread {
     /* Participants (ids of people) */
     private ArrayList<Integer> participant_ids;
 
+    /* Regular thread unknown participant (only for REGULAR thread type) */
+    private Boolean unknownParticipant = false;
+    private String unknownParticipantAlias;
+
     /* Maximum group chat size (TODO: parameterize in config) */
     private const int MAX_PARTICIPANTS = 20;
 
@@ -271,14 +275,24 @@ class MsgThread {
         this.participant_ids = new ArrayList<Integer>();
 
         /* Get participants from file */
-        /* TODO: if this is a group chat, then ignore any "Facebook User" chats */
-        /* TODO: otherwise if this is a 1:1 chat, then simply do "renaming" */
         for (int i = 0; i < participantsData.size(); i++) {
             String name = participantsData.getJSONObject(i).getString("name");
 
             /* Check if the name is "default name/no name" */
             if (name.equals(CONFIG.defaultName)) {
-                name += ' '  + str(UnknownPersonCounter.count++);
+                
+                if (this.threadType == ThreadType.REGULAR) {
+
+                    /* If it's a regular thread: use unknown alias */
+                    name = 'Unknown '  + str(UnknownPersonCounter.count++);
+                    this.unknownParticipantAlias = name;
+                    this.unknownParticipant = true;
+
+                } else if (this.threadType == ThreadType.REGULAR_GROUP) {
+
+                    /* Ignore if unknown person shows up in group chat */
+                    continue;
+                }
             }
 
             /* Get ID from manager and populate member array */
@@ -306,58 +320,125 @@ class MsgThread {
 
             if (msgData.getBoolean("is_unsent"))
                 continue;
+        }
+    }
 
-            if (msgData.getString("type").equals("Generic")) {
-                
-                /**
-                 * Sender id
-                 * NOTE: if the facebook user deleted their profile,
-                 * the sender_name retrievied here would be 'Other User'
-                 * (as of Nov. 2021).
-                 * This is problematic because the participant ID already maps
-                 * to a different name that goes by "Facebook User x" where x
-                 * is a number. 
-                 *
-                 * TODO: (?) what happens in a large group chat where >1 people
-                 * have gone offline?
-                 */
-                final String sender = msgData.getString("sender_name");
-                assert sender != null;
-                final int sender_id = this.manager.getPersonIDFromName(sender);
-                assert sender_id != -1;
+    private void processMsg(JSONObject MsgData) {
+        /**
+         * Sender id
+         * NOTE: if the facebook user deleted their profile,
+         * the sender_name retrievied here would be 'Other User'
+         * (as of Nov. 2021).
+         */
+        String sender = msgData.getString("sender_name");
+        assert sender != null;
 
-                /* Timestamp */
-                final long timestamp = msgData.getLong("timestamp_ms");
+        /* Check if the sender name is unknown */
+        if (sender.equals("Facebook User") || sender.equals("Other User")) {
+            if (this.threadType == ThreadType.REGULAR) {
 
+                /* If this is in a regular chat, replace name with alias */
+                assert this.unknownParticipant;
+                sender = this.unknownParticipantAlias;
 
-                /* Determine what kind of message it is */
-                /* TODO: for now we'll just focus on text msgs (see below) */
-                final String content = msgData.getString("content");
-                // final JSONArray photos = msgData.getJSONArray("photos");
-                // final JSONObject sticker = msgData.getJSONObject("sticker");
-                if (content == null)
-                    continue;
+            } else if (this.threadType == ThreadType.REGULAR_GROUP) {
 
-                /* Get receivers
-                 * -- which should just be a copy of the participants
-                 * list minus the sender
-                 */
-                ArrayList<Integer> receiver_ids = new ArrayList<Integer>(
-                    this.participant_ids);
-                receiver_ids.remove(Integer.valueOf(sender_id));
-
-                /* Create new message data container */
-                MsgData msg = new MsgData(
-                    timestamp,
-                    sender_id,
-                    receiver_ids,
-                    content
-                );
-
-                /* Add msg to list of msgs */
-                messagesData.add(msg);
+                /* Ignore this message entry if it's from unknown */
+                return;
             }
         }
+
+        final int sender_id = this.manager.getPersonIDFromName(sender);
+        assert sender_id != -1;
+
+        /* Get receivers
+         * -- which should just be a copy of the participants
+         * list minus the sender
+         */
+        ArrayList<Integer> receiver_ids = new ArrayList<Integer>(
+            this.participant_ids);
+        receiver_ids.remove(Integer.valueOf(sender_id));
+
+        /* Timestamp */
+        final long timestamp = msgData.getLong("timestamp_ms");
+
+        /* Process single message depending on the type */
+        MsgData msg;
+
+        if (msgData.getString("type").equals("Generic")) {
+
+            /* Regular message */
+            msg = this.processGenericMsg(sender_id, receiver_ids, timestamp, msgData);
+
+        } else if (msgData.getString("type").equals("Call")) {
+
+            /* Calls */
+            msg = this.processCallMsg(sender_id, receiver_ids, timestamp, msgData);
+
+        } else if (msgData.getString("type").equals("Share")) {
+
+            /* Same as a regular message */
+            msg = this.processGenericMsg(sender_id, receiver_ids, timestamp, msgData);
+
+        } else if (msgData.getString("type").equals("Subscribe")) {
+            assert this.threadType == ThreadType.REGULAR_GROUP;
+
+            /* TODO */
+        } else if (msgData.getString("type").equals("Unsubscribe")) {
+            assert this.threadType == ThreadType.REGULAR_GROUP;
+
+            /* TODO */
+        }
+
+        /* Add msg to list of msgs */
+        this.messagesData.add(msg);
+    }
+
+    private MsgData processGenericMsg(int sender_id,
+        ArrayList<Integer> receiver_ids, long timestamp, JSONObject MsgData) {
+        
+        /* Determine what kind of message it is */
+        /* TODO: for now we'll just focus on text msgs (see below) */
+        final String content = msgData.getString("content");
+        // final JSONArray photos = msgData.getJSONArray("photos");
+        // final JSONArray photos = msgData.getJSONArray("videos");
+        // final JSONObject sticker = msgData.getJSONObject("sticker");
+        if (content == null)
+            continue;
+
+        /* Create new message data container */
+        return new MsgData(
+            timestamp,
+            sender_id,
+            receiver_ids,
+            content
+        );
+    }
+
+    private MsgData processCallMsg(int sender_id,
+        ArrayList<Integer> receiver_ids, long timestamp, JSONObject MsgData) {
+
+        /* TODO: NOTE: calls should be visualized by a line */
+        /* TODO: call has field 'call_duration' in seconds */
+        final int callDurationSecs = msgData.getInt("call_duration");
+
+        /* TODO: a different type is required to represent this type of msg */
+        return new MsgData(
+            timestamp,
+            sender_id,
+            receiver_ids,
+            "TODO: CALL"
+        );
+    }
+    
+    private MsgData processSubscribeMsg(int sender_id,
+        ArrayList<Integer> receiver_ids, long timestamp, JSONObject MsgData) {
+        /* Unimplemented */
+    }
+    
+    Private MsgData processUnsubscribeMsg(int sender_id,
+        ArrayList<Integer> receiver_ids, long timestamp, JSONObject MsgData) {
+        /* Unimplemented */
     }
 
     /**
