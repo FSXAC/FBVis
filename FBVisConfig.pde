@@ -188,4 +188,13 @@ public class FBVisConfig {
         output.flush();
         output.close();
     }
+
+    /**
+     * Check if an input is inside the ignored list
+     * @param thread the thread to check
+     * @return true if message thread 'thread' is in the ignore list
+     */
+    public Boolean checkIfIgnored(String threadName) {
+        return Arrays.stream(this.ignoreList).anyMatch(threadName::equals);
+    }
 }
