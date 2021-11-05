@@ -11,37 +11,46 @@ import ch.bildspur.postfx.builder.*;
 import ch.bildspur.postfx.pass.*;
 import ch.bildspur.postfx.*;
 
-// Configuration is the most important so it needs to be set up first
+/* Handling configurations of FBVis */
 FBVisConfig CONFIG;
+
+/* PostFX */
 PostFX fx;
 
 // Render layers
 RenderUILayer g_uiLayer;
 RenderPeopleLayer g_pplLayer;
 
+/* The Stat card that shows when hovered over people */
 StatCardHover statcardHover;
 
+/* TODO: To be refactored to line up with the MsgManager */
 // Hash map to hold to the person
 IntDict nameToPersonIndexMap;
 ArrayList<PersonNode> persons;
 
+
+/* Payload */
 ArrayList<Payload> payloads;
 final int PAYLOADS_MAXSIZE = 2048;
 PayloadFactory payloadFactory;
+
+/* Message data */
 MessageManager man;
 
+/* Spiral generator */
 PackedSpiral g_layoutGen;
 
-// For display loading bars on splashscreen
+/* Porgress bar -- For display loading bars on splashscreen */
 Progress progress;
 
-// timing
+/* Timing and animation */
 long currentTimestamp;
 long nextTimestamp;
 Timeline timeline;
 SpeedControl speedControl;
 
-// Font
+/* Font */
 PFont font;
 PFont monospaceFont;
 
@@ -52,10 +61,10 @@ Boolean g_toggle_UI = true;
 Boolean g_mouseLocked = false;
 float mouseDown_x = 0;
 float mouseDown_y = 0;
-
 float g_offsetX = 0.0;
 float g_offsetY = 0.0;
 
+/* App life-cycle states */
 int g_state;
 final int STATE_UNINIT = 0;
 final int STATE_RUN = 1;
@@ -64,6 +73,7 @@ final int STATE_PAUSE = 2;
 void settings() {
     // Size and fullscreen should go inside here
     // But none of the Processing functions are available
+    /* TODO: add config for fullscreen */
     size(1920, 1080, P2D);
     smooth(2);
 }
@@ -111,7 +121,10 @@ void initialize() {
 
     // Load and process 
     progress = new Progress();
-    man = new MessageManager(CONFIG.dataRootPath);
+    // man = new MessageManager(CONFIG.dataRootPath);
+    MsgManager m = new MsgManager(CONFIG.dataRootPath);
+    m.populate(progress);
+    exit();
 
     // Initialize layers
     g_uiLayer = new RenderUILayer();
@@ -178,10 +191,7 @@ void draw() {
 }
 
 void drawRun() {
-    // background(0);
-    fill(0, 100);
-    noStroke();
-    rect(0, 0, width, height);
+    background(0);
     
     // Draw a grid of people
     pushMatrix();
