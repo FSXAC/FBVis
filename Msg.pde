@@ -143,6 +143,9 @@ class MsgThread {
     /* Participants (ids of people) */
     private ArrayList<Integer> participant_ids;
 
+    /* Maximum group chat size (TODO: parameterize in config) */
+    private const int MAX_PARTICIPANTS = 20;
+
     /**
      * Constructor for the thread parser; takes in a path to where the
      * message .json files are located -- Messenger splits larger
@@ -185,21 +188,23 @@ class MsgThread {
      * @return true if process successful
      */
     private Boolean processAllJsonFiles() {
+
         /* process all messages in reverse order of sorting (oldest first) */
-
         for (int idx = this.jsonFiles.length - 1; idx >= 0; idx--) {
-            // TODO: run once for participant processing
-            String jsonFilePath = pathJoin(this.threadRootPath, this.jsonFiles[idx]);
 
-            /* Only need to do once */
+            /* Load JSON file */
+            String jsonFilePath = pathJoin(this.threadRootPath, this.jsonFiles[idx]);
+            final JSONObject jsonData = loadJSONObject(filepath);
+
+            /* Populate metadata about thread */
             if (idx == this.jsonFiles.length - 1) {
-                /* Process participants initially */
-                if (!this.processJSONMetadata(jsonFilePath)) {
+                if (!this.processJSONMetadata(jsonData)) {
                     return false;
                 }
             }
 
-            this.processJsonFile(jsonFilePath);
+            /* Process messages */
+            this.processJsonFile(jsonData);
         }
 
         return true;
@@ -208,29 +213,46 @@ class MsgThread {
     /**
      * Process and populate thread metadata such as array of parcipant ids
      * (only need to run once even for multiple json files)
-     * @param filepath the full path to the .json file
+     * @param jsonData the json data of the file
      * @return true if successfullly parses metadata; false if cancel
      */
-    private Boolean processJSONMetadata(String filepath) {
-        /* Load JSON object using Processing's JSON function */
-        final JSONObject jsonData = loadJSONObject(filepath);
+    private Boolean processJSONMetadata(JSONObject jsonData) {
 
+        /* Get thread metadata */
+        this.name = jsonData.getString("title");
+        this.threadType = jsonData.getString("thread_type");
+
+        /* Get thread participants */
+        if (!processJSONParticipants())
+            return false;
+
+        return true;
+    }
+
+    /**
+     * Process the participants in a thread
+     * @param jsonData the json data
+     * @return true if process is successful, false if fails due to invalid
+     * set of participants
+     */
+    private Boolean processJSONParticipants(JSONObject jsonData) {
         /* Get participants in this thread */
         final JSONArray participantsData = jsonData.getJSONArray("participants");
-
-        /* Stop processing if number of participants is too few */
-        if (participantsData.size() <= 1) {
+        
+        /* Stop processing if number of participants is too few
+         * or if the number of participants is too large
+         */
+        if (participantsData.size() <= 1 ||
+            participantsData.size() > MAX_PARTICIPANTS) {
             return false;
         }
-        
-        /* TODO: ignore/cancel processing if group size is greater than theshold
-         * Perhaps it'a a good idea to THROW?
-         */
 
         /* Instantiate array of participant ids */
         this.participant_ids = new ArrayList<Integer>();
 
         /* Get participants from file */
+        /* TODO: if this is a group chat, then ignore any "Facebook User" chats */
+        /* TODO: otherwise if this is a 1:1 chat, then simply do "renaming" */
         for (int i = 0; i < participantsData.size(); i++) {
             String name = participantsData.getJSONObject(i).getString("name");
 
@@ -242,22 +264,13 @@ class MsgThread {
             /* Get ID from manager and populate member array */
             this.participant_ids.add(manager.getAndSetPersonIDFromName(name));
         }
-
-        /* Get other metadata */
-        this.name = jsonData.getString("title");
-        this.threadType = jsonData.getString("thread_type");
-
-        return true;
     }
 
     /**
      * Process a single json file
-     * @param filepath the full path to the .json file
+     * @param jsonData the json data of the file
      */
-    private void processJsonFile(String filepath) {
-
-        /* Load JSON object using Processing's JSON function */
-        final JSONObject jsonData = loadJSONObject(filepath);
+    private void processJsonFile(JSONObject jsonData) {
 
         /* Get message data */
         final JSONArray msgsData = jsonData.getJSONArray("messages");
