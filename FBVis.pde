@@ -124,6 +124,8 @@ void initialize() {
     // man = new MessageManager(CONFIG.dataRootPath);
     MsgManager m = new MsgManager(CONFIG.dataRootPath);
     m.populate(progress);
+
+    /* TODO: FIXME: TEMP: */
     exit();
 
     // Initialize layers
