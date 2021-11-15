@@ -8,6 +8,11 @@ class MsgManager {
 
     /* Threads */
     private ArrayList<MsgThread> msgThreads;
+
+    /* Metadata */
+    private long earliestTimestamp;
+    private long latestTimestamp;
+    private int totalMsgs;
     
     /**
      * MsgManager handles all the data processing of the messages
@@ -58,9 +63,6 @@ class MsgManager {
 
                     threadList.append(pathJoin(rootPath, thread));
                 }
-                
-
-
             } catch (NotDirectoryException e) {
                 println("Error while trying to access root paths: "
                         + rootPath);
@@ -84,8 +86,42 @@ class MsgManager {
             }
         }
 
-        // DEBUG
-        println("Total threads processed: " + str(this.msgThreads.size()));
+        /* Compute metadata */
+        this.populateThreadsMetadata();
+    }
+
+    /**
+     * Computes the threads metadata at initial-time since it only needs to
+     * be done once; metadata includes earliest timestamp, last timestamp,
+     * total number of messages, total number of unique participants, etc.
+     */
+    private void populateThreadsMetadata() {
+
+        /* Calculate earliest and latest timestamp */
+        Boolean init = true;
+        for (MsgThread t : this.MsgThreads) {
+            final long t0 = t.getEarliestTimestamp();
+            final long t1 = t.getLatestTimestamp();
+
+            if (init) {
+                this.earliestTimestamp = t0;
+                this.latestTimestamp = t1;
+            } else {
+                if (t0 < this.earliestTimestamp) {
+                    this.earliestTimestamp = t0;
+                }
+
+                if (t1 > this.latestTimestamp) {
+                    this.latestTimestamp = t1;
+                }
+            }
+        }
+
+        /* Compute total number of messages */
+        this.totalMsgs = 0;
+        for (MsgThread t : this.msgThreads) {
+            totalMsgs += t.getThreadSize();
+        }
     }
 
     /**
@@ -133,6 +169,7 @@ class MsgManager {
      * Returns an arraylist of MsgData from all the threads up to the given
      * timestamp -- from their current head index
      * @param t the end timestamp in ms
+     * @return an arraylist of msgs
      */
     public ArrayList<MsgData> getMsgsUntil(long t) {
         ArrayList<MsgData> msgs = new ArrayList<MsgData>();

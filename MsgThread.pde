@@ -365,4 +365,25 @@ class MsgThread {
     public Boolean isInitialized() {
         return this.initialized;
     }
+
+    /**
+     * Returns earliest timestamp
+     */
+    public long getEarliestTimestamp() {
+        return this.messagesData[0].getTimestamp();
+    }
+
+    /**
+     * Returns latest timestamp
+     */
+    public long getLatestTimestamp() {
+        return this.messagesData[this.messagesData.size() - 1].getTimestamp();
+    }
+
+    /**
+     * Returns number of messages in this thread
+     */
+    public int getThreadSize() {
+        return this.messagesData.size();
+    }
 }
