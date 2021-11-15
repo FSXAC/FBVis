@@ -1,3 +1,6 @@
+import java.util.Map;
+import java.util.HashMap;
+
 class MsgManager {
 
     String[] msgRootPaths;
@@ -57,8 +60,8 @@ class MsgManager {
                 /* For each thread, add to the master list */
                 for (String thread : threads) {
                     
-                    /* If it's in the ignore list (defined in CONFIG), ignore */
-                    if (CONFIG.checkIfIgnored(thread))
+                    /* If it's in the ignore list (defined in g_config), ignore */
+                    if (g_config.checkIfIgnored(thread))
                         continue;
 
                     threadList.append(pathJoin(rootPath, thread));
@@ -82,7 +85,7 @@ class MsgManager {
 
             if (progressBar != null) {
                 /* TODO: handle progress bar */
-                println(str(i) + "/" + str());
+                println(str(i) + "/" + str(numProcessableThreads));
             }
         }
 
@@ -99,7 +102,7 @@ class MsgManager {
 
         /* Calculate earliest and latest timestamp */
         Boolean init = true;
-        for (MsgThread t : this.MsgThreads) {
+        for (MsgThread t : this.msgThreads) {
             final long t0 = t.getEarliestTimestamp();
             final long t1 = t.getLatestTimestamp();
 
@@ -174,8 +177,8 @@ class MsgManager {
     public ArrayList<MsgData> getMsgsUntil(long t) {
         ArrayList<MsgData> msgs = new ArrayList<MsgData>();
 
-        for (MsgThread t : this.msgThreads) {
-            msgs.addAll(t.getMsgsUntil());
+        for (MsgThread th : this.msgThreads) {
+            msgs.addAll(th.getMsgsUntil(t));
         }
 
         return msgs;

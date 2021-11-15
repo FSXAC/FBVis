@@ -7,3 +7,4 @@ test.html
 messages.csv
 /sorted_old.csv
 application.*/
+.DS_Store

@@ -1,4 +1,7 @@
-
+enum ThreadType {
+    REGULAR,        /* Regular chat (1-1) */
+    REGULAR_GROUP   /* Regular group chat */
+}
 
 /* Parses a single thread */
 class MsgThread {
@@ -11,10 +14,7 @@ class MsgThread {
     private String[] jsonFiles;
     private String name;
 
-    enum ThreadType {
-        REGULAR,        /* Regular chat (1-1) */
-        REGULAR_GROUP   /* Regular group chat */
-    }
+    /* Thread type */
     private ThreadType threadType;
 
     private Boolean initialized;
@@ -33,7 +33,7 @@ class MsgThread {
     private String unknownParticipantAlias;
 
     /* Maximum group chat size (TODO: parameterize in config) */
-    private const int MAX_PARTICIPANTS = 20;
+    private final int MAX_PARTICIPANTS = 20;
 
     /**
      * Constructor for the thread parser; takes in a path to where the
@@ -83,7 +83,7 @@ class MsgThread {
 
             /* Load JSON file */
             String jsonFilePath = pathJoin(this.threadRootPath, this.jsonFiles[idx]);
-            final JSONObject jsonData = loadJSONObject(filepath);
+            final JSONObject jsonData = loadJSONObject(jsonFilePath);
 
             /* Populate metadata about thread */
             if (idx == this.jsonFiles.length - 1) {
@@ -112,7 +112,7 @@ class MsgThread {
         this.setThreadType(jsonData.getString("thread_type"));
 
         /* Get thread participants */
-        if (!processJSONParticipants())
+        if (!processJSONParticipants(jsonData))
             return false;
 
         return true;
@@ -159,12 +159,12 @@ class MsgThread {
             String name = participantsData.getJSONObject(i).getString("name");
 
             /* Check if the name is "default name/no name" */
-            if (name.equals(CONFIG.defaultName)) {
+            if (name.equals(g_config.defaultName)) {
                 
                 if (this.threadType == ThreadType.REGULAR) {
 
                     /* If it's a regular thread: use unknown alias */
-                    name = 'Unknown '  + str(UnknownPersonCounter.count++);
+                    name = "Unknown "  + str(UnknownPersonCounter.count++);
                     this.unknownParticipantAlias = name;
                     this.unknownParticipant = true;
 
@@ -178,6 +178,8 @@ class MsgThread {
             /* Get ID from manager and populate member array */
             this.participant_ids.add(manager.getAndSetPersonIDFromName(name));
         }
+        
+        return true;
     }
 
     /**
@@ -196,11 +198,11 @@ class MsgThread {
             if (msgData.getBoolean("is_unsent"))
                 continue;
 
-            processMsg(MsgData);
+            processMsg(msgData);
         }
     }
 
-    private void processMsg(JSONObject MsgData) {
+    private void processMsg(JSONObject msgData) {
         /**
          * Sender id
          * NOTE: if the facebook user deleted their profile,
@@ -226,7 +228,21 @@ class MsgThread {
         }
 
         final int sender_id = this.manager.getPersonIDFromName(sender);
-        assert sender_id != -1;
+        
+        /* At this point, if the sender_id is still -1, then it means
+         * that sender name is kept in the transcript, but the name doesn't
+         * match with the participants list (e.g. "Facebook User"), so
+         * it will not have an ID since IDs are assigned when reading
+         * the participants list
+         *
+         * We can definitely improve the logic to assign IDs to people,
+         * including doing a pass of all senders and partcipants in a thread
+         * before we process any messages -- but this may slow down processing
+         * by a lot. For now we just drop this message
+         */
+        if (sender_id == -1) {
+            return;
+        }
 
         /* Get receivers
          * -- which should just be a copy of the participants
@@ -240,39 +256,29 @@ class MsgThread {
         final long timestamp = msgData.getLong("timestamp_ms");
 
         /* Process single message depending on the type */
-        MsgData msg;
+        switch (msgData.getString("type")) {
+            case "Generic":
+            case "Share":
+                this.messagesData.add(
+                    this.processGenericMsg(sender_id, receiver_ids,timestamp, msgData));
+                break;
 
-        if (msgData.getString("type").equals("Generic")) {
+            case "Call":
+                this.messagesData.add(
+                    this.processCallMsg(sender_id, receiver_ids, timestamp, msgData));
+                break;
 
-            /* Regular message */
-            msg = this.processGenericMsg(sender_id, receiver_ids, timestamp, msgData);
-
-        } else if (msgData.getString("type").equals("Call")) {
-
-            /* Calls */
-            msg = this.processCallMsg(sender_id, receiver_ids, timestamp, msgData);
-
-        } else if (msgData.getString("type").equals("Share")) {
-
-            /* Same as a regular message */
-            msg = this.processGenericMsg(sender_id, receiver_ids, timestamp, msgData);
-
-        } else if (msgData.getString("type").equals("Subscribe")) {
-            assert this.threadType == ThreadType.REGULAR_GROUP;
-
-            /* TODO */
-        } else if (msgData.getString("type").equals("Unsubscribe")) {
-            assert this.threadType == ThreadType.REGULAR_GROUP;
-
-            /* TODO */
+            case "Subscribe":
+                /* TODO */
+                break;
+            case "Unsubscribe":
+                /* TODO */
+                break;
         }
-
-        /* Add msg to list of msgs */
-        this.messagesData.add(msg);
     }
 
     private MsgData processGenericMsg(int sender_id,
-        ArrayList<Integer> receiver_ids, long timestamp, JSONObject MsgData) {
+        ArrayList<Integer> receiver_ids, long timestamp, JSONObject msgData) {
         
         /* Determine what kind of message it is */
         /* TODO: for now we'll just focus on text msgs (see below) */
@@ -280,8 +286,10 @@ class MsgThread {
         // final JSONArray photos = msgData.getJSONArray("photos");
         // final JSONArray photos = msgData.getJSONArray("videos");
         // final JSONObject sticker = msgData.getJSONObject("sticker");
-        if (content == null)
-            continue;
+        
+        // TODO: ignored for now
+        //if (content == null)
+        //    return null;
 
         /* Create new message data container */
         return new MsgData(
@@ -293,7 +301,7 @@ class MsgThread {
     }
 
     private MsgData processCallMsg(int sender_id,
-        ArrayList<Integer> receiver_ids, long timestamp, JSONObject MsgData) {
+        ArrayList<Integer> receiver_ids, long timestamp, JSONObject msgData) {
 
         /* TODO: NOTE: calls should be visualized by a line */
         /* TODO: call has field 'call_duration' in seconds */
@@ -311,11 +319,15 @@ class MsgThread {
     private MsgData processSubscribeMsg(int sender_id,
         ArrayList<Integer> receiver_ids, long timestamp, JSONObject MsgData) {
         /* Unimplemented */
+        
+        return null;
     }
     
-    Private MsgData processUnsubscribeMsg(int sender_id,
+    private MsgData processUnsubscribeMsg(int sender_id,
         ArrayList<Integer> receiver_ids, long timestamp, JSONObject MsgData) {
         /* Unimplemented */
+        
+        return null;
     }
 
     /**
@@ -370,14 +382,14 @@ class MsgThread {
      * Returns earliest timestamp
      */
     public long getEarliestTimestamp() {
-        return this.messagesData[0].getTimestamp();
+        return this.messagesData.get(0).getTimestamp();
     }
 
     /**
      * Returns latest timestamp
      */
     public long getLatestTimestamp() {
-        return this.messagesData[this.messagesData.size() - 1].getTimestamp();
+        return this.messagesData.get(this.messagesData.size() - 1).getTimestamp();
     }
 
     /**

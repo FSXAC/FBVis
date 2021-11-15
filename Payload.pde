@@ -124,7 +124,7 @@ class PayloadSegment extends Payload{
     PersonNode targetPerson;
 
     float radius = random(3, 8);
-    float opacity = random(CONFIG.payloadOpacityMin, CONFIG.payloadOpacityMax);
+    float opacity = random(g_config.payloadOpacityMin, g_config.payloadOpacityMax);
 
     float travel_lerp;
     float travel_y_lerp_mult;
@@ -138,17 +138,17 @@ class PayloadSegment extends Payload{
         this.prevX = this.x;
         this.prevY = this.y;
         
-        if (CONFIG.payloadSizeBasedOnMessageLength) {
+        if (g_config.payloadSizeBasedOnMessageLength) {
             this.radius = size;
         }
 
-        this.travel_lerp = random(CONFIG.payloadSegmentLerpMin, CONFIG.payloadSegmentLerpMax);
+        this.travel_lerp = random(g_config.payloadSegmentLerpMin, g_config.payloadSegmentLerpMax);
         this.travel_y_lerp_mult = random(0.5, 0.8);
         
         this.targetPerson = target;
         
         // TODO: FIXME:
-        if (source.equals(CONFIG.masterName)) {
+        if (source.equals(g_config.masterName)) {
             this.isMasterSending = true;
         }
     }
@@ -156,7 +156,7 @@ class PayloadSegment extends Payload{
     @Override
     public void draw() {
         pushMatrix();
-        stroke(this.isMasterSending ? CONFIG.payloadSendColor : CONFIG.payloadReceiveColor, this.opacity);
+        stroke(this.isMasterSending ? g_config.payloadSendColor : g_config.payloadReceiveColor, this.opacity);
         strokeWeight(this.radius);
         line(this.x, this.y, this.prevX, this.prevY);
         popMatrix();
@@ -184,13 +184,13 @@ class PayloadSegment extends Payload{
 class PayloadSegment2 extends PayloadSegment {
     public PayloadSegment2(PersonNode source, PersonNode target, float size) {
         super(source, target, size);
-        this.travel_lerp = random(CONFIG.payloadSegmentGroupLerpMin, CONFIG.payloadSegmentGroupLerpMax);
+        this.travel_lerp = random(g_config.payloadSegmentGroupLerpMin, g_config.payloadSegmentGroupLerpMax);
     }
 
     @Override
     public void draw() {
         pushMatrix();
-        stroke(CONFIG.payloadGroupColor, this.opacity);
+        stroke(g_config.payloadGroupColor, this.opacity);
         strokeWeight(this.radius);
         line(this.x, this.y, this.prevX, this.prevY);
         popMatrix();
@@ -208,12 +208,12 @@ class PayloadFactory {
     }
 
     public void makeIndividualPayload(PersonNode sender, PersonNode receiver, float size) {
-        if (PAYLOADS_MAXSIZE > this.payloads.size())
+        //if (PAYLOADS_MAXSIZE > this.payloads.size())
             this.payloads.add(new PayloadSegment(sender, receiver, size));
     }
 
     public void makeGroupPayload(PersonNode sender, PersonNode receiver, float size) {
-        if (PAYLOADS_MAXSIZE > this.payloads.size())
+        //if (PAYLOADS_MAXSIZE > this.payloads.size())
             this.payloads.add(new PayloadSegment2(sender, receiver, size));
     }
 }
