@@ -3,4 +3,3 @@ public class NotDirectoryException extends Exception {
         super(errorMessage);
     }
 }
-

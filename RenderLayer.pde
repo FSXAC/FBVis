@@ -57,7 +57,7 @@ class RenderUILayer extends RenderLayer {
 	}
 
 	private void renderTimestamp() {
-		this.pg.textFont(monospaceFont);
+		this.pg.textFont(g_uiMonospaceFont);
 		this.pg.textAlign(CENTER, CENTER);
 		String date = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm").format(new java.util.Date(this.timestamp));
 		this.pg.textSize(20);
@@ -85,7 +85,7 @@ class RenderUILayer extends RenderLayer {
 	}
 
 	private void renderStatCardHover() {
-		this.pg.textFont(font);
+		this.pg.textFont(g_uiFont);
 		if (this.statCardHover == null) return;
 		this.statCardHover.draw(this.pg);
 	}

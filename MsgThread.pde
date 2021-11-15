@@ -1,0 +1,401 @@
+enum ThreadType {
+    REGULAR,        /* Regular chat (1-1) */
+    REGULAR_GROUP   /* Regular group chat */
+}
+
+/* Parses a single thread */
+class MsgThread {
+
+    /* Reference to parent/manager (for people look up) */
+    private MsgManager manager;
+
+    /* Message data */
+    private String threadRootPath;
+    private String[] jsonFiles;
+    private String name;
+
+    /* Thread type */
+    private ThreadType threadType;
+
+    private Boolean initialized;
+
+    /* Contains all the message data */
+    private ArrayList<MsgData> messagesData;
+
+    /* The index that points to the head of messagesData */
+    private int head;
+
+    /* Participants (ids of people) */
+    private ArrayList<Integer> participant_ids;
+
+    /* Regular thread unknown participant (only for REGULAR thread type) */
+    private Boolean unknownParticipant = false;
+    private String unknownParticipantAlias;
+
+    /* Maximum group chat size (TODO: parameterize in config) */
+    private final int MAX_PARTICIPANTS = 20;
+
+    /**
+     * Constructor for the thread parser; takes in a path to where the
+     * message .json files are located -- Messenger splits larger
+     * threads into multiple .json files;
+     * @param manager the parent MsgManager obj -- must be instantiated
+     * through here
+     * @param threadPath the root path of the thread where .json files
+     * are stored
+     */
+    public MsgThread(MsgManager manager, String threadPath) {
+
+        this.initialized = false;
+
+        /* assign parent/manager */
+        this.manager = manager;
+        
+        /* given the rootPath, add all json file paths to filePaths */
+        this.threadRootPath = threadPath;
+        try {
+            this.jsonFiles = sortFilenamesNumerically(
+                listFileNames(threadPath, "json"));
+        } catch (NotDirectoryException e) {
+            println("Not a directory exception occured while "
+                    + "attempting to parse " + threadPath);
+        }
+
+        /* Messages data container */
+        messagesData = new ArrayList<MsgData>();
+
+        /* process all files */
+        if (this.jsonFiles != null)
+            this.initialized = this.processAllJsonFiles();
+
+        /* reset data pointer */
+        this.head = 0;
+    }
+
+    /**
+     * Process all the json files -- paths are stored in filePaths
+     * @return true if process successful
+     */
+    private Boolean processAllJsonFiles() {
+
+        /* process all messages in reverse order of sorting (oldest first) */
+        for (int idx = this.jsonFiles.length - 1; idx >= 0; idx--) {
+
+            /* Load JSON file */
+            String jsonFilePath = pathJoin(this.threadRootPath, this.jsonFiles[idx]);
+            final JSONObject jsonData = loadJSONObject(jsonFilePath);
+
+            /* Populate metadata about thread */
+            if (idx == this.jsonFiles.length - 1) {
+                if (!this.processJSONMetadata(jsonData)) {
+                    return false;
+                }
+            }
+
+            /* Process messages */
+            this.processJsonFile(jsonData);
+        }
+
+        return true;
+    }
+
+    /**
+     * Process and populate thread metadata such as array of parcipant ids
+     * (only need to run once even for multiple json files)
+     * @param jsonData the json data of the file
+     * @return true if successfullly parses metadata; false if cancel
+     */
+    private Boolean processJSONMetadata(JSONObject jsonData) {
+
+        /* Get thread metadata */
+        this.name = jsonData.getString("title");
+        this.setThreadType(jsonData.getString("thread_type"));
+
+        /* Get thread participants */
+        if (!processJSONParticipants(jsonData))
+            return false;
+
+        return true;
+    }
+
+    /**
+     * Sets the thread type based on the string listed in the json file
+     * @param type A string denoting what type it is
+     */
+    private void setThreadType(String type) {
+        if (type.equals("Regular")) {
+            this.threadType = ThreadType.REGULAR;
+        } else if (type.equals("RegularGroup")) {
+            this.threadType = ThreadType.REGULAR_GROUP;
+        } else {
+            println("This should not happen");
+            assert false;
+        }
+    }
+
+    /**
+     * Process the participants in a thread
+     * @param jsonData the json data
+     * @return true if process is successful, false if fails due to invalid
+     * set of participants
+     */
+    private Boolean processJSONParticipants(JSONObject jsonData) {
+        /* Get participants in this thread */
+        final JSONArray participantsData = jsonData.getJSONArray("participants");
+        
+        /* Stop processing if number of participants is too few
+         * or if the number of participants is too large
+         */
+        if (participantsData.size() <= 1 ||
+            participantsData.size() > MAX_PARTICIPANTS) {
+            return false;
+        }
+
+        /* Instantiate array of participant ids */
+        this.participant_ids = new ArrayList<Integer>();
+
+        /* Get participants from file */
+        for (int i = 0; i < participantsData.size(); i++) {
+            String name = participantsData.getJSONObject(i).getString("name");
+
+            /* Check if the name is "default name/no name" */
+            if (name.equals(g_config.defaultName)) {
+                
+                if (this.threadType == ThreadType.REGULAR) {
+
+                    /* If it's a regular thread: use unknown alias */
+                    name = "Unknown "  + str(UnknownPersonCounter.count++);
+                    this.unknownParticipantAlias = name;
+                    this.unknownParticipant = true;
+
+                } else if (this.threadType == ThreadType.REGULAR_GROUP) {
+
+                    /* Ignore if unknown person shows up in group chat */
+                    continue;
+                }
+            }
+
+            /* Get ID from manager and populate member array */
+            this.participant_ids.add(manager.getAndSetPersonIDFromName(name));
+        }
+        
+        return true;
+    }
+
+    /**
+     * Process a single json file
+     * @param jsonData the json data of the file
+     */
+    private void processJsonFile(JSONObject jsonData) {
+
+        /* Get message data */
+        final JSONArray msgsData = jsonData.getJSONArray("messages");
+
+        /* Loop in reverse such that it's sorted oldest to newest */
+        for (int i = msgsData.size() - 1; i >= 0; i--) {
+            final JSONObject msgData = msgsData.getJSONObject(i);
+
+            if (msgData.getBoolean("is_unsent"))
+                continue;
+
+            processMsg(msgData);
+        }
+    }
+
+    private void processMsg(JSONObject msgData) {
+        /**
+         * Sender id
+         * NOTE: if the facebook user deleted their profile,
+         * the sender_name retrievied here would be 'Other User'
+         * (as of Nov. 2021).
+         */
+        String sender = msgData.getString("sender_name");
+        assert sender != null;
+
+        /* Check if the sender name is unknown */
+        if (sender.equals("Facebook User") || sender.equals("Other User")) {
+            if (this.threadType == ThreadType.REGULAR) {
+
+                /* If this is in a regular chat, replace name with alias */
+                assert this.unknownParticipant;
+                sender = this.unknownParticipantAlias;
+
+            } else if (this.threadType == ThreadType.REGULAR_GROUP) {
+
+                /* Ignore this message entry if it's from unknown */
+                return;
+            }
+        }
+
+        final int sender_id = this.manager.getPersonIDFromName(sender);
+        
+        /* At this point, if the sender_id is still -1, then it means
+         * that sender name is kept in the transcript, but the name doesn't
+         * match with the participants list (e.g. "Facebook User"), so
+         * it will not have an ID since IDs are assigned when reading
+         * the participants list
+         *
+         * We can definitely improve the logic to assign IDs to people,
+         * including doing a pass of all senders and partcipants in a thread
+         * before we process any messages -- but this may slow down processing
+         * by a lot. For now we just drop this message
+         */
+        if (sender_id == -1) {
+            return;
+        }
+
+        /* Get receivers
+         * -- which should just be a copy of the participants
+         * list minus the sender
+         */
+        ArrayList<Integer> receiver_ids = new ArrayList<Integer>(
+            this.participant_ids);
+        receiver_ids.remove(Integer.valueOf(sender_id));
+
+        /* Timestamp */
+        final long timestamp = msgData.getLong("timestamp_ms");
+
+        /* Process single message depending on the type */
+        switch (msgData.getString("type")) {
+            case "Generic":
+            case "Share":
+                this.messagesData.add(
+                    this.processGenericMsg(sender_id, receiver_ids,timestamp, msgData));
+                break;
+
+            case "Call":
+                this.messagesData.add(
+                    this.processCallMsg(sender_id, receiver_ids, timestamp, msgData));
+                break;
+
+            case "Subscribe":
+                /* TODO */
+                break;
+            case "Unsubscribe":
+                /* TODO */
+                break;
+        }
+    }
+
+    private MsgData processGenericMsg(int sender_id,
+        ArrayList<Integer> receiver_ids, long timestamp, JSONObject msgData) {
+        
+        /* Determine what kind of message it is */
+        /* TODO: for now we'll just focus on text msgs (see below) */
+        final String content = msgData.getString("content");
+        // final JSONArray photos = msgData.getJSONArray("photos");
+        // final JSONArray photos = msgData.getJSONArray("videos");
+        // final JSONObject sticker = msgData.getJSONObject("sticker");
+        
+        // TODO: ignored for now
+        //if (content == null)
+        //    return null;
+
+        /* Create new message data container */
+        return new MsgData(
+            timestamp,
+            sender_id,
+            receiver_ids,
+            content
+        );
+    }
+
+    private MsgData processCallMsg(int sender_id,
+        ArrayList<Integer> receiver_ids, long timestamp, JSONObject msgData) {
+
+        /* TODO: NOTE: calls should be visualized by a line */
+        /* TODO: call has field 'call_duration' in seconds */
+        final int callDurationSecs = msgData.getInt("call_duration");
+
+        /* TODO: a different type is required to represent this type of msg */
+        return new MsgData(
+            timestamp,
+            sender_id,
+            receiver_ids,
+            "TODO: CALL"
+        );
+    }
+    
+    private MsgData processSubscribeMsg(int sender_id,
+        ArrayList<Integer> receiver_ids, long timestamp, JSONObject MsgData) {
+        /* Unimplemented */
+        
+        return null;
+    }
+    
+    private MsgData processUnsubscribeMsg(int sender_id,
+        ArrayList<Integer> receiver_ids, long timestamp, JSONObject MsgData) {
+        /* Unimplemented */
+        
+        return null;
+    }
+
+    /**
+     * Reset messages data index/pointer
+     */
+    public void resetHead() {
+        this.head = 0;
+    }
+
+    /**
+     * Get HEAD msg
+     * @return HEAD MsgData
+     */
+    public MsgData getHeadMsgData() {
+        return this.messagesData.get(this.head);
+    }
+
+    /**
+     * Get the timestamp of the HEAD
+     * @return the timestamp of the MsgData at HEAD
+     */
+    public long getHeadTimestamp() {
+        return this.getHeadMsgData().getTimestamp();
+    }
+
+    /**
+     * Get a list of messages from head to a specified timestamp
+     * Then increase the HEAD index up to the time
+     * @param endTime the end timestamp
+     */
+    public ArrayList<MsgData> getMsgsUntil(long endTime) {
+
+        ArrayList<MsgData> msgs = new ArrayList<MsgData>();
+        while (this.getHeadTimestamp() < endTime) {
+
+            /* Add head msg and increment head */
+            msgs.add(this.getHeadMsgData());
+            this.head++;
+        }
+
+        return msgs;
+    }
+
+    /**
+     * Returns whether this thread has been processed and initialized
+     */
+    public Boolean isInitialized() {
+        return this.initialized;
+    }
+
+    /**
+     * Returns earliest timestamp
+     */
+    public long getEarliestTimestamp() {
+        return this.messagesData.get(0).getTimestamp();
+    }
+
+    /**
+     * Returns latest timestamp
+     */
+    public long getLatestTimestamp() {
+        return this.messagesData.get(this.messagesData.size() - 1).getTimestamp();
+    }
+
+    /**
+     * Returns number of messages in this thread
+     */
+    public int getThreadSize() {
+        return this.messagesData.size();
+    }
+}

@@ -46,8 +46,8 @@ class PersonNode {
 		this.stats = new PersonStat();
 
 		// Set name
-		if (CONFIG.hideRealNames) {
-			this.name = CONFIG.hideNameReplacement;
+		if (g_config.hideRealNames) {
+			this.name = g_config.hideNameReplacement;
 		} else {
 			this.name = name;
 		}
@@ -118,8 +118,8 @@ class PersonNode {
 		pg.popMatrix();
 
 		// Set hover state for UI (todo: add mutex lock so only one hover is possible and mouse input is consumed)
-		statcardHover.person = this;
-		statcardHover.show = true;
+		//statcardHover.person = this;
+		//statcardHover.show = true;
 	}
 
 	protected void drawNode(PGraphics pg) {

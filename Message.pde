@@ -40,7 +40,7 @@ class MessageManager {
                 
                 // If in the ignore list, then skip
                 boolean ignore = false;
-                for (String ignoredItem : CONFIG.ignoreList) {
+                for (String ignoredItem : g_config.ignoreList) {
                     if (ignoredItem.equals(filename)) {
                         ignore = true;
                         break;
@@ -62,7 +62,7 @@ class MessageManager {
                 }
                 
                 /* Get message util object and populate with all the json files */
-                if (CONFIG.enableVerbose) println("Loading: " + messageDataPath);
+                if (g_config.enableVerbose) println("Loading: " + messageDataPath);
                 MessageUtil newMessageUtil = new MessageUtil(messageDataPath);
 
                 /* Populate in reverse order */
@@ -77,11 +77,11 @@ class MessageManager {
                 i++;
                 
                 // Status
-                progress.setLoadingProgress(i / filenames.size());
+                g_progress.setLoadingProgress(i / filenames.size());
             }
 
             j++;
-            progress.setLoadingLargeProgress(j / this.rootPaths.size());
+            g_progress.setLoadingLargeProgress(j / this.rootPaths.size());
         }
         
         this.buildMessagesList();
@@ -89,12 +89,12 @@ class MessageManager {
     
     // Builds an timely ordered list
     public void buildMessagesList() {
-        if (CONFIG.enableVerbose) println("Building ordered messages list, sorting through all messages by time");
+        if (g_config.enableVerbose) println("Building ordered messages list, sorting through all messages by time");
         for (int i = 0; i < this.messageUtils.size(); i++) {
 
             // Status
-            if (CONFIG.enableVerbose) println("Sorting " + str(i) + "/" + str(messageUtils.size()) + " entries");
-            progress.setSortingProgress(i / messageUtils.size());
+            if (g_config.enableVerbose) println("Sorting " + str(i) + "/" + str(messageUtils.size()) + " entries");
+            g_progress.setSortingProgress(i / messageUtils.size());
 
             MessageUtil mu = this.messageUtils.get(i);
             for (MessageData md : mu.getMessagesList()) {
@@ -225,7 +225,7 @@ class MessageUtil {
 
             String name = nameObj.getString("name");
 
-            if (name.equals(CONFIG.defaultName)) {
+            if (name.equals(g_config.defaultName)) {
                 name += ' ' + str(globalUnknownUserCount);
                 globalUnknownUserCount++;
             }
@@ -285,7 +285,7 @@ class MessageUtil {
             }
         }
 
-        if (CONFIG.enableVerbose) {
+        if (g_config.enableVerbose) {
             println("Finished processsing file");
             println("Total of " + str(this.messagesList.size()) + " messages");
         }
