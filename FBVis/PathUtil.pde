@@ -24,21 +24,6 @@ StringList listFileNames(String dir) throws NotDirectoryException {
     return filenames;
 }
 
-
-int extractNumber(String s, char startToken, char endToken) {
-    int i = 0;
-    try {
-        int start = s.indexOf(startToken) + 1;
-        int end = s.lastIndexOf(endToken);
-        String number = s.substring(start, end);
-        i = Integer.parseInt(number);
-    } catch (Exception e) {
-        i = 0;
-    }
-
-    return i;
-}
-
 StringList listFileNames(String dir, String extention) throws NotDirectoryException {
     StringList allfiles = listFileNames(dir);
     StringList files = new StringList();
@@ -52,12 +37,27 @@ StringList listFileNames(String dir, String extention) throws NotDirectoryExcept
     return files;
 }
 
-String[] sortFilenamesNumerically(StringList files) {
-    String[] sorted = new String[files.size()];
-    for (String f : files) {
-        int index = extractNumber(f, '_', '.') - 1;
-        sorted[index] = f;
-    }
 
-    return sorted;
-}
+// int extractNumber(String s, char startToken, char endToken) {
+//     int i = 0;
+//     try {
+//         int start = s.indexOf(startToken) + 1;
+//         int end = s.lastIndexOf(endToken);
+//         String number = s.substring(start, end);
+//         i = Integer.parseInt(number);
+//     } catch (Exception e) {
+//         i = 0;
+//     }
+
+//     return i;
+// }
+
+// String[] sortFilenamesNumerically(StringList files) {
+//     String[] sorted = new String[files.size()];
+//     for (String f : files) {
+//         int index = extractNumber(f, '_', '.') - 1;
+//         sorted[index] = f;
+//     }
+
+//     return sorted;
+// }

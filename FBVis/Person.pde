@@ -26,24 +26,53 @@ class PersonStat {
 	}
 }
 
-class PersonNode {
-	float x, targetX; 
-	float y, targetY;
-
+class Node {
+	PVector pos;
+	PVector targetPos;
+	
 	String name;
-	float refreshScore;
+	int id;
+
+	float NODE_RESPONSIVENESS = 0.2;
+
+	public Node(String name, PVector initPos, PVector targetPos) {
+		this.pos = initPos;
+		this.targetPos = targetPos;
+		this.name = name;
+	}
+
+	public void setPos(PVector pos) {
+		this.targetPos = pos;
+	}
+
+	private void update() {
+		this.pos.lerp(this.targetPos, NODE_RESPONSIVENESS);
+	}
+
+	private void drawNode(PGraphics pg) {
+		pg.sphere(5);
+	}
+
+	public void draw(PGraphics pg) {
+		pg.pushMatrix();
+		pg.translate(this.pos.x, this.pos.y, this.pos.z);
+		this.drawNode(pg);
+		pg.popMatrix();
+
+		this.update();
+	}
+}
+
+class PersonNode extends Node {
+
+	// Display properties
+	float refreshScore = 1.0;
 
 	// Stats
 	PersonStat stats;
 	
 	public PersonNode(String name) {
-		this.refreshScore = 1.0;
-
-		this.x = width / 2;
-		this.y = height / 2;
-
-		// Reset stats
-		this.stats = new PersonStat();
+		super(name, new PVector(0, 0, 0), new PVector(0, 0, 0));
 
 		// Set name
 		if (CONFIG.hideRealNames) {
@@ -51,16 +80,8 @@ class PersonNode {
 		} else {
 			this.name = name;
 		}
-	}
 
-	public void setPosition(float x, float y) {
-		this.x = x;
-		this.y = y;
-	}
-
-	public void setTargetPosition(float x, float y) {
-		this.targetX = x;
-		this.targetY = y;
+		this.stats = new PersonStat();
 	}
 
 	public void refresh() {
@@ -79,52 +100,13 @@ class PersonNode {
 		this.stats.msgSent++;
 	}
 
-	public void draw() {
-		// If no PGraphics object is selected, then we draw to default PGraphics instead
-		this.draw(g);
-	}
-
-	public void draw(PGraphics pg) {
-		// If mouse position is over the person, change UI
-		if (abs(mouseXSpace() - this.x) < PERSON_HITBOX_R && abs(mouseYSpace() - this.y) < PERSON_HITBOX_R) {
-			this.drawNodeInFocus(pg);
-		} else if (this.refreshScore < REFRESH_THRES) {
+	private void drawNode(PGraphics pg) {
+		if (this.refreshScore < REFRESH_THRES) {
 			return;
-		} else {
-			this.drawNode(pg);
 		}
-	}
 
-	protected void drawNodeInFocus(PGraphics pg) {
-		pg.pushMatrix();
-		pg.translate(this.x, this.y);
-
-		// Draw circle outline
-		pg.strokeWeight(4);
-		pg.stroke(50);
-
-		// Draw inner circle
-		pg.fill(50, 255, 50);
-		pg.ellipse(0, 0, PERSON_NODE_SIZE, PERSON_NODE_SIZE);
-
-		// Draw name tag
-		pg.textAlign(CENTER, CENTER);
-		pg.fill(255);
-		pg.textSize(PERSON_NAME_TEXT_SIZE);
-	
-		pg.text(this.name, 0, PERSON_NODE_SIZE);
-
-		// Done
-		pg.popMatrix();
-
-		// Set hover state for UI (todo: add mutex lock so only one hover is possible and mouse input is consumed)
-		statcardHover.person = this;
-		statcardHover.show = true;
-	}
-
-	protected void drawNode(PGraphics pg) {
-		pg.pushMatrix();
-		pg.translate(this.x, this.y);
+		// Ignore mouse focus for now
+		// FIXME:
 
 		float fillScore = map(this.refreshScore, 0, 1, 0, 245);
 		float strokeFillScore = map(this.refreshScore, 0, 1, 5, 50);
@@ -142,49 +124,154 @@ class PersonNode {
 		pg.fill(255, fillScore);
 		pg.textSize(PERSON_NAME_TEXT_SIZE);
 		pg.text(this.name, 0, PERSON_NODE_SIZE);
-
-		// Done
-		pg.popMatrix();
 	}
 
+
+
+	// public void draw(PGraphics pg) {
+	// 	// If mouse position is over the person, change UI
+	// 	if (abs(mouseXSpace() - this.x) < PERSON_HITBOX_R && abs(mouseYSpace() - this.y) < PERSON_HITBOX_R) {
+	// 		this.drawNodeInFocus(pg);
+	// 	} else if (this.refreshScore < REFRESH_THRES) {
+	// 		return;
+	// 	} else {
+	// 		this.drawNode(pg);
+	// 	}
+	// }
+
+	// protected void drawNodeInFocus(PGraphics pg) {
+	// 	pg.pushMatrix();
+	// 	pg.translate(this.x, this.y);
+
+	// 	// Draw circle outline
+	// 	pg.strokeWeight(4);
+	// 	pg.stroke(50);
+
+	// 	// Draw inner circle
+	// 	pg.fill(50, 255, 50);
+	// 	pg.ellipse(0, 0, PERSON_NODE_SIZE, PERSON_NODE_SIZE);
+
+	// 	// Draw name tag
+	// 	pg.textAlign(CENTER, CENTER);
+	// 	pg.fill(255);
+	// 	pg.textSize(PERSON_NAME_TEXT_SIZE);
+	
+	// 	pg.text(this.name, 0, PERSON_NODE_SIZE);
+
+	// 	// Done
+	// 	pg.popMatrix();
+
+	// 	// Set hover state for UI (todo: add mutex lock so only one hover is possible and mouse input is consumed)
+	// 	statcardHover.person = this;
+	// 	statcardHover.show = true;
+	// }
+
+	// protected void drawNode(PGraphics pg) {
+	// 	pg.pushMatrix();
+	// 	pg.translate(this.x, this.y);
+
+	// 	float fillScore = map(this.refreshScore, 0, 1, 0, 245);
+	// 	float strokeFillScore = map(this.refreshScore, 0, 1, 5, 50);
+			
+	// 	// Draw circle outline
+	// 	pg.strokeWeight(4);
+	// 	pg.stroke(strokeFillScore);
+
+	// 	// Draw inner circle
+	// 	pg.fill(10 + fillScore);
+	// 	pg.ellipse(0, 0, PERSON_NODE_SIZE, PERSON_NODE_SIZE);
+
+	// 	// Draw name tag
+	// 	pg.textAlign(CENTER, CENTER);
+	// 	pg.fill(255, fillScore);
+	// 	pg.textSize(PERSON_NAME_TEXT_SIZE);
+	// 	pg.text(this.name, 0, PERSON_NODE_SIZE);
+
+	// 	// Done
+	// 	pg.popMatrix();
+	// }
+
 	private void update() {
-		// Update position by lerping
-		this.x = lerp(this.x, this.targetX, PERSON_LERP);
-		this.y = lerp(this.y, this.targetY, PERSON_LERP);
+		// Super update
+		super.update();
 
 		// Update refresh score
 		this.refreshScore *= REFRESH_DECAY;
 	}
 }
 
-class PersonMasterNode extends PersonNode {
-	public PersonMasterNode(String name) {
-		super(name);
+class GroupNode extends Node {
+	
+	// Contains either PersonNode or GroupNode
+	ArrayList<Node> nodes = new ArrayList<Node>();
 
-		// Actually don't hide the name
-		this.name = name;
+	// Display properties
+	float groupRadius = 100;
+
+	public GroupNode(String name) {
+		super(name, new PVector(0, 0, 0), new PVector(0, 0, 0));
 	}
 
-	@Override
-	protected void drawNode(PGraphics pg) {
-		pg.pushMatrix();
-		pg.translate(this.x, this.y);
-			
-		// Draw circle outline
-		pg.strokeWeight(4);
-		pg.stroke(50);
+	public void addNode(Node node) {
+		this.nodes.add(node);
+		this.reposition();
+	}
 
-		// Draw inner circle
-		pg.fill(255, 230, 64);
-		pg.ellipse(0, 0, PERSON_MASTER_NODE_SIZE, PERSON_MASTER_NODE_SIZE);
+	public void removeNode(Node node) {
+		this.nodes.remove(node);
+		this.reposition();
+	}
 
-		// Draw name tag
-		pg.textAlign(CENTER, CENTER);
-		pg.fill(255);
-		pg.textSize(PERSON_NAME_TEXT_SIZE);
-		pg.text(this.name, 0, PERSON_MASTER_NODE_SIZE);
+	public void reposition() {
+		final int N = this.nodes.size();
+		
+		// Calculate new position for all nodes, +1 offset
+		PVector[] points = genPts3DSphere(N + 1, this.groupRadius);
 
-		// Done
-		pg.popMatrix();
+		// Set new positions
+		for (int i = 0; i < N; i++) {
+			this.nodes.get(i).setPos(points[i + 1].add(this.pos));
+		
+			if (this.nodes.get(i) instanceof GroupNode) {
+				
+				// Push group nodes away
+				PVector deltaPos = points[i + 1].copy().normalize().mult(2 * this.groupRadius);
+				this.nodes.get(i).setPos(points[i + 1].add(deltaPos));
+
+				// Recursively reposition group nodes
+				((GroupNode) this.nodes.get(i)).reposition();
+			}
+		}
+	}
+
+	private void update() {
+		// Super update
+		super.update();
+
+		// Update all nodes
+		for (Node node : this.nodes) {
+			node.update();
+		}
+	}
+
+	private void drawNode(PGraphics pg) {
+		super.drawNode(pg);
+
+		// Draw lines to all nodes
+		for (Node node : this.nodes) {
+			pg.line(this.pos.x, this.pos.y, this.pos.z, node.pos.x, node.pos.y, node.pos.z);
+		}
+
+		// Draw all nodes
+		for (Node node : this.nodes) {
+			node.draw(pg);
+		}
+	}
+}
+
+// Singleton class for the master person node (root)
+class MasterPersonNode extends GroupNode {
+	private MasterPersonNode(String name) {
+		super(name);
 	}
 }

@@ -1,6 +1,12 @@
 // if number of participants in a thread is bigger than this number, ignore it
 final int LARGE_GROUP_PARTICIPANT_THRES = 20;
 
+int globalUnknownUserCount = 0;
+int id_counter = 0;
+
+// global name to id map
+HashMap<String, Integer> nameToIdMap = new HashMap<String, Integer>();
+
 // This should be a class that manages all messages, and message utils
 class MessageManager {
     ArrayList<MessageData> organizedMessagesList;
@@ -24,7 +30,7 @@ class MessageManager {
             try {
                 filenames = listFileNames(path);
             } catch (NotDirectoryException e) {
-                println("Error");
+                println("Error: " + path + " is not a directory");
                 exit();
                 return;
                 
@@ -55,8 +61,13 @@ class MessageManager {
 
                 /* Find all the JSON files in the path */
                 String[] sortedJsonFiles;
+                // try {
+                //     sortedJsonFiles = sortFilenamesNumerically(listFileNames(messageDataPath, "backup"));
+                // } catch (NotDirectoryException e) {
+                //     continue;
+                // }
                 try {
-                    sortedJsonFiles = sortFilenamesNumerically(listFileNames(messageDataPath, "json"));
+                    sortedJsonFiles = listFileNames(messageDataPath, "json").array();
                 } catch (NotDirectoryException e) {
                     continue;
                 }
@@ -77,11 +88,11 @@ class MessageManager {
                 i++;
                 
                 // Status
-                progress.setLoadingProgress(i / filenames.size());
+                // progress.setLoadingProgress(i / filenames.size());
             }
 
             j++;
-            progress.setLoadingLargeProgress(j / this.rootPaths.size());
+            // progress.setLoadingLargeProgress(j / this.rootPaths.size());
         }
         
         this.buildMessagesList();
@@ -94,7 +105,7 @@ class MessageManager {
 
             // Status
             if (CONFIG.enableVerbose) println("Sorting " + str(i) + "/" + str(messageUtils.size()) + " entries");
-            progress.setSortingProgress(i / messageUtils.size());
+            // progress.setSortingProgress(i / messageUtils.size());
 
             MessageUtil mu = this.messageUtils.get(i);
             for (MessageData md : mu.getMessagesList()) {
@@ -145,29 +156,153 @@ class MessageManager {
 
 
 // Primitive object for a single entry of message
-class MessageData{
+class MessageData {
     long timestamp;
-    String sender;
-    ArrayList<String> receivers;
-    String content;
-    float contentSizeSqrt;
 
-    public MessageData(long timestamp, String sender, ArrayList<String> receivers, String content) {
-        super();
+    int sender_id;
+    int[] receivers_ids;
+
+    String content;
+
+    public MessageData(long timestamp, int sender_id, int[] receivers_ids, String content) {
         this.timestamp = timestamp;
-        this.sender = sender;
-        this.receivers = receivers;
+        this.sender_id = sender_id;
+        this.receivers_ids = receivers_ids;
         this.content = content;
-        this.contentSizeSqrt = sqrt(this.content.length());
     }
 }
+
+// class MessageFileReader {
+//     String filePath;
+//     MessageData[] messages;
+
+//     public MessageFileReader(String filePath) {
+//         this.filePath = filePath;
+//     }
+
+//     public void process() {
+//         JSONObject json = loadJSONObject(this.filePath);
+
+//         JSONArray participants = json.getJSONArray("participants");
+
+//         // Ignore group chats
+//         // TODO: add support for group chats
+//         if (participants.size() > 2) {
+//             return;
+//         }
+
+//         // local name to id map
+//         HashMap<String, Integer> localNameToIdMap = new HashMap<String, Integer>();
+//         for (int i = 0; i < participants.size(); i++) {
+//             String participantName = participants.getJSONObject(i).getString("name");
+//             localNameToIdMap.put(participantName, -1);
+
+//             if (participantName.equals(CONFIG.defaultName)) {
+//                 // TODO: add support for unknown users
+//                 return;
+//             }
+//         }
+
+//         // Populate local id map with global id map
+//         for (String name : localNameToIdMap.keySet()) {
+//             if (globalNameToIdMap.containsKey(name)) {
+//                 localNameToIdMap.put(name, globalNameToIdMap.get(name));
+//             } else {
+//                 localNameToIdMap.put(name, id_counter);
+//                 globalNameToIdMap.put(name, id_counter);
+//                 id_counter++;
+//             }
+//         }
+
+//         // Process through messages
+//         JSONArray messages = jsonData.getJSONArray("messages");
+//         this.messages = new MessageData[messages.size()];
+//         for (int i = 0; i < messages.size(); i++) {
+//             JSONObject message = messages.getJSONObject(i);
+
+//             // TODO: add support for other message types
+//             if (!message.getString("type").equals("Generic")) {
+//                 continue;
+//             }
+
+//             String sender = message.getString("sender_name");
+//             if (sender == null) {
+//                 continue;
+//             }
+
+//             String content = message.getString("content");
+//             if (content == null) {
+//                 continue;
+//             }
+
+//             long timestamp = message.getLong("timestamp_ms");
+
+//             // Get receivers (list of participants minus sender)
+//             ArrayList<String> receivers = new ArrayList<String>();
+            
+//             // Check the id map
+            
+//         }
+        
+//         // A hashmap / table is used to cache the sender -> receiver mapping
+//         // TODO: we have to recompute the table if someone adds/removes people from group chat
+//         HashMap<String, ArrayList<String>> receiverMapping = new HashMap<String, ArrayList<String>>();
+
+//         // We go backwards because the messages are sorted
+//         // by most recent on top
+//         for (int i = messages.size() - 1; i >= 0; i--) {
+//             JSONObject message = messages.getJSONObject(i);
+
+//             if (message.getString("type").equals("Generic")) {
+//                 String content = message.getString("content");
+//                 String sender = message.getString("sender_name");
+//                 final long timestamp = message.getLong("timestamp_ms");
+                
+//                 if (sender == null) {
+//                     sender = "{UNKNOWN USER}";
+//                 }
+                
+//                 if (content == null) {
+//                     content = "{NO CONTENT}";
+//                 }
+
+//                 // Get a single or list of receivers
+//                 ArrayList<String> receivers;
+//                 if (receiverMapping.containsKey(sender)) {
+//                     receivers = receiverMapping.get(sender);
+
+//                 } else {
+
+//                     receivers = new ArrayList<String>();
+
+//                     // Find all receivers from the participants list
+//                     for (int j = 0; j < participants.size(); j++) {
+//                         String name = participants.get(j);
+
+//                         // if participant name is not sender, it must be receiver
+//                         if (!sender.equals(name)) {
+//                             receivers.add(name);
+//                         }
+//                     }
+
+//                     // Add the list to the table to save computing
+//                     receiverMapping.put(sender, receivers);
+//                 }
+                
+//                 // messagesList.add(new MessageData(timestamp, sender, receivers, content));
+//                 messagesList.add(new MessageData(timestamp, 0, null, content));
+//             }
+//         }
+        
+//     }
+// }
 
 
 // Takes a file or arrays of files and construct a single array of 
 // uniform time sorted list
 
 // For now, suppose we are only dealing with one chat file
-int globalUnknownUserCount = 0;
+
 class MessageUtil {
     String filePath;
     ArrayList<MessageData> messagesList;
@@ -281,7 +416,8 @@ class MessageUtil {
                     receiverMapping.put(sender, receivers);
                 }
                 
-                messagesList.add(new MessageData(timestamp, sender, receivers, content));
+                // messagesList.add(new MessageData(timestamp, sender, receivers, content));
+                messagesList.add(new MessageData(timestamp, 0, null, content));
             }
         }
 

@@ -7,8 +7,8 @@ class Payload {
     PersonNode targetPerson;
     public Payload(PersonNode source, PersonNode target)
     {
-        this.x = source.x;
-        this.y = source.y;
+        //this.x = source.x;
+        //this.y = source.y;
         this.targetPerson = target;
 
         // Sender gets refreshed
@@ -16,7 +16,7 @@ class Payload {
     }
 
     public void draw() {
-        line(this.x, this.y, this.targetPerson.x, this.targetPerson.y);
+        //line(this.x, this.y, this.targetPerson.x, this.targetPerson.y);
     }
 
     public void update() {
@@ -54,8 +54,8 @@ class PayloadDot extends Payload{
 
     public PayloadDot(PersonNode source, PersonNode target) {
         super(source, target);
-        this.x = source.x + random(-RANDOM_START_D, RANDOM_START_D);
-        this.y = source.y + random(-RANDOM_START_D, RANDOM_START_D);
+        //this.x = source.x + random(-RANDOM_START_D, RANDOM_START_D);
+        //this.y = source.y + random(-RANDOM_START_D, RANDOM_START_D);
         
         this.targetPerson = target;
 
@@ -76,17 +76,17 @@ class PayloadDot extends Payload{
 
     @Override
     public void update() {
-        this.x = lerp(this.x, this.targetPerson.x, PAYLOAD_LERP);
-        this.y = lerp(this.y, this.targetPerson.y, PAYLOAD_LERP);
+        //this.x = lerp(this.x, this.targetPerson.x, PAYLOAD_LERP);
+        //this.y = lerp(this.y, this.targetPerson.y, PAYLOAD_LERP);
     }
 
-    @Override
-    protected boolean getArrived() {
-        final float dx = abs(this.targetPerson.x - this.x);
-        final float dy = abs(this.targetPerson.y - this.y);
+    //@Override
+    //protected boolean getArrived() {
+    //    //final float dx = abs(this.targetPerson.x - this.x);
+    //    //final float dy = abs(this.targetPerson.y - this.y);
 
-        return dx < ARRIVE_THRESHOLD_PX && dy < ARRIVE_THRESHOLD_PX;
-    }
+    //    //return dx < ARRIVE_THRESHOLD_PX && dy < ARRIVE_THRESHOLD_PX;
+    //}
 }
 
 class PayloadLine extends Payload{
@@ -98,8 +98,8 @@ class PayloadLine extends Payload{
 
     public PayloadLine(PersonNode source, PersonNode target) {
         super(source, target);
-        this.x = source.x + random(-RANDOM_START_D, RANDOM_START_D);
-        this.y = source.y + random(-RANDOM_START_D, RANDOM_START_D);
+        //this.x = source.x + random(-RANDOM_START_D, RANDOM_START_D);
+        //this.y = source.y + random(-RANDOM_START_D, RANDOM_START_D);
         
         this.targetPerson = target;
         this.life = 15;
@@ -108,7 +108,7 @@ class PayloadLine extends Payload{
     public void draw() {
         stroke(255, 255, 0);
         strokeWeight(1);
-        line(this.x, this.y, this.targetPerson.x, this.targetPerson.y);
+        //line(this.x, this.y, this.targetPerson.x, this.targetPerson.y);
     }
 
     protected boolean getArrived() {
@@ -133,8 +133,8 @@ class PayloadSegment extends Payload{
 
     public PayloadSegment(PersonNode source, PersonNode target, float size) {
         super(source, target);
-        this.x = source.x + random(-RANDOM_START_D, RANDOM_START_D);
-        this.y = source.y + random(-RANDOM_START_D, RANDOM_START_D);
+        //this.x = source.x + random(-RANDOM_START_D, RANDOM_START_D);
+        //this.y = source.y + random(-RANDOM_START_D, RANDOM_START_D);
         this.prevX = this.x;
         this.prevY = this.y;
         
@@ -168,17 +168,17 @@ class PayloadSegment extends Payload{
     public void update() {
         this.prevX = this.x;
         this.prevY = this.y;
-        this.x = lerp(this.x, this.targetPerson.x, this.travel_lerp);
-        this.y = lerp(this.y, this.targetPerson.y, this.travel_lerp * travel_y_lerp_mult);
+        //this.x = lerp(this.x, this.targetPerson.x, this.travel_lerp);
+        //this.y = lerp(this.y, this.targetPerson.y, this.travel_lerp * travel_y_lerp_mult);
     }
 
-    @Override
-    protected boolean getArrived() {
-        final float dx = abs(this.targetPerson.x - this.x);
-        final float dy = abs(this.targetPerson.y - this.y);
+    //@Override
+    //protected boolean getArrived() {
+    //    //final float dx = abs(this.targetPerson.x - this.x);
+    //    //final float dy = abs(this.targetPerson.y - this.y);
 
-        return dx < ARRIVE_THRESHOLD_PX && dy < ARRIVE_THRESHOLD_PX;
-    }
+    //    //return dx < ARRIVE_THRESHOLD_PX && dy < ARRIVE_THRESHOLD_PX;
+    //}
 }
 
 class PayloadSegment2 extends PayloadSegment {
@@ -207,13 +207,13 @@ class PayloadFactory {
         this.payloads = payloads;
     }
 
-    public void makeIndividualPayload(PersonNode sender, PersonNode receiver, float size) {
-        if (PAYLOADS_MAXSIZE > this.payloads.size())
-            this.payloads.add(new PayloadSegment(sender, receiver, size));
-    }
+    //public void makeIndividualPayload(PersonNode sender, PersonNode receiver, float size) {
+    //    if (PAYLOADS_MAXSIZE > this.payloads.size())
+    //        this.payloads.add(new PayloadSegment(sender, receiver, size));
+    //}
 
-    public void makeGroupPayload(PersonNode sender, PersonNode receiver, float size) {
-        if (PAYLOADS_MAXSIZE > this.payloads.size())
-            this.payloads.add(new PayloadSegment2(sender, receiver, size));
-    }
+    //public void makeGroupPayload(PersonNode sender, PersonNode receiver, float size) {
+    //    if (PAYLOADS_MAXSIZE > this.payloads.size())
+    //        this.payloads.add(new PayloadSegment2(sender, receiver, size));
+    //}
 }
