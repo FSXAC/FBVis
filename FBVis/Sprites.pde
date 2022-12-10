@@ -9,9 +9,9 @@ public class Sprites {
         personNodeSprites = new PGraphics[10];
 
         for (int i = 0; i < personNodeSprites.length; i++) {
-
-            float fillScore = map(i, 0,  personNodeSprites.length - 1, 0, 245);
-            float strokeScore = map(i, 0,  personNodeSprites.length - 1, 5, 50);
+            float refreshScore = exp(0.3 * (i - personNodeSprites.length));
+            float fillScore = map(refreshScore, 0, 1, 0, 245);
+            float strokeScore = map(refreshScore, 0, 1, 5, 50);
 
             personNodeSprites[i] = createGraphics(20, 20);
             personNodeSprites[i].beginDraw();

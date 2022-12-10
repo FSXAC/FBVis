@@ -51,7 +51,7 @@ void initializeData() {
     msgManager = new MessageManager(CONFIG.dataRootPath);
     int duration = millis() - startTime;
     println("Done loading data");
-    println(msgManager.organizedMessagesList.size());
+    println(msgManager.organizedMessagesList.size()); //<>//
     println("Took " + duration + "ms");
 
     msgScheduler = new MessageScheduler(msgManager);
@@ -98,8 +98,8 @@ void draw() {
         blendMode(ADD);
         image(crawlerLayer.getRender(), 0, 0);
         text(frameRate, 10, 10);
-
         text(msgScheduler.getCurrentTime(), 10, 30);
+        text("Crawlers: " + crawlers.getNumCrawlers(), 10, 50);
 
         if (msgScheduler.finished()) {
             state = AppState.PAUSED;

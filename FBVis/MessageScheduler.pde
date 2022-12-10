@@ -22,10 +22,10 @@ class MessageScheduler {
         // this.time_step = 2 * 60 * 1000;
 
         // set time step to 1 day
-        // this.time_step = 48 * 60 * 60 * 1000;
+        this.time_step = 24 * 60 * 60 * 1000;
 
         // Hack: timestep is entire duration of simulation
-        this.time_step = this.messages.get(this.messages.size() - 1).timestamp - this.messages.get(0).timestamp;
+        // this.time_step = this.messages.get(this.messages.size() - 1).timestamp - this.messages.get(0).timestamp;
 
         this.current_time = this.messages.get(0).timestamp;
         this.previous_time = this.current_time;

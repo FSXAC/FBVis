@@ -16,6 +16,11 @@ class Crawler {
 
         this.travel_lerp = random(CONFIG.payloadSegmentLerpMin, CONFIG.payloadSegmentLerpMax);
         this.travel_y_lerp_mult = random(0.5, 0.8);
+
+        // if the source is personnode
+        if (source instanceof PersonNode) {
+            ((PersonNode) source).refresh();
+        }
     }
 
     private void update() {
@@ -28,7 +33,10 @@ class Crawler {
 
     public boolean hasArrived() {
         if (this.getArrived()) {
-            //this.target.refresh();
+
+            if (target instanceof PersonNode) {
+                ((PersonNode) target).refresh();
+            }
             return true;
         }
 
@@ -66,5 +74,9 @@ class Crawlers {
         // Remove crawlers that have arrived
         this.inboundCrawlers.removeIf(Crawler::hasArrived);
         this.outboundCrawlers.removeIf(Crawler::hasArrived);
+    }
+
+    public int getNumCrawlers() {
+        return this.inboundCrawlers.size() + this.outboundCrawlers.size();
     }
 }

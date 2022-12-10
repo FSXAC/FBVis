@@ -46,28 +46,8 @@ class Node {
 		this.targetPos = pos;
 	}
 
-	protected void update() {
+	public void update() {
 		this.pos.lerp(this.targetPos, NODE_RESPONSIVENESS);
-	}
-
-	protected void drawNode(PGraphics pg) {
-		pg.noStroke();
-		pg.fill(255);
-		pg.ellipse(0, 0, 10, 10);
-		pg.text(this.name, 0, 0);
-	}
-
-	public void draw(PGraphics pg) {
-		pg.pushMatrix();
-		if (RENDERER == P3D) {
-			pg.translate(this.pos.x, this.pos.y, this.pos.z);
-		} else {
-			pg.translate(this.pos.x, this.pos.y);
-		}
-		this.drawNode(pg);
-		pg.popMatrix();
-
-		this.update();
 	}
 }
 
@@ -107,111 +87,14 @@ class PersonNode extends Node {
 	public void incrementMsgSent() {
 		this.stats.msgSent++;
 	}
-  
-	@Override
-	protected void drawNode(PGraphics pg) {
-		if (this.refreshScore < REFRESH_THRES) {
-			return;
-		}
-
-		// Ignore mouse focus for now
-		// FIXME:
-
-		// float fillScore = map(this.refreshScore, 0, 1, 0, 245);
-		// float strokeFillScore = map(this.refreshScore, 0, 1, 5, 50);
-			
-		// Draw circle outline
-		// pg.strokeWeight(4);
-		// pg.stroke(strokeFillScore);
-
-		// // Draw inner circle
-		// pg.fill(10 + fillScore);
-		// pg.ellipse(0, 0, PERSON_NODE_SIZE, PERSON_NODE_SIZE);
-		pg.image(sprites.personNodeSprites[floor(this.refreshScore * 9)], -10, -10);
-
-
-		// Draw name tag (not as expensive)
-		pg.textAlign(CENTER, CENTER);
-		// pg.fill(255, fillScore);
-		pg.textSize(PERSON_NAME_TEXT_SIZE);
-		pg.text(this.name, 0, PERSON_NODE_SIZE);
-
-		// pg.fill(0, 255, 0);
-		// pg.ellipse(this.pos.x, this.pos.y, 100, 10);
-	}
-
-
-
-	// public void draw(PGraphics pg) {
-	// 	// If mouse position is over the person, change UI
-	// 	if (abs(mouseXSpace() - this.x) < PERSON_HITBOX_R && abs(mouseYSpace() - this.y) < PERSON_HITBOX_R) {
-	// 		this.drawNodeInFocus(pg);
-	// 	} else if (this.refreshScore < REFRESH_THRES) {
-	// 		return;
-	// 	} else {
-	// 		this.drawNode(pg);
-	// 	}
-	// }
-
-	// protected void drawNodeInFocus(PGraphics pg) {
-	// 	pg.pushMatrix();
-	// 	pg.translate(this.x, this.y);
-
-	// 	// Draw circle outline
-	// 	pg.strokeWeight(4);
-	// 	pg.stroke(50);
-
-	// 	// Draw inner circle
-	// 	pg.fill(50, 255, 50);
-	// 	pg.ellipse(0, 0, PERSON_NODE_SIZE, PERSON_NODE_SIZE);
-
-	// 	// Draw name tag
-	// 	pg.textAlign(CENTER, CENTER);
-	// 	pg.fill(255);
-	// 	pg.textSize(PERSON_NAME_TEXT_SIZE);
-	
-	// 	pg.text(this.name, 0, PERSON_NODE_SIZE);
-
-	// 	// Done
-	// 	pg.popMatrix();
-
-	// 	// Set hover state for UI (todo: add mutex lock so only one hover is possible and mouse input is consumed)
-	// 	statcardHover.person = this;
-	// 	statcardHover.show = true;
-	// }
-
-	// protected void drawNode(PGraphics pg) {
-	// 	pg.pushMatrix();
-	// 	pg.translate(this.x, this.y);
-
-	// 	float fillScore = map(this.refreshScore, 0, 1, 0, 245);
-	// 	float strokeFillScore = map(this.refreshScore, 0, 1, 5, 50);
-			
-	// 	// Draw circle outline
-	// 	pg.strokeWeight(4);
-	// 	pg.stroke(strokeFillScore);
-
-	// 	// Draw inner circle
-	// 	pg.fill(10 + fillScore);
-	// 	pg.ellipse(0, 0, PERSON_NODE_SIZE, PERSON_NODE_SIZE);
-
-	// 	// Draw name tag
-	// 	pg.textAlign(CENTER, CENTER);
-	// 	pg.fill(255, fillScore);
-	// 	pg.textSize(PERSON_NAME_TEXT_SIZE);
-	// 	pg.text(this.name, 0, PERSON_NODE_SIZE);
-
-	// 	// Done
-	// 	pg.popMatrix();
-	// }
 
 	@Override
-	protected void update() {
+	public void update() {
 		// Super update
 		super.update();
 
 		// Update refresh score
-		// this.refreshScore *= REFRESH_DECAY;
+		this.refreshScore *= REFRESH_DECAY;
 	}
 }
 
@@ -223,6 +106,8 @@ class GroupNode extends Node {
 	// Display properties
 	float groupRadius = 100;
 
+	boolean refreshNeeded = false;
+
 	public GroupNode(int id, String name) {
 		super(id, name, new PVector(0, 0, 0), new PVector(0, 0, 0));
 	}
@@ -230,11 +115,13 @@ class GroupNode extends Node {
 	public void addNode(Node node) {
 		this.nodes.add(node);
 		this.reposition();
+		this.refreshNeeded = true;
 	}
 
 	public void removeNode(Node node) {
 		this.nodes.remove(node);
 		this.reposition();
+		this.refreshNeeded = true;
 	}
 
 	public void reposition() {
@@ -265,7 +152,7 @@ class GroupNode extends Node {
 	}
 
 	@Override
-	protected void update() {
+	public void update() {
 		// Super update
 		super.update();
 
@@ -275,23 +162,18 @@ class GroupNode extends Node {
 		}
 	}
 
-	@Override
-	protected void drawNode(PGraphics pg) {
-		super.drawNode(pg);
-
-		// Draw lines to all nodes
-		if (RENDERER == P3D) {
-			for (Node node : this.nodes) {
-				pg.stroke(255);
-				pg.strokeWeight(1);
-				pg.line(this.pos.x, this.pos.y, this.pos.z, node.pos.x, node.pos.y, node.pos.z);
+	// Recursively get all nodes in this group
+	public ArrayList<Node> getAllNodes() {
+		ArrayList<Node> allNodes = new ArrayList<Node>();
+		for (Node node : this.nodes) {
+			allNodes.add(node);
+			if (node instanceof GroupNode) {
+				allNodes.addAll(((GroupNode) node).getAllNodes());
 			}
 		}
-
-		// Draw all nodes
-		for (Node node : this.nodes) {
-			node.draw(pg);
-		}
+		// add self
+		allNodes.add(this);
+		return allNodes;
 	}
 }
 
