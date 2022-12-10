@@ -128,20 +128,20 @@ class MessageData {
     long timestamp;
 
     int sender_id;
-    int[] receivers_ids;
+    int[] receiver_ids;
 
     String content;
 
-    public MessageData(long timestamp, int sender_id, int[] receivers_ids, String content) {
+    public MessageData(long timestamp, int sender_id, int[] receiver_ids, String content) {
         this.timestamp = timestamp;
         this.sender_id = sender_id;
-        this.receivers_ids = receivers_ids;
+        this.receiver_ids = receiver_ids;
         this.content = content;
     }
     
     // Printable string
     public String toString() {
-        return "MessageData: " + this.timestamp + " " + this.sender_id + " " + this.receivers_ids + " " + this.content;
+        return "MessageData: " + this.timestamp + " " + this.sender_id + " " + this.receiver_ids + " " + this.content;
     }
 }
 

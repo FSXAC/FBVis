@@ -16,26 +16,22 @@ MessageManager msgManager;
 MessageScheduler msgScheduler;
 
 MasterPersonNode root;
-HashMap<Integer, PersonNode> personNodes;
+HashMap<Integer, Node> personNodes;
 
 // ============ render layers ============
 
 RenderPeopleLayer peopleLayer;
-String RENDERER = P3D;
+String RENDERER = P2D;
 
 // ============ visualization ============
 
 void settings() {
-    size(800, 600, RENDERER);
+    size(1280, 720, RENDERER);
 }
 
 void setup() {
     CONFIG = new FBVisConfig();
     thread("initializeData");
-
-    // Initialize visualization
-    root = new MasterPersonNode(CONFIG.masterName);
-    peopleLayer = new RenderPeopleLayer(root);
 }
 
 void initializeData() {
@@ -47,8 +43,16 @@ void initializeData() {
     println(msgManager.organizedMessagesList.size());
     println("Took " + duration + "ms");
 
-
     msgScheduler = new MessageScheduler(msgManager);
+
+    // Initialize the person nodes map with root
+    personNodes = new HashMap<Integer, Node>();
+    int root_id = msgManager.nameToIdMap.get(CONFIG.masterName);
+    root = new MasterPersonNode(root_id, CONFIG.masterName);
+    personNodes.put(root_id, root);
+
+    // Initialize visualization //<>//
+    peopleLayer = new RenderPeopleLayer(root);
 
     state = AppState.RUNNING;
 }
@@ -57,14 +61,33 @@ void draw() {
     if (state == AppState.INIT) {
         background(255);
     } else if (state == AppState.RUNNING) {
-        background(100);
+        background(30);
         fill(255);
 
-        // MessageData msg = msgScheduler.next();
-        // if (msg == null) {
-        //     state = AppState.PAUSED;
-        //     return;
-        // }
+        MessageData msg = msgScheduler.next();
+        if (msg == null) {
+            state = AppState.PAUSED;
+            return;
+        }
+
+        // Do something with the data
+        // First check the sender and receivers, and add them to the graph if they don't exist
+        int sender_id = msg.sender_id;
+        int[] receiver_ids = msg.receiver_ids;
+        if (personNodes.containsKey(sender_id) == false) {
+            PersonNode senderNode = new PersonNode(sender_id, msgManager.idToNameMap.get(sender_id));
+            personNodes.put(sender_id, senderNode);
+            root.addNode(senderNode);
+        }
+
+        for (int i = 0; i < receiver_ids.length; i++) {
+            int receiver_id = receiver_ids[i];
+            if (personNodes.containsKey(receiver_id) == false) {
+                PersonNode receiverNode = new PersonNode(receiver_id, msgManager.idToNameMap.get(receiver_id));
+                personNodes.put(receiver_id, receiverNode);
+                root.addNode(receiverNode);
+            }
+        }
 
         // image(peopleLayer.getRender(), 0, 0);
         pushMatrix();
@@ -75,6 +98,8 @@ void draw() {
         }
         root.draw(this.g);
         popMatrix();
+
+        text(frameRate, 10, 10);
 
 
     } else if (state == AppState.PAUSED) {
@@ -92,8 +117,5 @@ void keyPressed() {
         } else if (state == AppState.PAUSED) {
             state = AppState.RUNNING;
         }
-    } else if (key == 'a') {
-        root.addNode(new PersonNode("test"));
-        println("Added node");
     }
 }

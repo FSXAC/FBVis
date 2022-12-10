@@ -35,7 +35,8 @@ class Node {
 
 	float NODE_RESPONSIVENESS = 0.2;
 
-	public Node(String name, PVector initPos, PVector targetPos) {
+	public Node(int id, String name, PVector initPos, PVector targetPos) {
+		this.id = id;
 		this.pos = initPos;
 		this.targetPos = targetPos;
 		this.name = name;
@@ -50,9 +51,10 @@ class Node {
 	}
 
 	protected void drawNode(PGraphics pg) {
-		// pg.sphere(5);
-		pg.fill(255, 0, 0);
-		pg.ellipse(0, 0, 5, 5);
+		pg.noStroke();
+		pg.fill(255);
+		pg.ellipse(0, 0, 10, 10);
+		pg.text(this.name, 0, 0);
 	}
 
 	public void draw(PGraphics pg) {
@@ -77,8 +79,8 @@ class PersonNode extends Node {
 	// Stats
 	PersonStat stats;
 	
-	public PersonNode(String name) {
-		super(name, new PVector(0, 0, 0), new PVector(0, 0, 0));
+	public PersonNode(int id, String name) {
+		super(id, name, new PVector(0, 0, 0), new PVector(0, 0, 0));
 
 		// Set name
 		if (CONFIG.hideRealNames) {
@@ -106,41 +108,43 @@ class PersonNode extends Node {
 		this.stats.msgSent++;
 	}
   
-	@Override
-	protected void drawNode(PGraphics pg) {
-		// if (this.refreshScore < REFRESH_THRES) {
-		// 	return;
-		// }
+	// @Override
+	// protected void drawNode(PGraphics pg) {
+	// 	// if (this.refreshScore < REFRESH_THRES) {
+	// 	// 	return;
+	// 	// }
 
-		// // Ignore mouse focus for now
-		// // FIXME:
+	// 	// // Ignore mouse focus for now
+	// 	// // FIXME:
 
-		// float fillScore = map(this.refreshScore, 0, 1, 0, 245);
-		// float strokeFillScore = map(this.refreshScore, 0, 1, 5, 50);
+	// 	// float fillScore = map(this.refreshScore, 0, 1, 0, 245);
+	// 	// float strokeFillScore = map(this.refreshScore, 0, 1, 5, 50);
 			
-		// // Draw circle outline
-		// pg.strokeWeight(4);
-		// pg.stroke(strokeFillScore);
+	// 	// // Draw circle outline
+	// 	// pg.strokeWeight(4);
+	// 	// pg.stroke(strokeFillScore);
 
-		// // Draw inner circle
-		// pg.fill(10 + fillScore);
-		// pg.ellipse(0, 0, PERSON_NODE_SIZE, PERSON_NODE_SIZE);
+	// 	// // Draw inner circle
+	// 	// pg.fill(10 + fillScore);
+	// 	// pg.ellipse(0, 0, PERSON_NODE_SIZE, PERSON_NODE_SIZE);
 
-		// // Draw name tag
-		// pg.textAlign(CENTER, CENTER);
-		// pg.fill(255, fillScore);
-		// pg.textSize(PERSON_NAME_TEXT_SIZE);
-		// pg.text(this.name, 0, PERSON_NODE_SIZE);
+	// 	// // Draw name tag
+	// 	// pg.textAlign(CENTER, CENTER);
+	// 	// pg.fill(255, fillScore);
+	// 	// pg.textSize(PERSON_NAME_TEXT_SIZE);
+	// 	// pg.text(this.name, 0, PERSON_NODE_SIZE);
 
-		// pg.fill(0, 255, 0);
-		// pg.ellipse(this.pos.x, this.pos.y, 100, 10);
+	// 	// pg.fill(0, 255, 0);
+	// 	// pg.ellipse(this.pos.x, this.pos.y, 100, 10);
 
-		if (RENDERER == P3D) {
-			pg.sphere(5);
-		} else {
-			pg.ellipse(0, 0, 5, 5);
-		}
-	}
+	// 	if (RENDERER == P3D) {
+	// 		pg.sphere(5);
+	// 	} else {
+	// 		// pg.ellipse(0, 0, 5, 5);
+	// 		// pg.ellipse(0, 0, 20, 20);
+	// 		// pg.text(this.name, 0, 0);
+	// 	}
+	// }
 
 
 
@@ -225,8 +229,8 @@ class GroupNode extends Node {
 	// Display properties
 	float groupRadius = 100;
 
-	public GroupNode(String name) {
-		super(name, new PVector(0, 0, 0), new PVector(0, 0, 0));
+	public GroupNode(int id, String name) {
+		super(id, name, new PVector(0, 0, 0), new PVector(0, 0, 0));
 	}
 
 	public void addNode(Node node) {
@@ -240,7 +244,6 @@ class GroupNode extends Node {
 	}
 
 	public void reposition() {
-		println("Repositioning group " + this.name + " with " + this.nodes.size() + " nodes");
 		final int N = this.nodes.size();
 		
 		// Calculate new position for all nodes, +1 offset
@@ -283,10 +286,12 @@ class GroupNode extends Node {
 		super.drawNode(pg);
 
 		// Draw lines to all nodes
-		for (Node node : this.nodes) {
-			pg.stroke(255);
-			pg.strokeWeight(1);
-			pg.line(this.pos.x, this.pos.y, this.pos.z, node.pos.x, node.pos.y, node.pos.z);
+		if (RENDERER == P3D) {
+			for (Node node : this.nodes) {
+				pg.stroke(255);
+				pg.strokeWeight(1);
+				pg.line(this.pos.x, this.pos.y, this.pos.z, node.pos.x, node.pos.y, node.pos.z);
+			}
 		}
 
 		// Draw all nodes
@@ -298,7 +303,7 @@ class GroupNode extends Node {
 
 // Singleton class for the master person node (root)
 class MasterPersonNode extends GroupNode {
-	private MasterPersonNode(String name) {
-		super(name);
+	private MasterPersonNode(int id, String name) {
+		super(id, name);
 	}
 }
