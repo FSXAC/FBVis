@@ -1,219 +1,219 @@
-// This is a graphic version of the message
+// // This is a graphic version of the message
 
-// Abstract payload
-class Payload {
-    float x;
-    float y;
-    PersonNode targetPerson;
-    public Payload(PersonNode source, PersonNode target)
-    {
-        //this.x = source.x;
-        //this.y = source.y;
-        this.targetPerson = target;
+// // Abstract payload
+// class Payload {
+//     float x;
+//     float y;
+//     PersonNode targetPerson;
+//     public Payload(PersonNode source, PersonNode target)
+//     {
+//         //this.x = source.x;
+//         //this.y = source.y;
+//         this.targetPerson = target;
 
-        // Sender gets refreshed
-        source.refresh();
-    }
+//         // Sender gets refreshed
+//         source.refresh();
+//     }
 
-    public void draw() {
-        //line(this.x, this.y, this.targetPerson.x, this.targetPerson.y);
-    }
+//     public void draw() {
+//         //line(this.x, this.y, this.targetPerson.x, this.targetPerson.y);
+//     }
 
-    public void update() {
-        return;
-    }
+//     public void update() {
+//         return;
+//     }
 
-    public boolean hasArrived() {
-        if (this.getArrived()) {
-            this.targetPerson.refresh();
-            return true;
-        }
+//     public boolean hasArrived() {
+//         if (this.getArrived()) {
+//             this.targetPerson.refresh();
+//             return true;
+//         }
 
-        return false;
-    }
+//         return false;
+//     }
 
-    protected boolean getArrived() {
-        return true;
-    }
-}
-
-
-final float PAYLOAD_LERP = 0.1;
-final float ARRIVE_THRESHOLD_PX = 5.0;
-
-final float RANDOM_START_D = 5.0;
+//     protected boolean getArrived() {
+//         return true;
+//     }
+// }
 
 
-class PayloadDot extends Payload{
-    float x;
-    float y;
-    PersonNode targetPerson;
+// final float PAYLOAD_LERP = 0.1;
+// final float ARRIVE_THRESHOLD_PX = 5.0;
 
-    float r;
-    float f;
+// final float RANDOM_START_D = 5.0;
 
-    public PayloadDot(PersonNode source, PersonNode target) {
-        super(source, target);
-        //this.x = source.x + random(-RANDOM_START_D, RANDOM_START_D);
-        //this.y = source.y + random(-RANDOM_START_D, RANDOM_START_D);
+
+// class PayloadDot extends Payload{
+//     float x;
+//     float y;
+//     PersonNode targetPerson;
+
+//     float r;
+//     float f;
+
+//     public PayloadDot(PersonNode source, PersonNode target) {
+//         super(source, target);
+//         //this.x = source.x + random(-RANDOM_START_D, RANDOM_START_D);
+//         //this.y = source.y + random(-RANDOM_START_D, RANDOM_START_D);
         
-        this.targetPerson = target;
+//         this.targetPerson = target;
 
-        this.r = random(5, 12);
-        this.f = random(80, 200);
-    }
+//         this.r = random(5, 12);
+//         this.f = random(80, 200);
+//     }
 
-    @Override
-    public void draw() {
-        pushMatrix();
-        translate(this.x, this.y);
-        fill(this.f);
-        ellipse(0, 0, this.r, this.r);
-        popMatrix();
+//     @Override
+//     public void draw() {
+//         pushMatrix();
+//         translate(this.x, this.y);
+//         fill(this.f);
+//         ellipse(0, 0, this.r, this.r);
+//         popMatrix();
 
-        this.update();
-    }
+//         this.update();
+//     }
 
-    @Override
-    public void update() {
-        //this.x = lerp(this.x, this.targetPerson.x, PAYLOAD_LERP);
-        //this.y = lerp(this.y, this.targetPerson.y, PAYLOAD_LERP);
-    }
+//     @Override
+//     public void update() {
+//         //this.x = lerp(this.x, this.targetPerson.x, PAYLOAD_LERP);
+//         //this.y = lerp(this.y, this.targetPerson.y, PAYLOAD_LERP);
+//     }
 
-    //@Override
-    //protected boolean getArrived() {
-    //    //final float dx = abs(this.targetPerson.x - this.x);
-    //    //final float dy = abs(this.targetPerson.y - this.y);
+//     //@Override
+//     //protected boolean getArrived() {
+//     //    //final float dx = abs(this.targetPerson.x - this.x);
+//     //    //final float dy = abs(this.targetPerson.y - this.y);
 
-    //    //return dx < ARRIVE_THRESHOLD_PX && dy < ARRIVE_THRESHOLD_PX;
-    //}
-}
+//     //    //return dx < ARRIVE_THRESHOLD_PX && dy < ARRIVE_THRESHOLD_PX;
+//     //}
+// }
 
-class PayloadLine extends Payload{
-    float x;
-    float y;
-    PersonNode targetPerson;
+// class PayloadLine extends Payload{
+//     float x;
+//     float y;
+//     PersonNode targetPerson;
 
-    int life;
+//     int life;
 
-    public PayloadLine(PersonNode source, PersonNode target) {
-        super(source, target);
-        //this.x = source.x + random(-RANDOM_START_D, RANDOM_START_D);
-        //this.y = source.y + random(-RANDOM_START_D, RANDOM_START_D);
+//     public PayloadLine(PersonNode source, PersonNode target) {
+//         super(source, target);
+//         //this.x = source.x + random(-RANDOM_START_D, RANDOM_START_D);
+//         //this.y = source.y + random(-RANDOM_START_D, RANDOM_START_D);
         
-        this.targetPerson = target;
-        this.life = 15;
-    }
+//         this.targetPerson = target;
+//         this.life = 15;
+//     }
 
-    public void draw() {
-        stroke(255, 255, 0);
-        strokeWeight(1);
-        //line(this.x, this.y, this.targetPerson.x, this.targetPerson.y);
-    }
+//     public void draw() {
+//         stroke(255, 255, 0);
+//         strokeWeight(1);
+//         //line(this.x, this.y, this.targetPerson.x, this.targetPerson.y);
+//     }
 
-    protected boolean getArrived() {
-        return life-- == 0;
-    }
-}
+//     protected boolean getArrived() {
+//         return life-- == 0;
+//     }
+// }
 
-class PayloadSegment extends Payload{
-    float x;
-    float y;
-    float prevX;
-    float prevY;
-    PersonNode targetPerson;
+// class PayloadSegment extends Payload{
+//     float x;
+//     float y;
+//     float prevX;
+//     float prevY;
+//     PersonNode targetPerson;
 
-    float radius = random(3, 8);
-    float opacity = random(CONFIG.payloadOpacityMin, CONFIG.payloadOpacityMax);
+//     float radius = random(3, 8);
+//     float opacity = random(CONFIG.payloadOpacityMin, CONFIG.payloadOpacityMax);
 
-    float travel_lerp;
-    float travel_y_lerp_mult;
+//     float travel_lerp;
+//     float travel_y_lerp_mult;
 
-    boolean isMasterSending = false;
+//     boolean isMasterSending = false;
 
-    public PayloadSegment(PersonNode source, PersonNode target, float size) {
-        super(source, target);
-        //this.x = source.x + random(-RANDOM_START_D, RANDOM_START_D);
-        //this.y = source.y + random(-RANDOM_START_D, RANDOM_START_D);
-        this.prevX = this.x;
-        this.prevY = this.y;
+//     public PayloadSegment(PersonNode source, PersonNode target, float size) {
+//         super(source, target);
+//         //this.x = source.x + random(-RANDOM_START_D, RANDOM_START_D);
+//         //this.y = source.y + random(-RANDOM_START_D, RANDOM_START_D);
+//         this.prevX = this.x;
+//         this.prevY = this.y;
         
-        if (CONFIG.payloadSizeBasedOnMessageLength) {
-            this.radius = size;
-        }
+//         if (CONFIG.payloadSizeBasedOnMessageLength) {
+//             this.radius = size;
+//         }
 
-        this.travel_lerp = random(CONFIG.payloadSegmentLerpMin, CONFIG.payloadSegmentLerpMax);
-        this.travel_y_lerp_mult = random(0.5, 0.8);
+//         this.travel_lerp = random(CONFIG.payloadSegmentLerpMin, CONFIG.payloadSegmentLerpMax);
+//         this.travel_y_lerp_mult = random(0.5, 0.8);
         
-        this.targetPerson = target;
+//         this.targetPerson = target;
         
-        // TODO: FIXME:
-        if (source.equals(CONFIG.masterName)) {
-            this.isMasterSending = true;
-        }
-    }
+//         // TODO: FIXME:
+//         if (source.equals(CONFIG.masterName)) {
+//             this.isMasterSending = true;
+//         }
+//     }
 
-    @Override
-    public void draw() {
-        pushMatrix();
-        stroke(this.isMasterSending ? CONFIG.payloadSendColor : CONFIG.payloadReceiveColor, this.opacity);
-        strokeWeight(this.radius);
-        line(this.x, this.y, this.prevX, this.prevY);
-        popMatrix();
+//     @Override
+//     public void draw() {
+//         pushMatrix();
+//         stroke(this.isMasterSending ? CONFIG.payloadSendColor : CONFIG.payloadReceiveColor, this.opacity);
+//         strokeWeight(this.radius);
+//         line(this.x, this.y, this.prevX, this.prevY);
+//         popMatrix();
 
-        this.update();
-    }
+//         this.update();
+//     }
 
-    @Override
-    public void update() {
-        this.prevX = this.x;
-        this.prevY = this.y;
-        this.x = lerp(this.x, this.targetPerson.x, this.travel_lerp);
-        this.y = lerp(this.y, this.targetPerson.y, this.travel_lerp * travel_y_lerp_mult);
-    }
+//     @Override
+//     public void update() {
+//         this.prevX = this.x;
+//         this.prevY = this.y;
+//         //this.x = lerp(this.x, this.target.x, this.travel_lerp);
+//         //this.y = lerp(this.y, this.target.y, this.travel_lerp * travel_y_lerp_mult);
+//     }
 
-    //@Override
-    //protected boolean getArrived() {
-    //    //final float dx = abs(this.targetPerson.x - this.x);
-    //    //final float dy = abs(this.targetPerson.y - this.y);
+//     //@Override
+//     //protected boolean getArrived() {
+//     //    //final float dx = abs(this.targetPerson.x - this.x);
+//     //    //final float dy = abs(this.targetPerson.y - this.y);
 
-    //    //return dx < ARRIVE_THRESHOLD_PX && dy < ARRIVE_THRESHOLD_PX;
-    //}
-}
+//     //    //return dx < ARRIVE_THRESHOLD_PX && dy < ARRIVE_THRESHOLD_PX;
+//     //}
+// }
 
-class PayloadSegment2 extends PayloadSegment {
-    public PayloadSegment2(PersonNode source, PersonNode target, float size) {
-        super(source, target, size);
-        this.travel_lerp = random(CONFIG.payloadSegmentGroupLerpMin, CONFIG.payloadSegmentGroupLerpMax);
-    }
+// class PayloadSegment2 extends PayloadSegment {
+//     public PayloadSegment2(PersonNode source, PersonNode target, float size) {
+//         super(source, target, size);
+//         this.travel_lerp = random(CONFIG.payloadSegmentGroupLerpMin, CONFIG.payloadSegmentGroupLerpMax);
+//     }
 
-    @Override
-    public void draw() {
-        pushMatrix();
-        stroke(CONFIG.payloadGroupColor, this.opacity);
-        strokeWeight(this.radius);
-        line(this.x, this.y, this.prevX, this.prevY);
-        popMatrix();
+//     @Override
+//     public void draw() {
+//         pushMatrix();
+//         stroke(CONFIG.payloadGroupColor, this.opacity);
+//         strokeWeight(this.radius);
+//         line(this.x, this.y, this.prevX, this.prevY);
+//         popMatrix();
 
-        this.update();
-    }
-}
+//         this.update();
+//     }
+// }
 
-class PayloadFactory {
+// class PayloadFactory {
 
-    ArrayList<Payload> payloads;
+//     ArrayList<Payload> payloads;
 
-    public PayloadFactory(ArrayList<Payload> payloads) {
-        this.payloads = payloads;
-    }
+//     public PayloadFactory(ArrayList<Payload> payloads) {
+//         this.payloads = payloads;
+//     }
 
-    //public void makeIndividualPayload(PersonNode sender, PersonNode receiver, float size) {
-    //    if (PAYLOADS_MAXSIZE > this.payloads.size())
-    //        this.payloads.add(new PayloadSegment(sender, receiver, size));
-    //}
+//     //public void makeIndividualPayload(PersonNode sender, PersonNode receiver, float size) {
+//     //    if (PAYLOADS_MAXSIZE > this.payloads.size())
+//     //        this.payloads.add(new PayloadSegment(sender, receiver, size));
+//     //}
 
-    //public void makeGroupPayload(PersonNode sender, PersonNode receiver, float size) {
-    //    if (PAYLOADS_MAXSIZE > this.payloads.size())
-    //        this.payloads.add(new PayloadSegment2(sender, receiver, size));
-    //}
-}
+//     //public void makeGroupPayload(PersonNode sender, PersonNode receiver, float size) {
+//     //    if (PAYLOADS_MAXSIZE > this.payloads.size())
+//     //        this.payloads.add(new PayloadSegment2(sender, receiver, size));
+//     //}
+// }

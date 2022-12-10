@@ -30,7 +30,8 @@ String RENDERER = P2D;
 // ============ visualization ============
 
 void settings() {
-    size(1280, 720, RENDERER);
+    // size(1920, 1080, RENDERER);
+    fullScreen(RENDERER);
 }
 
 void setup() {
@@ -50,8 +51,8 @@ void initializeData() {
     msgScheduler = new MessageScheduler(msgManager);
 
     // Initialize the person nodes map with root
-    personNodes = new HashMap<Integer, Node>();
-    int root_id = msgManager.nameToIdMap.get(CONFIG.masterName);
+    personNodes = new HashMap<Integer, Node>(); //<>// //<>//
+    int root_id = msgManager.nameToIdMap.get(CONFIG.masterName); //<>//
     root = new MasterPersonNode(root_id, CONFIG.masterName);
     personNodes.put(root_id, root);
 
@@ -72,26 +73,23 @@ void draw() {
         fill(255);
 
         // Do something with msg data every turn
-        MessageData msg = msgScheduler.next();
-        if (msg == null) {
-            state = AppState.PAUSED;
-            return;
+        ArrayList<MessageData> msgs = msgScheduler.nextTimeStep();
+        for (int i = 0; i < msgs.size(); i++) {
+            MessageData msg = msgs.get(i);
+            if (msg == null) {
+                state = AppState.PAUSED;
+                return;
+            }
+            updateIdNodeMap(msg);
+            updateCrawlers(msg);
         }
-        updateIdNodeMap(msg);
-        updateCrawlers(msg);
 
         image(peopleLayer.getRender(), 0, 0);
+        blendMode(ADD);
         image(crawlerLayer.getRender(), 0, 0);
-        // pushMatrix();
-        // if (RENDERER == P3D) {
-        //     translate(width/2, height/2, -400);
-        // } else {
-        //     translate(width/2, height/2);
-        // }
-        // root.draw(this.g);
-        // popMatrix();
-
         text(frameRate, 10, 10);
+
+        text(msgScheduler.getCurrentTime(), 10, 30);
 
 
     } else if (state == AppState.PAUSED) {
@@ -99,7 +97,13 @@ void draw() {
         fill(255);
         text("Paused", 10, 10);
     }
+
+    if (frameCount % 60 == 0) {
+        println(frameRate);
+    }
 }
+
+// ============ data processing ============
 
 void updateIdNodeMap(MessageData msg) {
     int sender_id = msg.sender_id;
@@ -125,11 +129,16 @@ void updateCrawlers(MessageData msg) {
     for (int i = 0; i < msg.receiver_ids.length; i++) {
         crawlers.addCrawler(
             personNodes.get(msg.sender_id),
-            personNodes.get(msg.receiver_ids[i])
+            personNodes.get(msg.receiver_ids[i]),
+
+            // inbound? (if sender is not root, then it's inbound)
+            (msg.sender_id != root.id)
         );
     }
 }
 
+
+// ============ input ============
 
 void keyPressed() {
     if (key == ' ') {

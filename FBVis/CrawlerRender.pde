@@ -18,11 +18,19 @@ class RenderCrawlerLayer extends RenderLayer {
         this.pg.translate(width/2, height/2);
         // this.pg.noStroke();
         // this.pg.fill(255, 0, 0);
-        this.pg.stroke(255, 0, 0);
-        this.pg.strokeWeight(3);
-        for (Crawler c : this.crawlers.getCrawlers()) {
-            // this.pg.ellipse(c.pos.x, c.pos.y, 10, 10);
-            this.pg.point(c.pos.x, c.pos.y);
+        this.pg.blendMode(ADD);
+        this.pg.strokeWeight(1);
+
+        // Draw inbound crawlers
+        this.pg.stroke(160, 80, 80);
+        for (Crawler c : this.crawlers.inboundCrawlers) {
+            this.pg.line(c.pos.x, c.pos.y, c.prev_pos.x, c.prev_pos.y);
+        }
+
+        // Draw outbound crawlers
+        this.pg.stroke(80, 160, 80);
+        for (Crawler c : this.crawlers.outboundCrawlers) {
+            this.pg.line(c.pos.x, c.pos.y, c.prev_pos.x, c.prev_pos.y);
         }
         this.pg.popMatrix();
 
