@@ -6,9 +6,10 @@ class MessageManager {
     ArrayList<String> rootPaths;
 
     ArrayList<MessageData> organizedMessagesList;
-    ArrayList<MessageFileReader> messageUtils;
+    private ArrayList<MessageFileReader> messageUtils;
 
     HashMap<String, Integer> nameToIdMap = new HashMap<String, Integer>();
+    HashMap<Integer, String> idToNameMap = new HashMap<Integer, String>();
     int id_counter = 0;
 
     public MessageManager(String root) {
@@ -66,7 +67,7 @@ class MessageManager {
     }
 
     private void processParticipants() {
-         for (MessageFileReader mfr : this.messageUtils) {
+        for (MessageFileReader mfr : this.messageUtils) {
             if (!mfr.valid) continue;
 
             for (String name : mfr.participants) {
@@ -75,6 +76,12 @@ class MessageManager {
                     this.id_counter++;
                 }
             }
+        }
+
+        // Also make a reverse map
+        this.idToNameMap = new HashMap<Integer, String>();
+        for (String name : this.nameToIdMap.keySet()) {
+            this.idToNameMap.put(this.nameToIdMap.get(name), name);
         }
     }
 
@@ -130,6 +137,11 @@ class MessageData {
         this.sender_id = sender_id;
         this.receivers_ids = receivers_ids;
         this.content = content;
+    }
+    
+    // Printable string
+    public String toString() {
+        return "MessageData: " + this.timestamp + " " + this.sender_id + " " + this.receivers_ids + " " + this.content;
     }
 }
 
@@ -227,6 +239,8 @@ class MessageFileReader {
 
         // Get content
         String content = message.getString("content");
+        if (content == null) return null;
+        if (content.equals("")) return null;
 
         // Get receivers
         if (this.senderToReceiversMap.containsKey(sender_id)) {

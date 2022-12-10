@@ -1,10 +1,23 @@
 import java.util.Map;
 
 
+
+// ============ application states enum ============
+enum AppState {
+    INIT, RUNNING, PAUSED
+}
+AppState state = AppState.INIT;
+
+// ============ data ============
+
 FBVisConfig CONFIG;
 
+MessageManager msgManager;
+MessageScheduler msgScheduler;
 
-MessageManager man;
+MasterPersonNode root;
+
+// ============ visualization ============
 
 void settings() {
     size(800, 600);
@@ -18,25 +31,41 @@ void setup() {
 void initializeData() {
     // Start timer
     int startTime = millis();
-    man = new MessageManager(CONFIG.dataRootPath);
+    msgManager = new MessageManager(CONFIG.dataRootPath);
     int duration = millis() - startTime;
     println("Done loading data");
-    println(man.organizedMessagesList.size());
+    println(msgManager.organizedMessagesList.size());
     println("Took " + duration + "ms");
 
-    // Verify sorted message list
-    for (int i = 0; i < 10; i++) {
-        // print time stamp
-        println(man.organizedMessagesList.get(i).timestamp);
-    }
 
-    println("...");
+    msgScheduler = new MessageScheduler(msgManager);
 
-    for (int i = man.organizedMessagesList.size() - 11; i < man.organizedMessagesList.size(); i++) {
-        println(man.organizedMessagesList.get(i).timestamp);
-    }
+    state = AppState.RUNNING;
 }
 
 void draw() {
-    ellipse(mouseX, mouseY, 10, 10);
+    if (state == AppState.INIT) {
+        background(255);
+    } else if (state == AppState.RUNNING) {
+        background(0);
+        fill(255);
+
+        MessageData msg = msgScheduler.next();
+        if (msg == null) {
+            state = AppState.PAUSED;
+            return;
+        }
+
+        // draw message
+        try {
+            text(msg.content, 10, 10);
+        } catch (NullPointerException e) {
+            println("Null pointer exception for message: " + msg.toString());
+        }
+
+    } else if (state == AppState.PAUSED) {
+        background(0);
+        fill(255);
+        text("Paused", 10, 10);
+    }
 }
