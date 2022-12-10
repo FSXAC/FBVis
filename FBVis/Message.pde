@@ -50,38 +50,23 @@ class MessageManager {
                 }
                 
                 String messageDataPath = pathJoin(path, filename);
-
-
-                /* Find all the JSON files in the path */
-                // StringList ThreadJsonFiles;
-                // try {
-                //     sortedJsonFiles = sortFilenamesNumerically(listFileNames(messageDataPath, "backup"));
-                // } catch (NotDirectoryException e) {
-                //     continue;
-                // }
-                // try {
-                //     ThreadJsonFiles = listFileNames(messageDataPath, "json")
-                // } catch (NotDirectoryException e) {
-                //     continue;
-                // }
-                
-                /* Get message util object and populate with all the json files */
-                // if (CONFIG.enableVerbose) println("Loading: " + messageDataPath);
                 MessageFileReader newMessageUtil = new MessageFileReader(messageDataPath);
-
-                /* Populate in reverse order */
-                // for (int idx = sortedJsonFiles.length - 1; idx >= 0; idx--) {
-                //     String jsonFilePath = pathJoin(messageDataPath, sortedJsonFiles[idx]);
-                //     newMessageUtil.processMessageFile(jsonFilePath);
-                // }
-                
-                // newMessageUtil.initialized = true;
                 this.messageUtils.add(newMessageUtil);
             }
         }
 
         // Now let's build the participants name to id map
-        for (MessageFileReader mfr : this.messageUtils) {
+        this.processParticipants();
+
+        // Process each message util given the name to id map
+        this.processMessages();
+
+        // Sort the messages by timestamp
+        Collections.sort(this.organizedMessagesList, new MessageDataComparator());
+    }
+
+    private void processParticipants() {
+         for (MessageFileReader mfr : this.messageUtils) {
             if (!mfr.valid) continue;
 
             for (String name : mfr.participants) {
@@ -91,61 +76,14 @@ class MessageManager {
                 }
             }
         }
-
-        // Process each message util given the name to id map
-        for (MessageFileReader mfr : this.messageUtils) {
-            if (!mfr.valid) continue;
-
-            mfr.processMessages(this.nameToIdMap);
-        }
-
-        // Build message list
-        for (MessageFileReader mfr : this.messageUtils) {
-            if (!mfr.valid) continue;
-            for (MessageData md : mfr.messages) {
-
-                // No sorting required for the first entry
-                // if (this.organizedMessagesList.size() == 0) {
-                //     this.organizedMessagesList.add(md);
-                //     continue;
-                // }
-
-                // int index = this.getInsersionIndex(md.timestamp, 0, this.organizedMessagesList.size() - 1);
-                // this.organizedMessagesList.add(index, md);
-                this.organizedMessagesList.add(md);
-            }
-        }
-
-        Collections.sort(this.organizedMessagesList, new MessageDataComparator());
-        
-        // this.buildMessagesList();
     }
-    
-    // Builds an timely ordered list
-    // public void buildMessagesList() {
-    //     if (CONFIG.enableVerbose) println("Building ordered messages list, sorting through all messages by time");
-    //     for (int i = 0; i < this.messageUtils.size(); i++) {
 
-    //         // Status
-    //         if (CONFIG.enableVerbose) println("Sorting " + str(i) + "/" + str(messageUtils.size()) + " entries");
-    //         // progress.setSortingProgress(i / messageUtils.size());
-
-    //         MessageUtil mu = this.messageUtils.get(i);
-    //         for (MessageData md : mu.getMessagesList()) {
-    //             // No sorting required for the first entry
-    //             if (this.organizedMessagesList.size() == 0) {
-    //                 this.organizedMessagesList.add(0, md);
-    //                 continue;
-    //             }
-
-    //             int index = this.getInsersionIndex(md.timestamp, 0, this.organizedMessagesList.size() - 1);
-    //             this.organizedMessagesList.add(index, md);
-    //         }
-    //     }
-
-    //     // Print first 200 results to verify
-    //     println("Sorted " + this.organizedMessagesList.size() + " total messages");
-    // }
+    private void processMessages() {
+        for (MessageFileReader mfr : this.messageUtils) {
+            if (!mfr.valid) continue;
+            mfr.processMessages(this.nameToIdMap, this.organizedMessagesList);
+        }
+    }
 
     private int getInsersionIndex(long timestamp, int start, int end) {
         // Recursive function that use binary search to get index to insert
@@ -195,6 +133,7 @@ class MessageData {
     }
 }
 
+/* Comparator for sorting messages by timestamp */
 public class MessageDataComparator implements Comparator<MessageData> {
     @Override
     public int compare(MessageData md1, MessageData md2) {
@@ -206,7 +145,6 @@ class MessageFileReader {
     String filePath;
     JSONObject[] jsonData;
 
-    ArrayList<MessageData> messages;
     StringList participants;
 
     boolean valid = false;
@@ -214,6 +152,10 @@ class MessageFileReader {
     // Cache for sender to receiver map, int->int[]
     HashMap<Integer, int[]> senderToReceiversMap = new HashMap<Integer, int[]>();
 
+    /**
+     * Constructor
+     * @param filePath Path to the folder containing all the json files for this thread
+     */
     public MessageFileReader(String filePath) {
         this.filePath = filePath;
 
@@ -233,10 +175,13 @@ class MessageFileReader {
 
         // Check if this thread is useful
         this.participants = new StringList();
-        this.messages = new ArrayList<MessageData>();
         this.check();
     }
 
+    /**
+     * Checks if this thread is useful, if so, the valid flag is set to true
+     * and the participants list is populated
+     */
     private void check() {
         if (this.jsonData.length == 0) return;
 
@@ -259,6 +204,12 @@ class MessageFileReader {
         this.valid = true;
     }
 
+    /**
+     * Processes a single message and returns a MessageData object
+     * @param message JSONObject of the message
+     * @param nameToIdMap HashMap of name to id
+     * @return
+     */
     public MessageData processSingleMessage(JSONObject message, HashMap<String, Integer> nameToIdMap) {
 
         // Ignore non-generic messages
@@ -298,7 +249,12 @@ class MessageFileReader {
         return new MessageData(timestamp, sender_id, receivers_ids, content);
     }
 
-    public void processMessages(HashMap<String, Integer> nameToIdMap) {
+    /**
+     * Process all messages in the thread
+     * @param nameToIdMap HashMap of name to id
+     * @param outputMessages ArrayList of MessageData objects from the thread
+     */
+    public void processMessages(HashMap<String, Integer> nameToIdMap, ArrayList<MessageData> outputMessages) {
         if (!this.valid) return;
 
         // Process each json file
@@ -313,250 +269,8 @@ class MessageFileReader {
                 MessageData md = this.processSingleMessage(messages.getJSONObject(j), nameToIdMap);
                 if (md == null) continue;
 
-                this.messages.add(md);
+                outputMessages.add(md);
             }
         }
     }
-
-    // public void process() {
-    //     JSONObject json = loadJSONObject(this.filePath);
-
-    //     JSONArray participants = json.getJSONArray("participants");
-
-
-    //     // local name to id map
-    //     HashMap<String, Integer> localNameToIdMap = new HashMap<String, Integer>();
-    //     for (int i = 0; i < participants.size(); i++) {
-    //         String participantName = participants.getJSONObject(i).getString("name");
-    //         localNameToIdMap.put(participantName, -1);
-
-    //         if (participantName.equals(CONFIG.defaultName)) {
-    //             // TODO: add support for unknown users
-    //             return;
-    //         }
-    //     }
-
-    //     // Populate local id map with global id map
-    //     for (String name : localNameToIdMap.keySet()) {
-    //         if (globalNameToIdMap.containsKey(name)) {
-    //             localNameToIdMap.put(name, globalNameToIdMap.get(name));
-    //         } else {
-    //             localNameToIdMap.put(name, id_counter);
-    //             globalNameToIdMap.put(name, id_counter);
-    //             id_counter++;
-    //         }
-    //     }
-
-    //     // Process through messages
-    //     JSONArray messages = jsonData.getJSONArray("messages");
-    //     this.messages = new MessageData[messages.size()];
-    //     for (int i = 0; i < messages.size(); i++) {
-    //         JSONObject message = messages.getJSONObject(i);
-
-    //         // TODO: add support for other message types
-    //         if (!message.getString("type").equals("Generic")) {
-    //             continue;
-    //         }
-
-    //         String sender = message.getString("sender_name");
-    //         if (sender == null) {
-    //             continue;
-    //         }
-
-    //         String content = message.getString("content");
-    //         if (content == null) {
-    //             continue;
-    //         }
-
-    //         long timestamp = message.getLong("timestamp_ms");
-
-    //         // Get receivers (list of participants minus sender)
-    //         ArrayList<String> receivers = new ArrayList<String>();
-            
-    //         // Check the id map
-            
-    //     }
-        
-    //     // A hashmap / table is used to cache the sender -> receiver mapping
-    //     // TODO: we have to recompute the table if someone adds/removes people from group chat
-    //     HashMap<String, ArrayList<String>> receiverMapping = new HashMap<String, ArrayList<String>>();
-
-    //     // We go backwards because the messages are sorted
-    //     // by most recent on top
-    //     for (int i = messages.size() - 1; i >= 0; i--) {
-    //         JSONObject message = messages.getJSONObject(i);
-
-    //         if (message.getString("type").equals("Generic")) {
-    //             String content = message.getString("content");
-    //             String sender = message.getString("sender_name");
-    //             final long timestamp = message.getLong("timestamp_ms");
-                
-    //             if (sender == null) {
-    //                 sender = "{UNKNOWN USER}";
-    //             }
-                
-    //             if (content == null) {
-    //                 content = "{NO CONTENT}";
-    //             }
-
-    //             // Get a single or list of receivers
-    //             ArrayList<String> receivers;
-    //             if (receiverMapping.containsKey(sender)) {
-    //                 receivers = receiverMapping.get(sender);
-
-    //             } else {
-
-    //                 receivers = new ArrayList<String>();
-
-    //                 // Find all receivers from the participants list
-    //                 for (int j = 0; j < participants.size(); j++) {
-    //                     String name = participants.get(j);
-
-    //                     // if participant name is not sender, it must be receiver
-    //                     if (!sender.equals(name)) {
-    //                         receivers.add(name);
-    //                     }
-    //                 }
-
-    //                 // Add the list to the table to save computing
-    //                 receiverMapping.put(sender, receivers);
-    //             }
-                
-    //             // messagesList.add(new MessageData(timestamp, sender, receivers, content));
-    //             messagesList.add(new MessageData(timestamp, 0, null, content));
-    //         }
-    //     }
-        
-    // }
 }
-
-
-// Takes a file or arrays of files and construct a single array of 
-// uniform time sorted list
-
-// For now, suppose we are only dealing with one chat file
-
-// class MessageUtil {
-//     String filePath;
-//     ArrayList<MessageData> messagesList;
-
-//     boolean initialized;
-
-//     /* Message util takes a file path and populates
-//      * messagesList with the data read from the file
-//      * @param path, the path to the inbox mail folder
-//      */
-//     public MessageUtil(String path) {
-//         this.filePath = filePath;
-//         this.messagesList = new ArrayList<MessageData>();
-//         this.initialized = false;
-//     }
-
-//     ////////////////// PUBLIC FUNCTIONS
-//     public long getFirstMessageTimestamp() {
-//         if (this.messagesList.size() != 0) {
-//             return this.messagesList.get(this.messagesList.size() - 1).timestamp;
-//         }
-
-//         return 0;
-//     }
-
-//     public long getLastMessageTimestamp() {
-//         if (this.messagesList.size() != 0) {
-//             return this.messagesList.get(0).timestamp;
-//         }
-
-//         return 0;
-//     }
-    
-//     public ArrayList<MessageData> getMessagesList() {
-//         return messagesList;
-//     }
-
-//     public void processMessageFile(String filePath) {
-//         // We expect the file path to be JSON
-
-//         // TODO: wrap in try
-//         JSONObject jsonData = loadJSONObject(filePath);
-
-//         // Get participants
-//         JSONArray participantsData = jsonData.getJSONArray("participants");
-//         if (participantsData.size() > LARGE_GROUP_PARTICIPANT_THRES) {
-//             return;
-//         }
-
-//         ArrayList<String> participants = new ArrayList<String>();
-
-//         for (int i = 0; i < participantsData.size(); i++) {
-//             JSONObject nameObj = participantsData.getJSONObject(i);
-
-
-//             String name = nameObj.getString("name");
-
-//             if (name.equals(CONFIG.defaultName)) {
-//                 name += ' ' + str(globalUnknownUserCount);
-//                 globalUnknownUserCount++;
-//             }
-
-//             participants.add(name);
-//         }
-
-//         // Get messages
-//         JSONArray messages = jsonData.getJSONArray("messages");
-        
-//         // A hashmap / table is used to cache the sender -> receiver mapping
-//         // TODO: we have to recompute the table if someone adds/removes people from group chat
-//         HashMap<String, ArrayList<String>> receiverMapping = new HashMap<String, ArrayList<String>>();
-
-//         // We go backwards because the messages are sorted
-//         // by most recent on top
-//         for (int i = messages.size() - 1; i >= 0; i--) {
-//             JSONObject message = messages.getJSONObject(i);
-
-//             if (message.getString("type").equals("Generic")) {
-//                 String content = message.getString("content");
-//                 String sender = message.getString("sender_name");
-//                 final long timestamp = message.getLong("timestamp_ms");
-                
-//                 if (sender == null) {
-//                     sender = "{UNKNOWN USER}";
-//                 }
-                
-//                 if (content == null) {
-//                     content = "{NO CONTENT}";
-//                 }
-
-//                 // Get a single or list of receivers
-//                 ArrayList<String> receivers;
-//                 if (receiverMapping.containsKey(sender)) {
-//                     receivers = receiverMapping.get(sender);
-
-//                 } else {
-
-//                     receivers = new ArrayList<String>();
-
-//                     // Find all receivers from the participants list
-//                     for (int j = 0; j < participants.size(); j++) {
-//                         String name = participants.get(j);
-
-//                         // if participant name is not sender, it must be receiver
-//                         if (!sender.equals(name)) {
-//                             receivers.add(name);
-//                         }
-//                     }
-
-//                     // Add the list to the table to save computing
-//                     receiverMapping.put(sender, receivers);
-//                 }
-                
-//                 // messagesList.add(new MessageData(timestamp, sender, receivers, content));
-//                 messagesList.add(new MessageData(timestamp, 0, null, content));
-//             }
-//         }
-
-//         if (CONFIG.enableVerbose) {
-//             println("Finished processsing file");
-//             println("Total of " + str(this.messagesList.size()) + " messages");
-//         }
-//     }
-// }
