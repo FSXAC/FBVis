@@ -18,9 +18,13 @@ MessageScheduler msgScheduler;
 MasterPersonNode root;
 HashMap<Integer, Node> personNodes;
 
+// Crawers
+Crawlers crawlers;
+
 // ============ render layers ============
 
 RenderPeopleLayer peopleLayer;
+RenderCrawlerLayer crawlerLayer;
 String RENDERER = P2D;
 
 // ============ visualization ============
@@ -51,8 +55,11 @@ void initializeData() {
     root = new MasterPersonNode(root_id, CONFIG.masterName);
     personNodes.put(root_id, root);
 
-    // Initialize visualization //<>//
+    // Initialize visualization
     peopleLayer = new RenderPeopleLayer(root);
+
+    crawlers = new Crawlers();
+    crawlerLayer = new RenderCrawlerLayer(crawlers);
 
     state = AppState.RUNNING;
 }
@@ -64,40 +71,25 @@ void draw() {
         background(30);
         fill(255);
 
+        // Do something with msg data every turn
         MessageData msg = msgScheduler.next();
         if (msg == null) {
             state = AppState.PAUSED;
             return;
         }
+        updateIdNodeMap(msg);
+        updateCrawlers(msg);
 
-        // Do something with the data
-        // First check the sender and receivers, and add them to the graph if they don't exist
-        int sender_id = msg.sender_id;
-        int[] receiver_ids = msg.receiver_ids;
-        if (personNodes.containsKey(sender_id) == false) {
-            PersonNode senderNode = new PersonNode(sender_id, msgManager.idToNameMap.get(sender_id));
-            personNodes.put(sender_id, senderNode);
-            root.addNode(senderNode);
-        }
-
-        for (int i = 0; i < receiver_ids.length; i++) {
-            int receiver_id = receiver_ids[i];
-            if (personNodes.containsKey(receiver_id) == false) {
-                PersonNode receiverNode = new PersonNode(receiver_id, msgManager.idToNameMap.get(receiver_id));
-                personNodes.put(receiver_id, receiverNode);
-                root.addNode(receiverNode);
-            }
-        }
-
-        // image(peopleLayer.getRender(), 0, 0);
-        pushMatrix();
-        if (RENDERER == P3D) {
-            translate(width/2, height/2, -400);
-        } else {
-            translate(width/2, height/2);
-        }
-        root.draw(this.g);
-        popMatrix();
+        image(peopleLayer.getRender(), 0, 0);
+        image(crawlerLayer.getRender(), 0, 0);
+        // pushMatrix();
+        // if (RENDERER == P3D) {
+        //     translate(width/2, height/2, -400);
+        // } else {
+        //     translate(width/2, height/2);
+        // }
+        // root.draw(this.g);
+        // popMatrix();
 
         text(frameRate, 10, 10);
 
@@ -106,6 +98,35 @@ void draw() {
         background(0);
         fill(255);
         text("Paused", 10, 10);
+    }
+}
+
+void updateIdNodeMap(MessageData msg) {
+    int sender_id = msg.sender_id;
+    int[] receiver_ids = msg.receiver_ids;
+
+    if (personNodes.containsKey(sender_id) == false) {
+        PersonNode senderNode = new PersonNode(sender_id, msgManager.idToNameMap.get(sender_id));
+        personNodes.put(sender_id, senderNode);
+        root.addNode(senderNode);
+    }
+
+    for (int i = 0; i < receiver_ids.length; i++) {
+        int receiver_id = receiver_ids[i];
+        if (personNodes.containsKey(receiver_id) == false) {
+            PersonNode receiverNode = new PersonNode(receiver_id, msgManager.idToNameMap.get(receiver_id));
+            personNodes.put(receiver_id, receiverNode);
+            root.addNode(receiverNode);
+        }
+    }
+}
+
+void updateCrawlers(MessageData msg) {
+    for (int i = 0; i < msg.receiver_ids.length; i++) {
+        crawlers.addCrawler(
+            personNodes.get(msg.sender_id),
+            personNodes.get(msg.receiver_ids[i])
+        );
     }
 }
 
