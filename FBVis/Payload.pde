@@ -168,8 +168,8 @@ class PayloadSegment extends Payload{
     public void update() {
         this.prevX = this.x;
         this.prevY = this.y;
-        //this.x = lerp(this.x, this.targetPerson.x, this.travel_lerp);
-        //this.y = lerp(this.y, this.targetPerson.y, this.travel_lerp * travel_y_lerp_mult);
+        this.x = lerp(this.x, this.targetPerson.x, this.travel_lerp);
+        this.y = lerp(this.y, this.targetPerson.y, this.travel_lerp * travel_y_lerp_mult);
     }
 
     //@Override
