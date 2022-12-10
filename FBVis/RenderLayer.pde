@@ -7,33 +7,38 @@
 // functions such as UI, payload, people, etc.
 
 abstract class RenderLayer {
-	PGraphics pg;
+    PGraphics pg;
 
-	public RenderLayer(int w, int h, String renderer) {
-		this.pg = createGraphics(w, h, renderer);
-	}
+    public RenderLayer(int w, int h, String renderer) {
+        this.pg = createGraphics(w, h, renderer);
+    }
 
-	public RenderLayer(int w, int h) {
-		this.pg = createGraphics(w, h, P2D);
-	}
+    public RenderLayer(int w, int h) {
+        this.pg = createGraphics(w, h, RENDERER);
+    }
 
-	public RenderLayer() {
-		this.pg = createGraphics(width, height, P2D);
-	}
+    public RenderLayer() {
+        this.pg = createGraphics(width, height);
+    }
 
-	public void render() {
-		this.pg.beginDraw();
-		renderGraphics();
-		this.pg.endDraw();
-	}
+    protected void render() {
+        this.pg.beginDraw();
+        renderGraphics();
+        this.pg.endDraw();
+    }
 
-	protected void renderGraphics() {
-		this.pg.clear();
-	}
+    protected void renderGraphics() {
+        this.pg.clear();
+    }
+
+    public PGraphics getRender() {
+        this.render();
+        return this.pg;
+    }
 }
 
 // class RenderUILayer extends RenderLayer {
-	
+    
 // 	// Layer states
 // 	long timestamp;
 
@@ -72,7 +77,7 @@ abstract class RenderLayer {
 // 		this.pg.stroke(255, this.timeline.hovered ? 255 : 70);
 // 		this.pg.strokeWeight(1);
 // 		this.pg.rect(this.timeline.x, this.timeline.y, this.timeline.w, this.timeline.h);
-		
+        
 // 		// Draw a cursor of where in the timeline we're currently are at
 // 		final float percentX = map(this.timeline.percentage, 0, 1, this.timeline.x, this.timeline.x + this.timeline.w);
 // 		this.pg.strokeWeight(3);
@@ -91,24 +96,20 @@ abstract class RenderLayer {
 // 	}
 // }
 
-// class RenderPeopleLayer extends RenderLayer {
-// 	ArrayList<PersonNode> persons;
+class RenderPeopleLayer extends RenderLayer {
+    Node root;
 
-// 	public RenderPeopleLayer() {
-// 		super();
-// 	}
+    public RenderPeopleLayer(Node root) {
+        super();
+        this.root = root;
+    }
 
-// 	@Override
-// 	protected void renderGraphics() {
-// 		this.pg.clear();
-
-// 		if (this.persons == null) {
-// 			println("Error: reference to persons arraylist is null");
-// 			return;
-// 		}
-
-// 		for (PersonNode person : persons) {
-// 			person.draw(this.pg);
-// 		}
-// 	}
-// }
+    @Override
+    protected void renderGraphics() {
+        this.pg.clear();
+        this.pg.background(255);
+        this.pg.lights();
+        this.pg.translate(width/2, height/2, 0);
+        this.root.draw(this.pg);
+    }
+}
