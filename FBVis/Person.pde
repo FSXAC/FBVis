@@ -8,7 +8,7 @@ final float PERSON_MASTER_NODE_SIZE = 20;
 final float PERSON_NAME_TEXT_SIZE = 12;
 
 final float REFRESH_DECAY = 0.99;
-final float REFRESH_THRES = 0.01;
+final float REFRESH_THRES = 0.001;
 
 class PersonStat { 
 	int msgReceived;

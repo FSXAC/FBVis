@@ -34,8 +34,8 @@ Sprites sprites;
 // ============ visualization ============
 
 void settings() {
-    // size(1920, 1080, RENDERER);
-    fullScreen(RENDERER);
+    size(1920, 1080, RENDERER);
+    // fullScreen(RENDERER);
 }
 
 void setup() {

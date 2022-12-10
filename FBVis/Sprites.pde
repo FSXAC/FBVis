@@ -16,7 +16,12 @@ public class Sprites {
             personNodeSprites[i] = createGraphics(20, 20);
             personNodeSprites[i].beginDraw();
             personNodeSprites[i].clear();
-            personNodeSprites[i].strokeWeight(4);
+
+            if (i == personNodeSprites.length - 1) {
+                personNodeSprites[i].strokeWeight(2);
+            } else {
+                personNodeSprites[i].strokeWeight(4);
+            }
             personNodeSprites[i].stroke(strokeScore);
             personNodeSprites[i].fill(fillScore);
             personNodeSprites[i].ellipse(10, 10, 15, 15);

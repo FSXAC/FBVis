@@ -28,13 +28,21 @@ class RenderPeopleLayer extends RenderLayer {
 
             // render the node differently depending on its type
             if (node instanceof PersonNode) {
+                if (((PersonNode) node).refreshScore < REFRESH_THRES) {
+                    continue;
+                }
                 this.pg.image(
                     sprites.personNodeSprites[floor(((PersonNode) node).refreshScore * 9)], pos.x-10, pos.y-10);
+                this.pg.fill(map(((PersonNode) node).refreshScore, 0, 1, 70, 255));
+                this.pg.text(node.name, pos.x, pos.y+PERSON_NODE_SIZE);
+
             } else {
-                this.pg.image(sprites.personNodeSprites[9], pos.x-10, pos.y-10);
+                this.pg.image(sprites.personNodeSprites[8], pos.x-10, pos.y-10);
+                // gold fill
+                this.pg.fill(255, 215, 0);
+                this.pg.text(node.name, pos.x, pos.y+PERSON_NODE_SIZE);
             }
 
-            this.pg.text(node.name, pos.x, pos.y+PERSON_NODE_SIZE);
             node.update();
         }
 
