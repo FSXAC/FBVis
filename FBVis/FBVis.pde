@@ -27,6 +27,10 @@ RenderPeopleLayer peopleLayer;
 RenderCrawlerLayer crawlerLayer;
 String RENDERER = P2D;
 
+// ============ Sprites ============
+
+Sprites sprites;
+
 // ============ visualization ============
 
 void settings() {
@@ -37,6 +41,8 @@ void settings() {
 void setup() {
     CONFIG = new FBVisConfig();
     thread("initializeData");
+    thread("preRender");
+    frameRate(144);
 }
 
 void initializeData() {
@@ -65,6 +71,10 @@ void initializeData() {
     state = AppState.RUNNING;
 }
 
+void preRender() {
+    sprites = new Sprites();
+}
+
 void draw() {
     if (state == AppState.INIT) {
         background(255);
@@ -91,11 +101,19 @@ void draw() {
 
         text(msgScheduler.getCurrentTime(), 10, 30);
 
+        if (msgScheduler.finished()) {
+            state = AppState.PAUSED;
+        }
 
     } else if (state == AppState.PAUSED) {
-        background(0);
+        background(30);
         fill(255);
-        text("Paused", 10, 10);
+
+        image(peopleLayer.getRender(), 0, 0);
+        blendMode(ADD);
+        image(crawlerLayer.getRender(), 0, 0);
+        text(frameRate, 10, 10);
+        text(msgScheduler.getCurrentTime(), 10, 30);
     }
 
     if (frameCount % 60 == 0) {
